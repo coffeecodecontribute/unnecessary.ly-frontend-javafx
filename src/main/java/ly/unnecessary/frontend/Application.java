@@ -1,19 +1,20 @@
 package ly.unnecessary.frontend;
 
+import com.almasb.fxgl.app.GameApplication;
+import com.almasb.fxgl.app.GameSettings;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
-public class Application extends javafx.application.Application {
+public class Application extends GameApplication {
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        var scene = new Scene(new Label("Hello, world"), 600, 400);
-
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("JTodo");
-
-        primaryStage.show();
+    protected void initSettings(GameSettings gameSettings) {
+        gameSettings.setWidth(1920);
+        gameSettings.setHeight(1080);
+        gameSettings.setTitle("Brick Breaker");
+        gameSettings.setVersion("0.1");
     }
+
 
     public static void main(String[] args) {
         launch(args);
