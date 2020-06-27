@@ -82,6 +82,11 @@
             <version>11</version>
             <classifier>mac</classifier>
         </dependency>
+        <dependency>
+            <groupId>com.github.almasb</groupId>
+            <artifactId>fxgl</artifactId>
+            <version>11.9</version>
+        </dependency>
     </dependencies>
 
     <build>
