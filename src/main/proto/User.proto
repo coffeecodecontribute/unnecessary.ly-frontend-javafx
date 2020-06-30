@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package ly.unnecessary.backend;
+
+option java_package = "ly.unnecessary.backend.api";
+
+service UserService {
+  rpc signUp(UserSignUpRequest) returns (User);
+  rpc signIn(UserSignInRequest) returns (User);
+}
+
+message UserSignUpRequest {
+  string displayName = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message UserSignInRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message User {
+  int64 id = 1;
+  string displayName = 2;
+  string email = 3;
+}
