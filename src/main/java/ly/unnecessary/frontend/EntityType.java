@@ -1,5 +1,5 @@
 package ly.unnecessary.frontend;
 
 public enum EntityType {
-    PLAYER, BRICK, BALL
+    PLAYER, BRICK, BALL, WALL
 }
