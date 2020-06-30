@@ -31,8 +31,8 @@ public class GameEntityFactory implements EntityFactory {
                 .type(EntityType.BALL)
                 .from(data)
                 .viewWithBBox("ball.png")
-                .with("velocity", new Point2D(100, 100))
-                //.with(new BallComponent())
+                .with("velocity", new Point2D(10, 10))
+                .with(new BallComponent())
                 .collidable()
                 .build();
     }

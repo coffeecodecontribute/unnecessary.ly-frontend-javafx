@@ -62,7 +62,16 @@ public class Application extends GameApplication {
 
     @Override
     protected void onUpdate(double tpf) {
+        Point2D velocity = ball.getObject("velocity");
+        ball.translate(velocity);
 
+        if (ball.getY() < 0 || ball.getY() + ball.getWidth() > getAppHeight()) {
+            ball.setProperty("velocity", new Point2D(velocity.getX(), -velocity.getY()));
+        }
+
+        if (ball.getX() < 0 || ball.getX() + ball.getHeight() > getAppWidth()) {
+            ball.setProperty("velocity", new Point2D(-velocity.getX(), velocity.getY()));
+        }
     }
 
     @Override
@@ -76,30 +85,15 @@ public class Application extends GameApplication {
         onCollisionBegin(EntityType.BALL, EntityType.BRICK, (ball, brick) -> {
             brick.removeFromWorld();
             ball.getComponent(BallComponent.class).collideBlock();
+            Point2D velocity = ball.getObject("velocity");
+            ball.setProperty("velocity", new Point2D(velocity.getX(), -velocity.getY()));
             //System.out.println("Brick X: " + brick.getX() + " | Brick Y: " + brick.getY());
             System.out.println(Arrays.toString(bricks));
         });
 
         onCollisionBegin(EntityType.BALL, EntityType.PLAYER, (ball, player) -> {
-            ball.getComponent(BallComponent.class).collide(1);
-        });
-        getPhysicsWorld().addCollisionHandler(new CollisionHandler(EntityType.BALL, EntityType.WALL) {
-
-            @Override
-            protected void onHitBoxTrigger(Entity a, Entity b, HitBox boxA, HitBox boxB) {
-                if (boxB.getName().equals("BOT")) {
-                    ball.getComponent(BallComponent.class).collide(1);
-                }
-                if (boxB.getName().equals("TOP")) {
-                    ball.getComponent(BallComponent.class).collide(1);
-                }
-                if (boxB.getName().equals("RIGHT")) {
-                    ball.getComponent(BallComponent.class).collide(0);
-                }
-                if (boxB.getName().equals("LEFT")) {
-                    ball.getComponent(BallComponent.class).collide(0);
-                }
-            }
+            Point2D velocity = ball.getObject("velocity");
+            ball.setProperty("velocity", new Point2D(velocity.getX(), -velocity.getY()));
         });
     }
 
