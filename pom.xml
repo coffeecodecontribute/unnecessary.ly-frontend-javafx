@@ -11,7 +11,7 @@
         </license>
     </licenses>
 
-    <name>unnecessary•ly</name>
+    <name>unnecessary-ly</name>
     <description>JavaFX frontend for an unnecessary break breaker clone.</description>
 
     <properties>
@@ -82,6 +82,7 @@
             <version>11</version>
             <classifier>mac</classifier>
         </dependency>
+      
         <dependency>
             <groupId>com.github.almasb</groupId>
             <artifactId>fxgl</artifactId>
