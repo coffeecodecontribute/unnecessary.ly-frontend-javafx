@@ -10,7 +10,7 @@ public class BallComponent extends Component {
 
     @Override
     public void onAdded() {
-
+        entity.getTransformComponent().setAnchoredPosition(entity.getCenter());
     }
 
     @Override

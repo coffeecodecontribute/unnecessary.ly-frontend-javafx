@@ -1,6 +1,7 @@
 package ly.unnecessary.frontend;
 
 import com.almasb.fxgl.dsl.FXGL;
+import com.almasb.fxgl.dsl.components.ExpireCleanComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.EntityFactory;
 import com.almasb.fxgl.entity.SpawnData;
@@ -12,6 +13,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 
 import java.awt.geom.Rectangle2D;
 
@@ -19,19 +21,19 @@ import static com.almasb.fxgl.dsl.FXGL.*;
 
 public class GameEntityFactory implements EntityFactory {
 
+    int ballSpeed = 15;
+    int ballRadius = 24;
 
     @Spawns("ball")
     public Entity newBall(SpawnData data) {
-        int radius = 24;
-
-        Rectangle rectangle = new Rectangle(0, 0, 42, 42);
+        Rectangle rectangle = new Rectangle(0, 0, ballRadius, ballRadius);
         rectangle.setFill(Color.RED);
 
         return entityBuilder()
                 .type(EntityType.BALL)
                 .from(data)
                 .viewWithBBox("ball.png")
-                .with("velocity", new Point2D(10, 10))
+                .with("velocity", new Point2D(ballSpeed, ballSpeed))
                 .with(new BallComponent())
                 .collidable()
                 .build();
@@ -48,12 +50,15 @@ public class GameEntityFactory implements EntityFactory {
                 .build();
     }
 
+
     @Spawns("player")
     public Entity newPlayer(SpawnData data) {
+        var e = new Rectangle(0,0, 300,30);
+        e.setFill(Color.RED);
         return entityBuilder()
                 .type(EntityType.PLAYER)
                 .from(data)
-                .viewWithBBox("player.png")
+                .viewWithBBox(e)
                 .with(new PlayerComponent())
                 .collidable()
                 .build();
@@ -67,4 +72,16 @@ public class GameEntityFactory implements EntityFactory {
                 .build();
     }
 
+    //Developer
+
+    @Spawns("point")
+    public Entity newPoint(SpawnData data) {
+        var pixel = new Rectangle(10,10);
+        pixel.setFill(Color.CYAN);
+        return entityBuilder()
+                .from(data)
+                .view(pixel)
+                .with(new ExpireCleanComponent(Duration.seconds(0.5)))
+                .build();
+    }
 }
