@@ -21,19 +21,17 @@ import static com.almasb.fxgl.dsl.FXGL.*;
 
 public class GameEntityFactory implements EntityFactory {
 
-    int ballSpeed = 15;
-    int ballRadius = 24;
-
     @Spawns("ball")
     public Entity newBall(SpawnData data) {
-        Rectangle rectangle = new Rectangle(0, 0, ballRadius, ballRadius);
+        Rectangle rectangle = new Rectangle(0, 0, (int) data.get("ballRadius"), (int) data.get("ballRadius"));
+        //Circle rectangle = new Circle((int) data.get("ballRadius"));
         rectangle.setFill(Color.RED);
 
         return entityBuilder()
                 .type(EntityType.BALL)
                 .from(data)
-                .viewWithBBox("ball.png")
-                .with("velocity", new Point2D(ballSpeed, ballSpeed))
+                .viewWithBBox(rectangle)
+                .with("velocity", new Point2D((int) data.get("ballSpeed"), (int) data.get("ballSpeed")))
                 .with(new BallComponent())
                 .collidable()
                 .build();
