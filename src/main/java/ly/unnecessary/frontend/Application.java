@@ -94,8 +94,14 @@ public class Application extends GameApplication {
     protected void onUpdate(double tpf) {
         mouseMovement();
 
+        //Checks if ball is under the player
+        byType(EntityType.BALL).forEach(entity -> {
+            if(entity.getY() > getAppHeight() - 50)
+                entity.removeFromWorld();
+        });
+
         //Game is lost
-        if (ball.getY() > getAppHeight() - 50) {
+        if (byType(EntityType.BALL).isEmpty()) {
             set("gameStatus", 0);
             set("gameStatusReadable", getGameStatus(geti("gameStatus")));
         }
