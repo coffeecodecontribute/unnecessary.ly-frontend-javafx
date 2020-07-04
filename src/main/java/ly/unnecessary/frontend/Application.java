@@ -67,7 +67,23 @@ public class Application extends javafx.application.Application {
 
             var stream = communityClient.subscribeToChannelChats(channelFilter);
 
-            stream.forEachRemaining(c -> Platform.runLater(() -> communityComponent.addChat(c)));
+            stream.forEachRemaining(c -> Platform.runLater(() -> {
+                communityComponent.addChat(c);
+
+                communityComponent.scrollChatsToBottom();
+            }));
+        }).start();
+
+        new Thread(() -> {
+            var channelFilter = ChannelFilter.newBuilder().setChannelId(1).build();
+
+            var chats = communityClient.listChatsForChannel(channelFilter);
+
+            Platform.runLater(() -> {
+                communityComponent.replaceChats(chats.getChatsList());
+
+                communityComponent.scrollChatsToBottom();
+            });
         }).start();
 
         var scene = new Scene((Parent) communityComponent.render(), 1080, 720);

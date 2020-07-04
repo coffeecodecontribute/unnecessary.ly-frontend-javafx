@@ -1,11 +1,16 @@
 package ly.unnecessary.frontend;
 
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.Insets;
@@ -26,6 +31,7 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import javafx.util.Duration;
 import ly.unnecessary.backend.api.CommunityOuterClass.Chat;
 
 public class CommunityComponent {
@@ -33,9 +39,16 @@ public class CommunityComponent {
     private TextField newChatField;
     private VBox chatList;
     private VBox channel;
+    private ScrollPane chatListWrapper;
 
     public void addChat(Chat chat) {
         this.chatList.getChildren().add(this.createChat(channel.widthProperty(), "FP", chat.getMessage(), true));
+    }
+
+    public void replaceChats(List<Chat> chats) {
+        this.chatList.getChildren()
+                .setAll(chats.stream().map(c -> this.createChat(channel.widthProperty(), "FP", c.getMessage(), true))
+                        .collect(Collectors.toList()));
     }
 
     public void setOnCreateChat(Function<String, Integer> onCreateChat) {
@@ -45,6 +58,13 @@ public class CommunityComponent {
     public void clearAndFocusNewChatFieldText() {
         this.newChatField.clear();
         this.newChatField.requestFocus();
+    }
+
+    public void scrollChatsToBottom() {
+        var animation = new Timeline(
+                new KeyFrame(Duration.seconds(0.5), new KeyValue(this.chatListWrapper.vvalueProperty(), 1)));
+
+        animation.play();
     }
 
     public Node render() {
@@ -149,21 +169,13 @@ public class CommunityComponent {
         var channelHeader = new HBox();
         channelHeader.getChildren().add(this.createHeader("Channel 1"));
 
-        var chatListWrapper = new ScrollPane();
+        this.chatListWrapper = new ScrollPane();
 
         chatListWrapper.setVbarPolicy(ScrollBarPolicy.NEVER);
         chatListWrapper.setHbarPolicy(ScrollBarPolicy.NEVER);
         chatListWrapper.setFitToWidth(true);
 
         this.chatList = new VBox();
-
-        chatList.getChildren().addAll(this.createChat(channel.widthProperty(), "AD",
-                "Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-                false),
-                this.createChat(channel.widthProperty(), "BO",
-                        "Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-                        false),
-                this.createChat(channel.widthProperty(), "FP", "Hello, everyone!", true));
         chatList.setSpacing(8);
         chatListWrapper.setContent(chatList);
         chatListWrapper.setHbarPolicy(ScrollBarPolicy.NEVER);
