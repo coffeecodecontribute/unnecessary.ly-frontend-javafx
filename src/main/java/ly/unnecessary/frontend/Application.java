@@ -7,6 +7,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -19,6 +20,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -62,7 +64,7 @@ public class Application extends javafx.application.Application {
         // Community details
         var communityDetails = new VBox();
 
-        var avatarHeader = new Button("FP Felix Pojtinger");
+        var avatarHeader = this.createUserMenu("FP", "Felix Pojtinger");
 
         var memberListWrapper = new ScrollPane();
         var memberList = new VBox();
@@ -76,6 +78,8 @@ public class Application extends javafx.application.Application {
         var invitePeopleButton = new Button("+ Invite People");
 
         communityDetails.getChildren().addAll(avatarHeader, memberListWrapper, invitePeopleButton);
+        communityDetails.setSpacing(8);
+        communityDetails.setPadding(new Insets(8));
 
         // Community content
         var communityContent = new HBox();
@@ -185,6 +189,26 @@ public class Application extends javafx.application.Application {
         chat.getChildren().addAll(avatarPlaceholder, chatContent);
 
         return chat;
+    }
+
+    private Button createUserMenu(String initials, String fullName) {
+        var avatarHeader = new Button();
+
+        var innerAvatar = new HBox();
+        var avatar = new Label(initials);
+        avatar.setShape(new Circle(8));
+        avatar.setStyle(
+                "-fx-background-color: black; -fx-text-fill: white; -fx-min-width: 16; -fx-min-height: 16; -fx-font-size: 12;");
+        avatar.setPadding(new Insets(8));
+        var name = new Label(fullName);
+        innerAvatar.setSpacing(8);
+        innerAvatar.setPadding(new Insets(4));
+        innerAvatar.getChildren().addAll(avatar, name);
+        innerAvatar.setAlignment(Pos.CENTER);
+        avatarHeader.setGraphic(innerAvatar);
+        avatarHeader.setStyle("-fx-background-radius: 24;");
+
+        return avatarHeader;
     }
 
     public static void main(String[] args) {
