@@ -55,6 +55,8 @@ public class Application extends javafx.application.Application {
         var communityClient = MetadataUtils.attachHeaders(CommunityServiceGrpc.newBlockingStub(ch), metadata);
 
         var communityComponent = new CommunityComponent();
+
+        // Queries on UI
         communityComponent.setOnCreateChat(chat -> {
             new Thread(() -> {
                 var newChat = NewChat.newBuilder().setChannelId(1).setMessage(chat).build();
@@ -67,6 +69,13 @@ public class Application extends javafx.application.Application {
             return 0;
         });
 
+        communityComponent.setOnClickCommunityLink(c -> {
+            Platform.runLater(() -> communityComponent.selectCommunityLink(c));
+
+            return 0;
+        });
+
+        // Mutations on UI
         new Thread(() -> {
             var channelFilter = ChannelFilter.newBuilder().setChannelId(1).build();
 

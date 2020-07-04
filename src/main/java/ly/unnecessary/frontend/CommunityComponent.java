@@ -1,6 +1,8 @@
 package ly.unnecessary.frontend;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,12 +38,23 @@ import ly.unnecessary.backend.api.CommunityOuterClass.Chat;
 import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 
 public class CommunityComponent {
-    private Function<String, Integer> onCreateChat;
     private TextField newChatField;
     private VBox chatList;
     private VBox channel;
     private ScrollPane chatListWrapper;
     private VBox communities;
+    private Map<Community, Button> communityToCommmunityLink = new HashMap<>();
+
+    private Function<String, Integer> onCreateChat;
+    private Function<Community, Integer> onClickCommunityLink;
+
+    public void setOnCreateChat(Function<String, Integer> onCreateChat) {
+        this.onCreateChat = onCreateChat;
+    }
+
+    public void setOnClickCommunityLink(Function<Community, Integer> onClickCommunityLink) {
+        this.onClickCommunityLink = onClickCommunityLink;
+    }
 
     public void addChat(Chat chat) {
         this.chatList.getChildren().add(this.createChat(channel.widthProperty(), "FP", chat.getMessage(), true));
@@ -51,10 +64,6 @@ public class CommunityComponent {
         this.chatList.getChildren()
                 .setAll(chats.stream().map(c -> this.createChat(channel.widthProperty(), "FP", c.getMessage(), true))
                         .collect(Collectors.toList()));
-    }
-
-    public void setOnCreateChat(Function<String, Integer> onCreateChat) {
-        this.onCreateChat = onCreateChat;
     }
 
     public void clearAndFocusNewChatFieldText() {
@@ -70,8 +79,16 @@ public class CommunityComponent {
     }
 
     public void replaceCommunities(List<Community> communities) {
-        this.communities.getChildren().setAll(communities.stream()
-                .map(c -> this.createCommunityLink("FP", false, c.getDisplayName())).collect(Collectors.toList()));
+        this.communities.getChildren()
+                .setAll(communities.stream().map(c -> this.createCommunityLink(c, false)).collect(Collectors.toList()));
+    }
+
+    public void selectCommunityLink(Community community) {
+        this.communityToCommmunityLink.values().stream().forEach(b -> b.setStyle(SIDEBAR_BUTTON_INACTIVE_STYLES));
+
+        var buttonForCommunity = this.communityToCommmunityLink.get(community);
+
+        buttonForCommunity.setStyle(SIDEBAR_BUTTON_ACTIVE_STYLES);
     }
 
     public Node render() {
@@ -224,16 +241,27 @@ public class CommunityComponent {
         return wrapper;
     }
 
-    private Button createCommunityLink(String initials, boolean active, String fullName) {
-        var link = new Button(initials);
-        var tooltip = new Tooltip(fullName);
+    private Button createCommunityLink(Community community, boolean active) {
+        var shorthand = community.getDisplayName().substring(0, 2).toUpperCase();
+        var initials = community.getDisplayName().toUpperCase().split(" ");
+        if (initials[1] != null)
+            shorthand = initials[0].substring(0, 1) + initials[1].substring(0, 1);
+
+        var link = new Button(shorthand);
+        var tooltip = new Tooltip(community.getDisplayName());
         Tooltip.install(link, tooltip);
 
         if (active) {
-            link.setStyle("-fx-base: royalblue; -fx-background-radius: 16; " + SIDEBAR_BUTTON_STYLES);
+            link.setStyle(SIDEBAR_BUTTON_ACTIVE_STYLES);
         } else {
-            link.setStyle("-fx-background-radius: 32; " + SIDEBAR_BUTTON_STYLES);
+            link.setStyle(SIDEBAR_BUTTON_INACTIVE_STYLES);
         }
+
+        link.setOnAction((e) -> {
+            this.onClickCommunityLink.apply(community);
+        });
+
+        this.communityToCommmunityLink.put(community, link);
 
         return link;
     }
@@ -330,4 +358,7 @@ public class CommunityComponent {
     }
 
     private static String SIDEBAR_BUTTON_STYLES = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16; -fx-font-weight: bold;";
+    private static String SIDEBAR_BUTTON_INACTIVE_STYLES = "-fx-background-radius: 32; " + SIDEBAR_BUTTON_STYLES;
+    private static String SIDEBAR_BUTTON_ACTIVE_STYLES = "-fx-base: royalblue; -fx-background-radius: 16; "
+            + SIDEBAR_BUTTON_STYLES;
 }
