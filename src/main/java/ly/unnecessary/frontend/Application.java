@@ -3,7 +3,6 @@ package ly.unnecessary.frontend;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -16,6 +15,7 @@ public class Application extends javafx.application.Application {
     public void start(Stage primaryStage) throws Exception {
         var wrapper = new BorderPane();
 
+        // Community switcher
         var communitySwitcher = new VBox();
 
         var communityList = new ScrollPane();
@@ -37,7 +37,23 @@ public class Application extends javafx.application.Application {
 
         communitySwitcher.getChildren().addAll(communityList, communityMainActions);
 
+        // Community details
         var communityDetails = new VBox();
+
+        var avatarHeader = this.createHeader();
+
+        var memberListWrapper = new ScrollPane();
+        var memberList = new VBox();
+
+        memberList.getChildren().addAll(new Label("Owner"), avatarHeader, new Label("Members"), this.createHeader(),
+                this.createHeader(), this.createHeader());
+        memberListWrapper.setContent(memberList);
+
+        VBox.setVgrow(memberListWrapper, Priority.ALWAYS);
+
+        var invitePeopleButton = new Button("+ Invite People");
+
+        communityDetails.getChildren().addAll(avatarHeader, memberListWrapper, invitePeopleButton);
 
         var communityContent = new HBox();
 
@@ -51,6 +67,18 @@ public class Application extends javafx.application.Application {
         primaryStage.setTitle("unnecessary.ly");
 
         primaryStage.show();
+    }
+
+    private HBox createHeader() {
+        var avatarHeader = new HBox();
+
+        var avatarPlaceholder = new Label("FP");
+
+        var avatarName = new Label("Felix Pojtinger");
+
+        avatarHeader.getChildren().addAll(avatarPlaceholder, avatarName);
+
+        return avatarHeader;
     }
 
     public static void main(String[] args) {
