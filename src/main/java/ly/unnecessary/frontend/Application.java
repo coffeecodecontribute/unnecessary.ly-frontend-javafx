@@ -3,6 +3,8 @@ package ly.unnecessary.frontend;
 import com.almasb.fxgl.app.ApplicationMode;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
+import com.almasb.fxgl.app.scene.FXGLMenu;
+import com.almasb.fxgl.app.scene.SceneFactory;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.components.IrremovableComponent;
@@ -13,6 +15,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import ly.unnecessary.frontend.components.BallComponent;
 import ly.unnecessary.frontend.components.BrickComponent;
+import ly.unnecessary.frontend.menu.MainMenu;
 
 import java.util.Map;
 
@@ -21,25 +24,21 @@ import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
 
 public class Application extends GameApplication {
 
+    //brick
+    static final int collisionLogicSecurityPadding = 10;
     //app
     static int appWidth = 1920;
     static int appHeight = 1080;
-
     //ball
     static int ballSpeed = 8;
     static int ballRadius = 24;
     static Point2D ballSpawnPoint = new Point2D(appWidth / 2d - ballRadius / 2d, appHeight - 150);
-
-
     //player
     static int playerWidth = 300;
     static int playerHeight = 30;
     static int playerSpeed = 20;
     static double playerSpeedMultiplier = 1.5f;
-    static Point2D playerSpawnPoint = new Point2D( appWidth / 2d - playerWidth / 2d, appHeight - 100);
-
-    //brick
-    static final int collisionLogicSecurityPadding = 10;
+    static Point2D playerSpawnPoint = new Point2D(appWidth / 2d - playerWidth / 2d, appHeight - 100);
     static int brickWidth = 128;
     static int brickHeight = 36;
 
@@ -47,26 +46,7 @@ public class Application extends GameApplication {
 
     static int levelMargin = 36;
     static int levelRows = 19;
-    static String level =
-            "000000000000000" +
-            "000000000000000" +
-            "000000000000000" +
-            "000010000010000" +
-            "000101000101000" +
-            "001000111000100" +
-            "001000000000100" +
-            "010022000220010" +
-            "010000000000010" +
-            "010000030000010" +
-            "001000030000100" +
-            "001000030000100" +
-            "000100000001000" +
-            "000010000010000" +
-            "000001000100000" +
-            "000000101000000" +
-            "000000010000000" +
-            "000000000000000" +
-            "000000000000000";
+
     /*
     static String level =
                     "000000000000" +
@@ -111,6 +91,15 @@ public class Application extends GameApplication {
         gameSettings.setTitle("Brick Breaker");
         gameSettings.setVersion("0.2");
         gameSettings.setApplicationMode(ApplicationMode.DEVELOPER);
+        gameSettings.setMainMenuEnabled(true);
+        gameSettings.setSceneFactory(new SceneFactory() {
+            @Override
+            public FXGLMenu newMainMenu() {
+                return new MainMenu();
+            }
+        });
+        gameSettings.setFullScreenAllowed(true);
+        gameSettings.setFullScreenFromStart(true);
     }
 
     @Override
@@ -125,6 +114,7 @@ public class Application extends GameApplication {
         vars.put("ballRadius", ballRadius);
         vars.put("gameStatus", 0);
         vars.put("freeze", false);
+        vars.put("level", 0);
         /*
         -1 : lost
         0 : pregame
@@ -151,24 +141,8 @@ public class Application extends GameApplication {
     protected void initGame() {
         getGameWorld().addEntityFactory(new GameEntityFactory());
 
-        spawn("background", 0, 0);
-        player = spawn("player", playerSpawnPoint);
-        ball = spawn("ball", ballSpawnPoint);
 
-
-        int i = 0, x = 0, y = levelMargin;
-        for (int row = 0; row < levelRows; row++) {
-            for (int col = 0; col < 1920 / brickWidth; col++) {
-                if (level.charAt(i) == '1')
-                    spawn("brick", new SpawnData(x, y).put("color", Color.DARKGRAY));
-                else if(level.charAt(i) == '2')
-                    spawn("brick", new SpawnData(x, y).put("color", Color.RED));
-                i++;
-                x += brickWidth;
-            }
-            x = 0;
-            y += brickHeight;
-        }
+        setLevel(0);
 
         entityBuilder()
                 .type(EntityType.WALL)
@@ -181,7 +155,7 @@ public class Application extends GameApplication {
     protected void onUpdate(double tpf) {
         mouseMovement();
 
-        if(geti("gameStatus") == 0)
+        if (geti("gameStatus") == 0)
             inPreGame();
 
         if (getSettings().getApplicationMode() == ApplicationMode.RELEASE) {
@@ -195,7 +169,7 @@ public class Application extends GameApplication {
 
         //Game is lost
         if (byType(EntityType.BALL).isEmpty()) {
-            set("gameStatus", 0);
+            set("gameStatus", -1);
             set("gameStatusReadable", getGameStatus(geti("gameStatus")));
         }
 
@@ -211,14 +185,14 @@ public class Application extends GameApplication {
         getInput().addAction(new UserAction("Up") {
             @Override
             protected void onActionBegin() {
-                if(geti("gameStatus") == 0) {
+                if (geti("gameStatus") == 0) {
                     set("freeze", true);
                 }
             }
 
             @Override
             protected void onActionEnd() {
-                if(geti("gameStatus") == 0) {
+                if (geti("gameStatus") == 0) {
                     ball.getComponent(BallComponent.class).release();
                     set("gameStatus", 1);
                     set("freeze", false);
@@ -229,6 +203,11 @@ public class Application extends GameApplication {
 
         //onKey(KeyCode.D, "Move Right", () -> { player.getComponent(PlayerComponent.class).moveRight(); });
         //onKey(KeyCode.A, () -> player.getComponent(PlayerComponent.class).moveLeft());
+        onKey(KeyCode.K, () -> {
+            setLevel(1);
+            //getDialogService().showMessageBox("You have completed demo!", getGameController()::exit);
+        });
+
         onKey(KeyCode.L, () -> {
             if (byType(EntityType.BRICK).isEmpty())
                 spawn("brick", getAppWidth() / 2 - 250, 100);
@@ -237,6 +216,78 @@ public class Application extends GameApplication {
         });
 
 
+    }
+
+    private void setLevel(int levelId) {
+        getGameWorld().getEntitiesCopy().forEach(e -> e.removeFromWorld());
+
+        String level = "";
+        set("gameStatus", 0);
+        set("freeze", false);
+        set("level", levelId);
+
+        if(geti("level") == 0)
+            level =
+                        "000000000000000" +
+                        "000000000000000" +
+                        "000000000000000" +
+                        "000010000010000" +
+                        "000101000101000" +
+                        "001000111000100" +
+                        "001000000000100" +
+                        "010022000220010" +
+                        "010000000000010" +
+                        "010000030000010" +
+                        "001000030000100" +
+                        "001000030000100" +
+                        "000100000001000" +
+                        "000010000010000" +
+                        "000001000100000" +
+                        "000000101000000" +
+                        "000000010000000" +
+                        "000000000000000" +
+                        "000000000000000";
+        else if(geti("level") == 1) {
+            level =
+                            "000000000000000" +
+                            "000000000000000" +
+                            "002121212121200" +
+                            "002020202020200" +
+                            "002020202020200" +
+                            "002020202020200" +
+                            "002020202020200" +
+                            "001111111111100" +
+                            "000111111111000" +
+                            "000011111110000" +
+                            "000001111100000" +
+                            "000000111000000" +
+                            "000000010000000" +
+                            "000000020000000" +
+                            "000000020000000" +
+                            "001111121111100" +
+                            "000000000000000" +
+                            "000000000000000" +
+                            "000000000000000";
+        }
+
+        spawn("background", 0, 0);
+        player = spawn("player", playerSpawnPoint);
+        ball = spawn("ball", ballSpawnPoint);
+
+
+        int i = 0, x = 0, y = levelMargin;
+        for (int row = 0; row < levelRows; row++) {
+            for (int col = 0; col < 1920 / brickWidth; col++) {
+                if (level.charAt(i) == '1')
+                    spawn("brick", new SpawnData(x, y).put("color", Color.DARKGRAY));
+                else if (level.charAt(i) == '2')
+                    spawn("brick", new SpawnData(x, y).put("color", Color.RED));
+                i++;
+                x += brickWidth;
+            }
+            x = 0;
+            y += brickHeight;
+        }
     }
 
     @Override
@@ -305,7 +356,7 @@ public class Application extends GameApplication {
      * sets player'x position to the mouse'x
      */
     public void mouseMovement() {
-        if(getb("freeze"))
+        if (getb("freeze"))
             return;
 
         //gets the cursor and sets it to the middle of the player
