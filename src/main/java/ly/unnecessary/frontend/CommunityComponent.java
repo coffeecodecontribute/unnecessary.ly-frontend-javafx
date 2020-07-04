@@ -33,6 +33,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 import ly.unnecessary.backend.api.CommunityOuterClass.Chat;
+import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 
 public class CommunityComponent {
     private Function<String, Integer> onCreateChat;
@@ -40,6 +41,7 @@ public class CommunityComponent {
     private VBox chatList;
     private VBox channel;
     private ScrollPane chatListWrapper;
+    private VBox communities;
 
     public void addChat(Chat chat) {
         this.chatList.getChildren().add(this.createChat(channel.widthProperty(), "FP", chat.getMessage(), true));
@@ -67,6 +69,11 @@ public class CommunityComponent {
         animation.play();
     }
 
+    public void replaceCommunities(List<Community> communities) {
+        this.communities.getChildren().setAll(communities.stream()
+                .map(c -> this.createCommunityLink("FP", false, c.getDisplayName())).collect(Collectors.toList()));
+    }
+
     public Node render() {
         var wrapper = new BorderPane();
 
@@ -75,11 +82,7 @@ public class CommunityComponent {
 
         var communityList = new ScrollPane();
 
-        var communities = new VBox();
-        var community1 = this.createCommunityLink("FP", true, "Felix Pojtinger's Community");
-        var community2 = this.createCommunityLink("AD", false, "Alice Duck's Community");
-        var community3 = this.createCommunityLink("BO", false, "Bob Oliver's Communitiy");
-        communities.getChildren().addAll(community1, community2, community3);
+        this.communities = new VBox();
         communities.setSpacing(8);
         communities.setPadding(new Insets(8, 0, 8, 8));
 

@@ -35,6 +35,11 @@ import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.google.protobuf.Empty;
+
 public class Application extends javafx.application.Application {
     public static Metadata.Key<String> USER_EMAIL_KEY = Metadata.Key.of("x-uly-email", ASCII_STRING_MARSHALLER);
     public static Metadata.Key<String> USER_PASSWORD_KEY = Metadata.Key.of("x-uly-password", ASCII_STRING_MARSHALLER);
@@ -84,6 +89,16 @@ public class Application extends javafx.application.Application {
 
                 communityComponent.scrollChatsToBottom();
             });
+        }).start();
+
+        new Thread(() -> {
+            var ownedCommunities = communityClient.listCommunitiesForOwner(Empty.newBuilder().build());
+            var memberCommunities = communityClient.listCommunitiesForMember(Empty.newBuilder().build());
+
+            var allCommunities = Stream.concat(ownedCommunities.getCommunitiesList().stream(),
+                    memberCommunities.getCommunitiesList().stream()).collect(Collectors.toList());
+
+            Platform.runLater(() -> communityComponent.replaceCommunities(allCommunities));
         }).start();
 
         var scene = new Scene((Parent) communityComponent.render(), 1080, 720);
