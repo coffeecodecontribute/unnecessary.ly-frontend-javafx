@@ -23,10 +23,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 public class Application extends javafx.application.Application {
-
     private static String SIDEBAR_BUTTON_STYLES = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16; -fx-font-weight: bold;";
 
     @Override
@@ -134,13 +134,20 @@ public class Application extends javafx.application.Application {
 
         var chatListWrapper = new ScrollPane();
 
+        chatListWrapper.setVbarPolicy(ScrollBarPolicy.NEVER);
         chatListWrapper.setHbarPolicy(ScrollBarPolicy.NEVER);
         chatListWrapper.setFitToWidth(true);
 
         var chatList = new VBox();
 
-        chatList.getChildren().addAll(this.createChat(channel.widthProperty()),
-                this.createChat(channel.widthProperty()), this.createChat(channel.widthProperty()));
+        chatList.getChildren().addAll(this.createChat(channel.widthProperty(), "AD",
+                "Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+                false),
+                this.createChat(channel.widthProperty(), "BO",
+                        "Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+                        false),
+                this.createChat(channel.widthProperty(), "FP", "Hello, everyone!", true));
+        chatList.setSpacing(8);
         chatListWrapper.setContent(chatList);
         chatListWrapper.setHbarPolicy(ScrollBarPolicy.NEVER);
         chatListWrapper.setStyle("-fx-background-color: transparent");
@@ -229,17 +236,24 @@ public class Application extends javafx.application.Application {
         return button;
     }
 
-    private HBox createChat(ReadOnlyDoubleProperty width) {
+    private HBox createChat(ReadOnlyDoubleProperty width, String initials, String message, boolean fromSelf) {
         var chat = new HBox();
 
-        var avatarPlaceholder = new Label("FP");
+        var avatarPlaceholder = this.createProfilePicture(initials);
 
-        var chatContent = new Text(
-                "Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+        var chatContent = new Text(message);
 
-        chatContent.wrappingWidthProperty().bind(width.subtract(20));
+        chatContent.wrappingWidthProperty().bind(width.subtract(48));
 
-        chat.getChildren().addAll(avatarPlaceholder, chatContent);
+        if (fromSelf) {
+            chat.getChildren().addAll(chatContent, avatarPlaceholder);
+            chatContent.setTextAlignment(TextAlignment.RIGHT);
+        } else {
+            chat.getChildren().addAll(avatarPlaceholder, chatContent);
+        }
+
+        chat.setSpacing(8);
+        chat.setAlignment(Pos.CENTER);
 
         return chat;
     }
@@ -256,12 +270,8 @@ public class Application extends javafx.application.Application {
 
     private HBox createUserPersona(String initials, String fullName) {
         var innerAvatar = new HBox();
-        var avatar = new Label(initials);
-        avatar.setAlignment(Pos.CENTER);
-        avatar.setShape(new Circle(8));
-        avatar.setStyle(
-                "-fx-background-color: black; -fx-text-fill: white; -fx-min-width: 32; -fx-min-height: 32; -fx-max-width: 32; -fx-max-height: 32; -fx-font-size: 10; -fx-font-weight: bold;");
-        avatar.setPadding(new Insets(8));
+        var avatar = this.createProfilePicture(initials);
+
         var name = new Label(fullName);
         innerAvatar.setSpacing(8);
         innerAvatar.setPadding(new Insets(4));
@@ -269,6 +279,17 @@ public class Application extends javafx.application.Application {
         innerAvatar.setAlignment(Pos.CENTER_LEFT);
 
         return innerAvatar;
+    }
+
+    private Label createProfilePicture(String initials) {
+        var avatar = new Label(initials);
+        avatar.setAlignment(Pos.CENTER);
+        avatar.setShape(new Circle(8));
+        avatar.setStyle(
+                "-fx-background-color: black; -fx-text-fill: white; -fx-min-width: 32; -fx-min-height: 32; -fx-max-width: 32; -fx-max-height: 32; -fx-font-size: 10; -fx-font-weight: bold;");
+        avatar.setPadding(new Insets(8));
+
+        return avatar;
     }
 
     private Label createHeader(String title) {
