@@ -1,7 +1,8 @@
-package ly.unnecessary.frontend;
+package ly.unnecessary.frontend.components;
 
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.component.Component;
+import ly.unnecessary.frontend.Application;
 
 public class PlayerComponent extends Component {
 
