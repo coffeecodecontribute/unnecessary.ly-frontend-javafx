@@ -26,7 +26,7 @@ import javafx.stage.Stage;
 
 public class Application extends javafx.application.Application {
 
-    private static String SIDEBAR_BUTTON_STYLES = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16;";
+    private static String SIDEBAR_BUTTON_STYLES = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16; -fx-font-weight: bold;";
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -67,11 +67,27 @@ public class Application extends javafx.application.Application {
         var avatarHeader = this.createUserMenu("FP", "Felix Pojtinger");
 
         var memberListWrapper = new ScrollPane();
+
+        var userList = new VBox();
+
+        var ownerList = new VBox();
+
+        ownerList.getChildren().addAll(this.createHeader("Owner"), this.createUserPersona("FP", "Felix Pojtinger"));
+        ownerList.setSpacing(8);
+
         var memberList = new VBox();
 
-        memberList.getChildren().addAll(new Label("Owner"), avatarHeader, new Label("Members"), this.createHeader(),
-                this.createHeader(), this.createHeader());
-        memberListWrapper.setContent(memberList);
+        memberList.getChildren().addAll(this.createHeader("Members"), this.createUserPersona("AD", "Alice Duck"),
+                this.createUserPersona("BO", "Bob Oliver"), this.createUserPersona("PK", "Peter Kropotkin"));
+        memberList.setSpacing(8);
+        memberList.setAlignment(Pos.TOP_LEFT);
+
+        userList.getChildren().addAll(ownerList, memberList);
+
+        memberListWrapper.setVbarPolicy(ScrollBarPolicy.NEVER);
+        memberListWrapper.setHbarPolicy(ScrollBarPolicy.NEVER);
+        memberListWrapper.setStyle("-fx-background-color: transparent");
+        memberListWrapper.setContent(userList);
 
         VBox.setVgrow(memberListWrapper, Priority.ALWAYS);
 
@@ -131,24 +147,14 @@ public class Application extends javafx.application.Application {
 
         Platform.runLater(() -> newChatBox.requestFocus());
 
+        wrapper.setStyle("-fx-font-family: 'Arial';");
+
         var scene = new Scene(wrapper, 1080, 720);
 
         primaryStage.setScene(scene);
         primaryStage.setTitle("unnecessary.ly");
 
         primaryStage.show();
-    }
-
-    private HBox createHeader() {
-        var avatarHeader = new HBox();
-
-        var avatarPlaceholder = new Label("FP");
-
-        var avatarName = new Label("Felix Pojtinger");
-
-        avatarHeader.getChildren().addAll(avatarPlaceholder, avatarName);
-
-        return avatarHeader;
     }
 
     private Button createCommunityLink(String initials, boolean active, String fullName) {
@@ -193,22 +199,37 @@ public class Application extends javafx.application.Application {
 
     private Button createUserMenu(String initials, String fullName) {
         var avatarHeader = new Button();
+        var innerAvatar = this.createUserPersona(initials, fullName);
 
+        avatarHeader.setGraphic(innerAvatar);
+        avatarHeader.setStyle("-fx-background-radius: 24;");
+
+        return avatarHeader;
+    }
+
+    private HBox createUserPersona(String initials, String fullName) {
         var innerAvatar = new HBox();
         var avatar = new Label(initials);
+        avatar.setAlignment(Pos.CENTER);
         avatar.setShape(new Circle(8));
         avatar.setStyle(
-                "-fx-background-color: black; -fx-text-fill: white; -fx-min-width: 16; -fx-min-height: 16; -fx-font-size: 12;");
+                "-fx-background-color: black; -fx-text-fill: white; -fx-min-width: 32; -fx-min-height: 32; -fx-max-width: 32; -fx-max-height: 32; -fx-font-size: 10; -fx-font-weight: bold;");
         avatar.setPadding(new Insets(8));
         var name = new Label(fullName);
         innerAvatar.setSpacing(8);
         innerAvatar.setPadding(new Insets(4));
         innerAvatar.getChildren().addAll(avatar, name);
-        innerAvatar.setAlignment(Pos.CENTER);
-        avatarHeader.setGraphic(innerAvatar);
-        avatarHeader.setStyle("-fx-background-radius: 24;");
+        innerAvatar.setAlignment(Pos.CENTER_LEFT);
 
-        return avatarHeader;
+        return innerAvatar;
+    }
+
+    private Label createHeader(String title) {
+        var ownerHeader = new Label(title);
+
+        ownerHeader.setStyle("-fx-font-weight: bold;");
+
+        return ownerHeader;
     }
 
     public static void main(String[] args) {
