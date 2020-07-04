@@ -1,6 +1,9 @@
 package ly.unnecessary.frontend;
 
+import com.almasb.fxgl.core.math.Vec2;
 import com.almasb.fxgl.dsl.components.ExpireCleanComponent;
+import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
+import com.almasb.fxgl.dsl.components.ProjectileComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.EntityFactory;
 import com.almasb.fxgl.entity.SpawnData;
@@ -10,7 +13,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 import ly.unnecessary.frontend.components.BallComponent;
+import ly.unnecessary.frontend.components.BrickComponent;
 import ly.unnecessary.frontend.components.PlayerComponent;
+import org.w3c.dom.css.Rect;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
 
@@ -27,7 +32,7 @@ public class GameEntityFactory implements EntityFactory {
                 .type(EntityType.BALL)
                 .from(data)
                 .viewWithBBox(rectangle)
-                .with("velocity", new Point2D((int) geti("ballSpeed"), (int) geti("ballSpeed")))
+                .with("velocity", new Point2D(0,0))
                 .with(new BallComponent())
                 .collidable()
                 .build();
@@ -36,12 +41,28 @@ public class GameEntityFactory implements EntityFactory {
 
     @Spawns("brick")
     public Entity newBrick(SpawnData data) {
-        Rectangle brick = new Rectangle(0, 0, 500, 500);
-        brick.setFill(Color.RED);
+        Rectangle brick = new Rectangle(0, 0, 128, 36);
+        brick.setFill(data.get("color"));
+
         return entityBuilder()
                 .type(EntityType.BRICK)
                 .from(data)
-                .viewWithBBox("brick.png")
+                .viewWithBBox(brick)
+                .with(new BrickComponent())
+                .collidable()
+                .build();
+    }
+
+    @Spawns("actionBrick")
+    public Entity newActionBrick(SpawnData data) {
+        Rectangle brick = new Rectangle(0, 0, 128, 36);
+        brick.setFill(Color.DARKGRAY);
+        Vec2 dir = Vec2.fromAngle(90);
+        return entityBuilder()
+                .from(data)
+                .viewWithBBox(brick)
+                .with(new ProjectileComponent(dir.toPoint2D(), 500).allowRotation(false))
+                .with(new OffscreenCleanComponent())
                 .collidable()
                 .build();
     }
