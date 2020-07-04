@@ -3,6 +3,7 @@ package ly.unnecessary.frontend;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -55,7 +56,24 @@ public class Application extends javafx.application.Application {
 
         communityDetails.getChildren().addAll(avatarHeader, memberListWrapper, invitePeopleButton);
 
+        // Community content
         var communityContent = new HBox();
+
+        var communityHeader = new HBox();
+        communityHeader.getChildren().add(new Label("Community 1"));
+
+        var communityChannels = new VBox();
+
+        var communityChannelsList = new ListView<>();
+        communityChannelsList.getItems().addAll(new Label("Channel 1"), new Label("Channel 2"), new Label("Channel 3"));
+
+        var addChannelButton = new Button("+ Add Channel");
+
+        VBox.setVgrow(communityChannelsList, Priority.ALWAYS);
+
+        communityChannels.getChildren().addAll(communityHeader, communityChannelsList, addChannelButton);
+
+        communityContent.getChildren().addAll(communityChannels);
 
         wrapper.setLeft(communitySwitcher);
         wrapper.setCenter(communityContent);
