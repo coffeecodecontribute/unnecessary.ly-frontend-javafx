@@ -1,5 +1,9 @@
 package ly.unnecessary.frontend;
 
+import org.kordamp.ikonli.Ikon;
+import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
+import org.kordamp.ikonli.javafx.FontIcon;
+
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.Insets;
@@ -19,6 +23,9 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class Application extends javafx.application.Application {
+
+    private static String SIDEBAR_BUTTON_STYLES = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16;";
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         var wrapper = new BorderPane();
@@ -43,10 +50,12 @@ public class Application extends javafx.application.Application {
 
         VBox.setVgrow(communityList, Priority.ALWAYS);
 
-        var communityAddButton = new Button("+");
-        var communityJoinButton = new Button("j");
+        var communityAddButton = this.createCommunityAction(FontAwesomeSolid.PLUS, "Create community");
+        var communityJoinButton = this.createCommunityAction(FontAwesomeSolid.DOOR_OPEN, "Join community");
 
         var communityMainActions = new VBox(communityAddButton, communityJoinButton);
+        communityMainActions.setSpacing(8);
+        communityMainActions.setPadding(new Insets(8));
 
         communitySwitcher.getChildren().addAll(communityList, communityMainActions);
 
@@ -143,15 +152,24 @@ public class Application extends javafx.application.Application {
         var tooltip = new Tooltip(fullName);
         Tooltip.install(link, tooltip);
 
-        var baseStyles = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16;";
-
         if (active) {
-            link.setStyle("-fx-base: royalblue; -fx-background-radius: 16; " + baseStyles);
+            link.setStyle("-fx-base: royalblue; -fx-background-radius: 16; " + SIDEBAR_BUTTON_STYLES);
         } else {
-            link.setStyle("-fx-background-radius: 32; " + baseStyles);
+            link.setStyle("-fx-background-radius: 32; " + SIDEBAR_BUTTON_STYLES);
         }
 
         return link;
+    }
+
+    private Button createCommunityAction(Ikon iconName, String action) {
+        var button = new Button();
+        button.setGraphic(new FontIcon(iconName));
+        var tooltip = new Tooltip(action);
+        Tooltip.install(button, tooltip);
+
+        button.setStyle("-fx-background-radius: 32; " + SIDEBAR_BUTTON_STYLES);
+
+        return button;
     }
 
     private HBox createChat(ReadOnlyDoubleProperty width) {
