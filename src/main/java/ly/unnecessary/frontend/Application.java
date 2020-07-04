@@ -4,6 +4,10 @@ import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import io.grpc.Context;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
+import io.grpc.stub.MetadataUtils;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.Insets;
@@ -25,12 +29,28 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
+import ly.unnecessary.backend.api.CommunityServiceGrpc;
+import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
+import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
+
+import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
 public class Application extends javafx.application.Application {
     private static String SIDEBAR_BUTTON_STYLES = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16; -fx-font-weight: bold;";
 
+    public static Metadata.Key<String> USER_EMAIL_KEY = Metadata.Key.of("x-uly-email", ASCII_STRING_MARSHALLER);
+    public static Metadata.Key<String> USER_PASSWORD_KEY = Metadata.Key.of("x-uly-password", ASCII_STRING_MARSHALLER);
+
     @Override
     public void start(Stage primaryStage) throws Exception {
+        var ch = ManagedChannelBuilder.forTarget("localhost:1999").usePlaintext().build();
+
+        var metadata = new Metadata();
+        metadata.put(USER_EMAIL_KEY, "felix@pojtinger.com");
+        metadata.put(USER_PASSWORD_KEY, "pass1234");
+
+        var communityClient = MetadataUtils.attachHeaders(CommunityServiceGrpc.newBlockingStub(ch), metadata);
+
         var wrapper = new BorderPane();
 
         // Community switcher
@@ -163,10 +183,26 @@ public class Application extends javafx.application.Application {
         sendChatButton.setGraphic(sendIcon);
         sendChatButton.setStyle("-fx-background-radius: 0 16 16 0; -fx-base: royalblue");
         sendChatButton.setPadding(new Insets(9, 14, 9, 9));
+        sendChatButton.setOnAction((e) -> new Thread(() -> {
+            var newChat = NewChat.newBuilder().setChannelId(1).setMessage(newChatBox.getText()).build();
+
+            communityClient.createChat(newChat);
+
+            newChatBox.clear();
+        }).start());
         HBox.setHgrow(newChatBox, Priority.ALWAYS);
         newChatWrapper.getChildren().addAll(newChatBox, sendChatButton);
         newChatWrapper.setAlignment(Pos.CENTER);
         newChatWrapper.setMinHeight(56);
+
+        new Thread(() -> {
+            var channelFilter = ChannelFilter.newBuilder().setChannelId(1).build();
+
+            var stream = communityClient.subscribeToChannelChats(channelFilter);
+
+            stream.forEachRemaining((a) -> Platform.runLater(() -> chatList.getChildren()
+                    .add(this.createChat(channel.widthProperty(), "FP", a.getMessage(), true))));
+        }).start();
 
         VBox.setVgrow(chatListWrapper, Priority.ALWAYS);
 
