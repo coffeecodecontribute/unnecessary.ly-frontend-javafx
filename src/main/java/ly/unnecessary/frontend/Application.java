@@ -20,6 +20,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -43,7 +44,7 @@ public class Application extends javafx.application.Application {
         var community3 = this.createCommunityLink("BO", false, "Bob Oliver's Communitiy");
         communities.getChildren().addAll(community1, community2, community3);
         communities.setSpacing(8);
-        communities.setPadding(new Insets(8));
+        communities.setPadding(new Insets(8, 0, 8, 8));
 
         communityList.setContent(communities);
         communityList.setVbarPolicy(ScrollBarPolicy.NEVER);
@@ -65,6 +66,7 @@ public class Application extends javafx.application.Application {
         var communityDetails = new VBox();
 
         var avatarHeader = this.createUserMenu("FP", "Felix Pojtinger");
+        avatarHeader.setMaxWidth(Double.MAX_VALUE);
 
         var memberListWrapper = new ScrollPane();
 
@@ -78,8 +80,12 @@ public class Application extends javafx.application.Application {
 
         var memberList = new VBox();
 
+        var invitePeopleButton = this.createPrimaryAction(FontAwesomeSolid.USER_PLUS, "Invite people");
+        invitePeopleButton.setMaxWidth(Double.MAX_VALUE);
+
         memberList.getChildren().addAll(this.createHeader("Members"), this.createUserPersona("AD", "Alice Duck"),
-                this.createUserPersona("BO", "Bob Oliver"), this.createUserPersona("PK", "Peter Kropotkin"));
+                this.createUserPersona("BO", "Bob Oliver"), this.createUserPersona("PK", "Peter Kropotkin"),
+                invitePeopleButton);
         memberList.setSpacing(8);
         memberList.setPadding(new Insets(0, 0, 8, 0));
 
@@ -92,10 +98,7 @@ public class Application extends javafx.application.Application {
 
         VBox.setVgrow(memberListWrapper, Priority.ALWAYS);
 
-        var invitePeopleButton = this.createPrimaryAction(FontAwesomeSolid.USER_PLUS, "Invite people");
-        invitePeopleButton.setMaxWidth(Double.MAX_VALUE);
-
-        communityDetails.getChildren().addAll(avatarHeader, memberListWrapper, invitePeopleButton);
+        communityDetails.getChildren().addAll(memberListWrapper, avatarHeader);
         communityDetails.setSpacing(8);
         communityDetails.setPadding(new Insets(8));
 
@@ -103,23 +106,31 @@ public class Application extends javafx.application.Application {
         var communityContent = new HBox();
 
         var communityHeader = new HBox();
-        communityHeader.getChildren().add(new Label("Community 1"));
+        communityHeader.getChildren().add(this.createHeader("Community 1"));
 
         var communityChannels = new VBox();
 
         var communityChannelsList = new ListView<>();
         communityChannelsList.getItems().addAll(new Label("Channel 1"), new Label("Channel 2"), new Label("Channel 3"));
+        communityChannelsList.setMaxWidth(175);
 
-        var addChannelButton = new Button("+ Add Channel");
+        var addChannelButtonWrapper = new HBox();
+        var addChannelButton = createPrimaryAction(FontAwesomeSolid.PLUS_SQUARE, "Create channel");
+        addChannelButton.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(addChannelButton, Priority.ALWAYS);
+        addChannelButtonWrapper.getChildren().add(addChannelButton);
+        addChannelButtonWrapper.setAlignment(Pos.CENTER);
+        addChannelButtonWrapper.setMinHeight(56);
 
         VBox.setVgrow(communityChannelsList, Priority.ALWAYS);
 
-        communityChannels.getChildren().addAll(communityHeader, communityChannelsList, addChannelButton);
+        communityChannels.getChildren().addAll(communityHeader, communityChannelsList, addChannelButtonWrapper);
+        communityChannels.setSpacing(8);
 
         var channel = new VBox();
 
         var channelHeader = new HBox();
-        channelHeader.getChildren().add(new Label("Channel 1"));
+        channelHeader.getChildren().add(this.createHeader("Channel 1"));
 
         var chatListWrapper = new ScrollPane();
 
@@ -131,17 +142,35 @@ public class Application extends javafx.application.Application {
         chatList.getChildren().addAll(this.createChat(channel.widthProperty()),
                 this.createChat(channel.widthProperty()), this.createChat(channel.widthProperty()));
         chatListWrapper.setContent(chatList);
+        chatListWrapper.setHbarPolicy(ScrollBarPolicy.NEVER);
+        chatListWrapper.setStyle("-fx-background-color: transparent");
 
+        var newChatWrapper = new HBox();
         var newChatBox = new TextField();
         newChatBox.setPromptText("New chat");
+        newChatBox.setPadding(new Insets(9));
+        newChatBox.setStyle("-fx-background-radius: 16 0 0 16");
+        var sendChatButton = new Button();
+        var sendIcon = new FontIcon(FontAwesomeSolid.PAPER_PLANE);
+        sendIcon.setIconColor(Paint.valueOf("white"));
+        sendChatButton.setGraphic(sendIcon);
+        sendChatButton.setStyle("-fx-background-radius: 0 16 16 0; -fx-base: royalblue");
+        sendChatButton.setPadding(new Insets(9, 14, 9, 9));
+        HBox.setHgrow(newChatBox, Priority.ALWAYS);
+        newChatWrapper.getChildren().addAll(newChatBox, sendChatButton);
+        newChatWrapper.setAlignment(Pos.CENTER);
+        newChatWrapper.setMinHeight(56);
 
         VBox.setVgrow(chatListWrapper, Priority.ALWAYS);
 
-        channel.getChildren().addAll(channelHeader, chatListWrapper, newChatBox);
+        channel.getChildren().addAll(channelHeader, chatListWrapper, newChatWrapper);
+        channel.setSpacing(8);
 
         HBox.setHgrow(channel, Priority.ALWAYS);
 
         communityContent.getChildren().addAll(communityChannels, channel);
+        communityContent.setSpacing(8);
+        communityContent.setPadding(new Insets(8));
 
         wrapper.setLeft(communitySwitcher);
         wrapper.setCenter(communityContent);
@@ -220,7 +249,7 @@ public class Application extends javafx.application.Application {
         var innerAvatar = this.createUserPersona(initials, fullName);
 
         avatarHeader.setGraphic(innerAvatar);
-        avatarHeader.setStyle("-fx-background-radius: 24;");
+        avatarHeader.setStyle("-fx-background-radius: 16; -fx-min-height: 64; -fx-max-height: 64");
 
         return avatarHeader;
     }
