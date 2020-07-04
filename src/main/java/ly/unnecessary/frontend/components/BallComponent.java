@@ -50,7 +50,7 @@ public class BallComponent extends Component {
     public void release() {
         Vec2 vel = new Vec2(getInput().getMouseXWorld(), getInput().getMouseYWorld());
         vel.subLocal(new Vec2(entity.getPosition()));
-        vel.mulLocal(0.01f);
+        vel.mulLocal(0.04f);
         entity.setProperty("velocity", vel.toPoint2D());
     }
 

@@ -6,6 +6,7 @@ import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.components.IrremovableComponent;
+import com.almasb.fxgl.input.UserAction;
 import javafx.geometry.Point2D;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
@@ -207,19 +208,24 @@ public class Application extends GameApplication {
 
     @Override
     protected void initInput() {
-        onBtnDown(MouseButton.PRIMARY, () -> {
+        getInput().addAction(new UserAction("Up") {
+            @Override
+            protected void onActionBegin() {
                 if(geti("gameStatus") == 0) {
                     set("freeze", true);
                 }
-        });
-
-        onBtnUp(MouseButton.PRIMARY, () -> {
-            if(geti("gameStatus") == 0) {
-                ball.getComponent(BallComponent.class).release();
-                set("gameStatus", 1);
-                set("freeze", false);
             }
-        });
+
+            @Override
+            protected void onActionEnd() {
+                if(geti("gameStatus") == 0) {
+                    ball.getComponent(BallComponent.class).release();
+                    set("gameStatus", 1);
+                    set("freeze", false);
+                }
+            }
+        }, MouseButton.PRIMARY);
+
 
         //onKey(KeyCode.D, "Move Right", () -> { player.getComponent(PlayerComponent.class).moveRight(); });
         //onKey(KeyCode.A, () -> player.getComponent(PlayerComponent.class).moveLeft());
