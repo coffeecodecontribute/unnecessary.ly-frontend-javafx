@@ -37,6 +37,9 @@ public class Application extends javafx.application.Application {
         communities.setPadding(new Insets(8));
 
         communityList.setContent(communities);
+        communityList.setVbarPolicy(ScrollBarPolicy.NEVER);
+        communityList.setHbarPolicy(ScrollBarPolicy.NEVER);
+        communityList.setStyle("-fx-background-color: transparent");
 
         VBox.setVgrow(communityList, Priority.ALWAYS);
 
