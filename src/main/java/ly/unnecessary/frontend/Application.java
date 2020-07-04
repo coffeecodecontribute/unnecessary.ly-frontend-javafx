@@ -74,13 +74,14 @@ public class Application extends javafx.application.Application {
 
         ownerList.getChildren().addAll(this.createHeader("Owner"), this.createUserPersona("FP", "Felix Pojtinger"));
         ownerList.setSpacing(8);
+        ownerList.setPadding(new Insets(0, 0, 8, 0));
 
         var memberList = new VBox();
 
         memberList.getChildren().addAll(this.createHeader("Members"), this.createUserPersona("AD", "Alice Duck"),
                 this.createUserPersona("BO", "Bob Oliver"), this.createUserPersona("PK", "Peter Kropotkin"));
         memberList.setSpacing(8);
-        memberList.setAlignment(Pos.TOP_LEFT);
+        memberList.setPadding(new Insets(0, 0, 8, 0));
 
         userList.getChildren().addAll(ownerList, memberList);
 
