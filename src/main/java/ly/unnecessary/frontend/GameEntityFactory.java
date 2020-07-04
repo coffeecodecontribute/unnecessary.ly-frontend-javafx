@@ -1,21 +1,16 @@
 package ly.unnecessary.frontend;
 
-import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.dsl.components.ExpireCleanComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.EntityFactory;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.Spawns;
-import com.almasb.fxgl.physics.BoundingShape;
-import com.almasb.fxgl.physics.HitBox;
-import com.almasb.fxgl.physics.PhysicsComponent;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
-
-import java.awt.geom.Rectangle2D;
+import ly.unnecessary.frontend.components.BallComponent;
+import ly.unnecessary.frontend.components.PlayerComponent;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
 
@@ -23,15 +18,16 @@ public class GameEntityFactory implements EntityFactory {
 
     @Spawns("ball")
     public Entity newBall(SpawnData data) {
-        Rectangle rectangle = new Rectangle(0, 0, (int) data.get("ballRadius"), (int) data.get("ballRadius"));
-        //Circle rectangle = new Circle((int) data.get("ballRadius"));
+
+        Rectangle rectangle = new Rectangle(0, 0, (int) geti("ballRadius"), (int) geti("ballRadius"));
+        //Circle rectangle = new Circle((int) data.get("ballRadius"), (int) data.get("ballRadius"), (int) data.get("ballRadius"));
         rectangle.setFill(Color.RED);
 
         return entityBuilder()
                 .type(EntityType.BALL)
                 .from(data)
                 .viewWithBBox(rectangle)
-                .with("velocity", new Point2D((int) data.get("ballSpeed"), (int) data.get("ballSpeed")))
+                .with("velocity", new Point2D((int) geti("ballSpeed"), (int) geti("ballSpeed")))
                 .with(new BallComponent())
                 .collidable()
                 .build();
@@ -40,6 +36,8 @@ public class GameEntityFactory implements EntityFactory {
 
     @Spawns("brick")
     public Entity newBrick(SpawnData data) {
+        Rectangle brick = new Rectangle(0, 0, 500, 500);
+        brick.setFill(Color.RED);
         return entityBuilder()
                 .type(EntityType.BRICK)
                 .from(data)
@@ -74,7 +72,7 @@ public class GameEntityFactory implements EntityFactory {
 
     @Spawns("point")
     public Entity newPoint(SpawnData data) {
-        var pixel = new Rectangle(10,10);
+        var pixel = new Rectangle(2,2);
         pixel.setFill(Color.CYAN);
         return entityBuilder()
                 .from(data)
