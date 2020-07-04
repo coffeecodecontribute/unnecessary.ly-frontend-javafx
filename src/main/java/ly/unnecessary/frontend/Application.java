@@ -1,14 +1,19 @@
 package ly.unnecessary.frontend;
 
+import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class Application extends javafx.application.Application {
@@ -41,7 +46,7 @@ public class Application extends javafx.application.Application {
         // Community details
         var communityDetails = new VBox();
 
-        var avatarHeader = this.createHeader();
+        var avatarHeader = new Button("FP Felix Pojtinger");
 
         var memberListWrapper = new ScrollPane();
         var memberList = new VBox();
@@ -73,11 +78,38 @@ public class Application extends javafx.application.Application {
 
         communityChannels.getChildren().addAll(communityHeader, communityChannelsList, addChannelButton);
 
-        communityContent.getChildren().addAll(communityChannels);
+        var channel = new VBox();
+
+        var channelHeader = new HBox();
+        channelHeader.getChildren().add(new Label("Channel 1"));
+
+        var chatListWrapper = new ScrollPane();
+
+        chatListWrapper.setHbarPolicy(ScrollBarPolicy.NEVER);
+        chatListWrapper.setFitToWidth(true);
+
+        var chatList = new VBox();
+
+        chatList.getChildren().addAll(this.createChat(channel.widthProperty()),
+                this.createChat(channel.widthProperty()), this.createChat(channel.widthProperty()));
+        chatListWrapper.setContent(chatList);
+
+        var newChatBox = new TextField();
+        newChatBox.setPromptText("New chat");
+
+        VBox.setVgrow(chatListWrapper, Priority.ALWAYS);
+
+        channel.getChildren().addAll(channelHeader, chatListWrapper, newChatBox);
+
+        HBox.setHgrow(channel, Priority.ALWAYS);
+
+        communityContent.getChildren().addAll(communityChannels, channel);
 
         wrapper.setLeft(communitySwitcher);
         wrapper.setCenter(communityContent);
         wrapper.setRight(communityDetails);
+
+        Platform.runLater(() -> newChatBox.requestFocus());
 
         var scene = new Scene(wrapper, 1080, 720);
 
@@ -97,6 +129,21 @@ public class Application extends javafx.application.Application {
         avatarHeader.getChildren().addAll(avatarPlaceholder, avatarName);
 
         return avatarHeader;
+    }
+
+    private HBox createChat(ReadOnlyDoubleProperty width) {
+        var chat = new HBox();
+
+        var avatarPlaceholder = new Label("FP");
+
+        var chatContent = new Text(
+                "Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+
+        chatContent.wrappingWidthProperty().bind(width.subtract(20));
+
+        chat.getChildren().addAll(avatarPlaceholder, chatContent);
+
+        return chat;
     }
 
     public static void main(String[] args) {
