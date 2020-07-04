@@ -2,12 +2,14 @@ package ly.unnecessary.frontend;
 
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -27,10 +29,12 @@ public class Application extends javafx.application.Application {
         var communityList = new ScrollPane();
 
         var communities = new VBox();
-        var community1 = new Button("1");
-        var community2 = new Button("2");
-        var community3 = new Button("3");
+        var community1 = this.createCommunityLink("FP", true, "Felix Pojtinger's Community");
+        var community2 = this.createCommunityLink("AD", false, "Alice Duck's Community");
+        var community3 = this.createCommunityLink("BO", false, "Bob Oliver's Communitiy");
         communities.getChildren().addAll(community1, community2, community3);
+        communities.setSpacing(8);
+        communities.setPadding(new Insets(8));
 
         communityList.setContent(communities);
 
@@ -129,6 +133,22 @@ public class Application extends javafx.application.Application {
         avatarHeader.getChildren().addAll(avatarPlaceholder, avatarName);
 
         return avatarHeader;
+    }
+
+    private Button createCommunityLink(String initials, boolean active, String fullName) {
+        var link = new Button(initials);
+        var tooltip = new Tooltip(fullName);
+        Tooltip.install(link, tooltip);
+
+        var baseStyles = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16;";
+
+        if (active) {
+            link.setStyle("-fx-base: royalblue; -fx-background-radius: 16; " + baseStyles);
+        } else {
+            link.setStyle("-fx-background-radius: 32; " + baseStyles);
+        }
+
+        return link;
     }
 
     private HBox createChat(ReadOnlyDoubleProperty width) {
