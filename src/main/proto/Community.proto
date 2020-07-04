@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package ly.unnecessary.backend;
+
+option java_package = "ly.unnecessary.backend.api";
+
+import "User.proto";
+import "google/protobuf/empty.proto";
+
+service CommunityService {
+  rpc createCommunity(NewCommunity) returns (Community);
+  rpc createInvitation(InvitationCreateRequest) returns (Invitation);
+  rpc acceptInvitation(Invitation) returns (Community);
+  rpc createChannel(NewChannel) returns (Channel);
+  rpc createChat(NewChat) returns (Chat);
+  rpc subscribeToChannelChats(ChannelFilter) returns (stream Chat);
+  rpc listCommunitiesForOwner(google.protobuf.Empty) returns (Communities);
+  rpc listCommunitiesForMember(google.protobuf.Empty) returns (Communities);
+  rpc listChannelsForCommunity(CommunityFilter) returns (Channels);
+  rpc listChatsForChannel(ChannelFilter) returns (Chats);
+  rpc getCommunity(CommunityFilter) returns (Community);
+}
+
+message NewCommunity { string displayName = 1; }
+
+message Community {
+  int64 id = 1;
+  string displayName = 2;
+  User owner = 3;
+  repeated User members = 4;
+  repeated Channel channels = 5;
+}
+
+message InvitationCreateRequest { int64 communityId = 1; }
+
+message Invitation {
+  int64 id = 1;
+  int64 communityId = 2;
+  string token = 3;
+}
+
+message NewChannel {
+  int64 communityId = 1;
+  string displayName = 2;
+}
+
+message Channel {
+  int64 id = 1;
+  int64 communityId = 2;
+  string displayName = 3;
+  repeated Chat chats = 4;
+}
+
+message NewChat {
+  int64 channelId = 1;
+  string message = 2;
+}
+
+message Chat {
+  int64 id = 1;
+  int64 channelId = 2;
+  int64 userId = 3;
+  string message = 4;
+}
+
+message ChannelFilter { int64 channelId = 1; }
+
+message Communities { repeated Community communities = 1; }
+
+message CommunityFilter { int64 communityId = 1; }
+
+message Channels { repeated Channel channels = 1; }
+
+message Chats { repeated Chat chats = 1; }
