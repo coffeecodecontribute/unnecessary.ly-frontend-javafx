@@ -92,7 +92,8 @@ public class Application extends javafx.application.Application {
 
         VBox.setVgrow(memberListWrapper, Priority.ALWAYS);
 
-        var invitePeopleButton = new Button("+ Invite People");
+        var invitePeopleButton = this.createPrimaryAction(FontAwesomeSolid.USER_PLUS, "Invite people");
+        invitePeopleButton.setMaxWidth(Double.MAX_VALUE);
 
         communityDetails.getChildren().addAll(avatarHeader, memberListWrapper, invitePeopleButton);
         communityDetails.setSpacing(8);
@@ -179,6 +180,22 @@ public class Application extends javafx.application.Application {
         Tooltip.install(button, tooltip);
 
         button.setStyle("-fx-background-radius: 32; " + SIDEBAR_BUTTON_STYLES);
+
+        return button;
+    }
+
+    private Button createPrimaryAction(Ikon iconName, String action) {
+        var button = new Button();
+        var innerAvatar = new HBox();
+        var avatar = new FontIcon(iconName);
+        var name = new Label(action);
+        innerAvatar.setSpacing(8);
+        innerAvatar.setPadding(new Insets(4));
+        innerAvatar.getChildren().addAll(avatar, name);
+        innerAvatar.setAlignment(Pos.CENTER);
+
+        button.setGraphic(innerAvatar);
+        button.setStyle("-fx-background-radius: 16;");
 
         return button;
     }
