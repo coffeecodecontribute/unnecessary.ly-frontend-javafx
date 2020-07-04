@@ -11,15 +11,27 @@ import static com.almasb.fxgl.dsl.FXGL.*;
 public class BallComponent extends Component {
 
     boolean allowedToChangeCollideDirection = true;
-
     @Override
     public void onAdded() {
-        entity.getTransformComponent().setAnchoredPosition(entity.getCenter());
+        //entity.getTransformComponent().setAnchoredPosition(entity.getCenter()); TODO: Required?
     }
 
     @Override
     public void onUpdate(double tpf) {
+        Point2D velocity = entity.getObject("velocity");
+        entity.translate(velocity);
 
+        //System.out.println(Math.abs(velocity.getX()) + Math.abs(velocity.getY())); // TODO: Gets Ball Speed; Ball speed is to slow after first collide.
+
+        if (entity.getY() < 0) {
+            entity.getComponent(BallComponent.class).collide(new Point2D(velocity.getX(), -velocity.getY())); //TOP
+        } else if (entity.getY() + entity.getWidth() > getAppHeight()) {
+            entity.getComponent(BallComponent.class).collide(new Point2D(velocity.getX(), -velocity.getY())); //BOTTOM
+        } else if (entity.getX() < 0) {
+            entity.getComponent(BallComponent.class).collide(new Point2D(-velocity.getX(), velocity.getY())); //LEFT
+        } else if(entity.getX() + entity.getHeight() > getAppWidth()) {
+            entity.getComponent(BallComponent.class).collide(new Point2D(-velocity.getX(), velocity.getY())); //RIGHT
+        }
     }
 
     public void collide(Point2D point2d) {
@@ -27,9 +39,10 @@ public class BallComponent extends Component {
             entity.setProperty("velocity", point2d);
             allowedToChangeCollideDirection = false;
         }
+
         run(()->{
             allowedToChangeCollideDirection = true;
-        }, Duration.seconds(0.1));
+        }, Duration.millis(1));
     }
 
     public void collideBlock() {

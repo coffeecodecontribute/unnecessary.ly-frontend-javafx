@@ -76,9 +76,9 @@ public class Application extends GameApplication {
         ball = spawn("ball", new SpawnData(ballSpawnPointX + 100, ballSpawnPointY));
 
         int m = 0;
-        for(int i = 0; i < 6; i++) {
-            for(int j = 0; j < 7; j++) {
-                spawn("brick", 80 + i * 150, 60 + j * 50);
+        for(int i = 0; i < 2; i++) {
+            for(int j = 0; j < 15; j++) {
+                spawn("brick", 80 + i * 150, 60 + j * 36);
             }
         }
 
@@ -93,18 +93,6 @@ public class Application extends GameApplication {
     @Override
     protected void onUpdate(double tpf) {
         mouseMovement();
-        Point2D velocity = ball.getObject("velocity");
-        ball.translate(velocity);
-
-        //System.out.println(Math.abs(velocity.getX()) + Math.abs(velocity.getY())); // TODO: Gets Ball Speed; Ball speed is to slow after first collide.
-
-        if (ball.getY() < 0 || ball.getY() + ball.getWidth() > getAppHeight()) {
-            ball.getComponent(BallComponent.class).collide(new Point2D(velocity.getX(), -velocity.getY())); //TOP
-        }
-
-        if (ball.getX() < 0 || ball.getX() + ball.getHeight() > getAppWidth()) {
-            ball.getComponent(BallComponent.class).collide(new Point2D(-velocity.getX(), velocity.getY())); // RIGHT
-        }
 
         //Game is lost
         if (ball.getY() > getAppHeight() - 50) {
