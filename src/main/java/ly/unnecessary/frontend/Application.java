@@ -94,9 +94,11 @@ public class Application extends javafx.application.Application {
 
                 var initialCommunity = allCommunities.get(0);
                 if (initialCommunity != null) {
-
                     communityComponent.selectCommunityLink(initialCommunity);
                     communityComponent.setCommunityTitle(initialCommunity.getDisplayName());
+
+                    communityComponent.replaceOwner(initialCommunity.getOwner());
+                    communityComponent.replaceMemberList(initialCommunity.getMembersList());
 
                     var initialChannel = initialCommunity.getChannels(0);
 

@@ -1,5 +1,6 @@
 package ly.unnecessary.frontend;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import javafx.util.Duration;
 import ly.unnecessary.backend.api.CommunityOuterClass.Channel;
 import ly.unnecessary.backend.api.CommunityOuterClass.Chat;
 import ly.unnecessary.backend.api.CommunityOuterClass.Community;
+import ly.unnecessary.backend.api.UserOuterClass.User;
 
 public class CommunityComponent {
     private TextField newChatField;
@@ -49,6 +51,9 @@ public class CommunityComponent {
     private HBox channelHeader;
     private ListView<Node> communityChannelsList;
     private Map<Integer, Channel> indexToChannelMap = new HashMap<>();
+    private Button invitePeopleButton;
+    private VBox ownerList;
+    private VBox memberList;
 
     private Consumer<String> onCreateChat;
     private Consumer<Community> onClickCommunityLink;
@@ -118,6 +123,24 @@ public class CommunityComponent {
                 .addAll(channels.stream().map(c -> new Label(c.getDisplayName())).collect(Collectors.toList()));
     }
 
+    public void replaceOwner(User owner) {
+        this.ownerList.getChildren().setAll(this.createHeader("Owner"),
+                this.createUserPersona(this.getInitials(owner.getDisplayName()), owner.getDisplayName()));
+    }
+
+    public void replaceMemberList(List<User> members) {
+        var memberUserList = members.stream()
+                .map(m -> this.createUserPersona(this.getInitials(m.getDisplayName()), m.getDisplayName()))
+                .collect(Collectors.toList());
+
+        var nodeList = new ArrayList<Node>();
+        nodeList.add(this.createHeader("Members"));
+        nodeList.addAll(memberUserList);
+        nodeList.add(this.invitePeopleButton);
+
+        this.memberList.getChildren().setAll(nodeList);
+    }
+
     public Node render() {
         var wrapper = new BorderPane();
 
@@ -156,20 +179,18 @@ public class CommunityComponent {
 
         var userList = new VBox();
 
-        var ownerList = new VBox();
+        this.ownerList = new VBox();
 
-        ownerList.getChildren().addAll(this.createHeader("Owner"), this.createUserPersona("FP", "Felix Pojtinger"));
+        ownerList.getChildren().addAll(this.createHeader("Owner"));
         ownerList.setSpacing(8);
         ownerList.setPadding(new Insets(0, 0, 8, 0));
 
-        var memberList = new VBox();
+        this.memberList = new VBox();
 
-        var invitePeopleButton = this.createPrimaryAction(FontAwesomeSolid.USER_PLUS, "Invite people");
+        this.invitePeopleButton = this.createPrimaryAction(FontAwesomeSolid.USER_PLUS, "Invite people");
         invitePeopleButton.setMaxWidth(Double.MAX_VALUE);
 
-        memberList.getChildren().addAll(this.createHeader("Members"), this.createUserPersona("AD", "Alice Duck"),
-                this.createUserPersona("BO", "Bob Oliver"), this.createUserPersona("PK", "Peter Kropotkin"),
-                invitePeopleButton);
+        memberList.getChildren().addAll(this.createHeader("Members"), this.invitePeopleButton);
         memberList.setSpacing(8);
         memberList.setPadding(new Insets(0, 0, 8, 0));
 
@@ -269,10 +290,7 @@ public class CommunityComponent {
     }
 
     private Button createCommunityLink(Community community, boolean active) {
-        var shorthand = community.getDisplayName().substring(0, 2).toUpperCase();
-        var initials = community.getDisplayName().toUpperCase().split(" ");
-        if (initials[1] != null)
-            shorthand = initials[0].substring(0, 1) + initials[1].substring(0, 1);
+        var shorthand = this.getInitials(community.getDisplayName());
 
         var link = new Button(shorthand);
         var tooltip = new Tooltip(community.getDisplayName());
@@ -382,6 +400,15 @@ public class CommunityComponent {
         ownerHeader.setStyle("-fx-font-weight: bold;");
 
         return ownerHeader;
+    }
+
+    private String getInitials(String displayName) {
+        var shorthand = displayName.substring(0, 2).toUpperCase();
+        var initials = displayName.toUpperCase().split(" ");
+        if (initials[1] != null)
+            shorthand = initials[0].substring(0, 1) + initials[1].substring(0, 1);
+        return shorthand;
+
     }
 
     private static String SIDEBAR_BUTTON_STYLES = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16; -fx-font-weight: bold;";
