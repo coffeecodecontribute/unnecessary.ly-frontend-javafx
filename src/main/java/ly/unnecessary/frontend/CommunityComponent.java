@@ -44,6 +44,7 @@ public class CommunityComponent {
     private ScrollPane chatListWrapper;
     private VBox communities;
     private Map<Community, Button> communityToCommmunityLink = new HashMap<>();
+    private HBox communityHeader;
 
     private Function<String, Integer> onCreateChat;
     private Function<Community, Integer> onClickCommunityLink;
@@ -89,6 +90,10 @@ public class CommunityComponent {
         var buttonForCommunity = this.communityToCommmunityLink.get(community);
 
         buttonForCommunity.setStyle(SIDEBAR_BUTTON_ACTIVE_STYLES);
+    }
+
+    public void setCommunityTitle(String communityTitle) {
+        this.communityHeader.getChildren().setAll(this.createHeader(communityTitle));
     }
 
     public Node render() {
@@ -162,7 +167,7 @@ public class CommunityComponent {
         // Community content
         var communityContent = new HBox();
 
-        var communityHeader = new HBox();
+        this.communityHeader = new HBox();
         communityHeader.getChildren().add(this.createHeader("Community 1"));
 
         var communityChannels = new VBox();

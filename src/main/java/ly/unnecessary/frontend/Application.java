@@ -1,44 +1,22 @@
 package ly.unnecessary.frontend;
 
-import org.kordamp.ikonli.Ikon;
-import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
-import org.kordamp.ikonli.javafx.FontIcon;
-
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.Metadata;
-import io.grpc.stub.MetadataUtils;
-import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
-import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Paint;
-import javafx.scene.shape.Circle;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
-import javafx.stage.Stage;
-import ly.unnecessary.backend.api.CommunityServiceGrpc;
-import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
-import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
-
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.protobuf.Empty;
+
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
+import io.grpc.stub.MetadataUtils;
+import javafx.application.Platform;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
+import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
+import ly.unnecessary.backend.api.CommunityServiceGrpc;
 
 public class Application extends javafx.application.Application {
     public static Metadata.Key<String> USER_EMAIL_KEY = Metadata.Key.of("x-uly-email", ASCII_STRING_MARSHALLER);
@@ -70,7 +48,10 @@ public class Application extends javafx.application.Application {
         });
 
         communityComponent.setOnClickCommunityLink(c -> {
-            Platform.runLater(() -> communityComponent.selectCommunityLink(c));
+            Platform.runLater(() -> {
+                communityComponent.selectCommunityLink(c);
+                communityComponent.setCommunityTitle(c.getDisplayName());
+            });
 
             return 0;
         });
@@ -107,7 +88,14 @@ public class Application extends javafx.application.Application {
             var allCommunities = Stream.concat(ownedCommunities.getCommunitiesList().stream(),
                     memberCommunities.getCommunitiesList().stream()).collect(Collectors.toList());
 
-            Platform.runLater(() -> communityComponent.replaceCommunities(allCommunities));
+            Platform.runLater(() -> {
+                communityComponent.replaceCommunities(allCommunities);
+
+                var initialCommunity = allCommunities.get(0);
+
+                communityComponent.selectCommunityLink(initialCommunity);
+                communityComponent.setCommunityTitle(initialCommunity.getDisplayName());
+            });
         }).start();
 
         var scene = new Scene((Parent) communityComponent.render(), 1080, 720);
