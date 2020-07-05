@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,6 +26,7 @@ import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 import ly.unnecessary.backend.api.CommunityOuterClass.CommunityFilter;
 import ly.unnecessary.backend.api.CommunityOuterClass.NewChannel;
 import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
+import ly.unnecessary.backend.api.CommunityOuterClass.NewCommunity;
 import ly.unnecessary.backend.api.CommunityServiceGrpc.CommunityServiceBlockingStub;
 import ly.unnecessary.backend.api.UserOuterClass.User;
 import ly.unnecessary.backend.api.UserOuterClass.UserSignInRequest;
@@ -152,16 +154,18 @@ public class Application extends javafx.application.Application {
             }
         };
 
-        Consumer<List<Community>> handleInit = (newCommunities) -> {
-            Platform.runLater(() -> {
-                communityComponent.setCommunities(newCommunities);
+        Consumer<List<Community>> handleCommunitiesChange = (newCommunities) -> {
+            Platform.runLater(() -> communityComponent.setCommunities(newCommunities));
+        };
 
-                if (newCommunities.size() == 0) {
-                    handleCommunitySwitch.accept(null);
-                } else {
-                    handleCommunitySwitch.accept(newCommunities.get(0));
-                }
-            });
+        Consumer<List<Community>> handleInit = (newCommunities) -> {
+            handleCommunitiesChange.accept(newCommunities);
+
+            if (newCommunities.size() == 0) {
+                handleCommunitySwitch.accept(null);
+            } else {
+                handleCommunitySwitch.accept(newCommunities.get(0));
+            }
         };
 
         Consumer<User> handleUserChange = (newUser) -> {
@@ -183,6 +187,33 @@ public class Application extends javafx.application.Application {
             return true;
         };
 
+        Supplier<List<Community>> handleCommunitiesRefresh = () -> {
+            var ownedCommunities = this.communityClient.listCommunitiesForOwner(Empty.newBuilder().build());
+            var memberCommunities = this.communityClient.listCommunitiesForMember(Empty.newBuilder().build());
+
+            var allCommunities = Stream.concat(ownedCommunities.getCommunitiesList().stream(),
+                    memberCommunities.getCommunitiesList().stream()).collect(Collectors.toList());
+
+            return allCommunities;
+        };
+
+        Function<String, Boolean> handleCreateCommunity = (newCommunityName) -> {
+            if (newCommunityName.isEmpty()) {
+                return false;
+            }
+
+            var newCommunity = NewCommunity.newBuilder().setDisplayName(newCommunityName).build();
+
+            var updatedCommunity = this.communityClient.createCommunity(newCommunity);
+
+            var updatedCommunities = handleCommunitiesRefresh.get();
+            handleCommunitiesChange.accept(updatedCommunities);
+
+            handleCommunitySwitch.accept(updatedCommunity);
+
+            return true;
+        };
+
         // Connect handlers
         communityComponent.setOnSwitchCommunity(handleCommunitySwitch);
 
@@ -191,6 +222,8 @@ public class Application extends javafx.application.Application {
         communityComponent.setOnCreateChat(handleCreateChat);
 
         communityComponent.setOnCreateChannel(handleCreateChannel);
+
+        communityComponent.setOnCreateCommunity(handleCreateCommunity);
 
         // Set initial state
         new Thread(() -> {
@@ -219,11 +252,7 @@ public class Application extends javafx.application.Application {
             this.communityClient = MetadataUtils.attachHeaders(CommunityServiceGrpc.newBlockingStub(ch), metadata);
 
             // Fetch owned communities
-            var ownedCommunities = this.communityClient.listCommunitiesForOwner(Empty.newBuilder().build());
-            var memberCommunities = this.communityClient.listCommunitiesForMember(Empty.newBuilder().build());
-
-            var allCommunities = Stream.concat(ownedCommunities.getCommunitiesList().stream(),
-                    memberCommunities.getCommunitiesList().stream()).collect(Collectors.toList());
+            var allCommunities = handleCommunitiesRefresh.get();
 
             handleInit.accept(allCommunities);
         }).start();

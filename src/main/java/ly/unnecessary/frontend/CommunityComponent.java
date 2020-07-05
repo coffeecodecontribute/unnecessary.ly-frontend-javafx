@@ -69,6 +69,7 @@ public class CommunityComponent {
     private Consumer<Community> onClickCommunityLink;
     private Consumer<Channel> onChannelClick;
     private Function<String, Boolean> onCreateChannel;
+    private Function<String, Boolean> onCreateCommunity;
 
     public void setOnCreateChat(Consumer<String> onCreateChat) {
         this.onCreateChat = onCreateChat;
@@ -84,6 +85,10 @@ public class CommunityComponent {
 
     public void setOnCreateChannel(Function<String, Boolean> onCreateChannel) {
         this.onCreateChannel = onCreateChannel;
+    }
+
+    public void setOnCreateCommunity(Function<String, Boolean> onCreateCommunity) {
+        this.onCreateCommunity = onCreateCommunity;
     }
 
     public void addChat(Chat chat) {
@@ -212,6 +217,34 @@ public class CommunityComponent {
         VBox.setVgrow(communityList, Priority.ALWAYS);
 
         var communityAddButton = this.createCommunityAction(FontAwesomeSolid.PLUS, "Create community");
+        communityAddButton.setOnAction((e) -> {
+            var popoverContent = new VBox();
+            popoverContent.setAlignment(Pos.CENTER_RIGHT);
+
+            var popover = new PopOver(popoverContent);
+
+            var nameField = new TextField();
+            nameField.setPromptText("New community name");
+            nameField.setOnAction((event) -> {
+                if (this.onCreateCommunity.apply(nameField.getText())) {
+                    popover.hide();
+                }
+            });
+
+            var createButton = new Button("Create new community");
+            createButton.setStyle("-fx-base: royalblue");
+            createButton.setOnAction((event) -> {
+                if (this.onCreateCommunity.apply(nameField.getText())) {
+                    popover.hide();
+                }
+            });
+
+            popoverContent.getChildren().setAll(nameField, createButton);
+            popoverContent.setSpacing(8);
+            popoverContent.setPadding(new Insets(8));
+
+            popover.show(communityAddButton);
+        });
         var communityJoinButton = this.createCommunityAction(FontAwesomeSolid.DOOR_OPEN, "Join community");
 
         var communityMainActions = new VBox(communityAddButton, communityJoinButton);
