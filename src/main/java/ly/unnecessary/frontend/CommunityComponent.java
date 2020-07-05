@@ -217,8 +217,13 @@ public class CommunityComponent {
 
         this.communityChannelsList = new ListView<>();
         communityChannelsList.setMaxWidth(175);
-        communityChannelsList.setOnMouseClicked((e) -> this.onChannelClick
-                .accept(this.indexToChannelMap.get(communityChannelsList.getSelectionModel().getSelectedIndex())));
+        communityChannelsList.setOnMouseClicked((e) -> {
+            var index = communityChannelsList.getSelectionModel().getSelectedIndex();
+
+            if (index != -1) {
+                this.onChannelClick.accept(this.indexToChannelMap.get(index));
+            }
+        });
 
         var addChannelButtonWrapper = new HBox();
         var addChannelButton = createPrimaryAction(FontAwesomeSolid.PLUS_SQUARE, "Create channel");

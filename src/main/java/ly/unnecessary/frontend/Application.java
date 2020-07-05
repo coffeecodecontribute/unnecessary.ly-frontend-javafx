@@ -2,6 +2,7 @@ package ly.unnecessary.frontend;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,6 +16,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
+import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 import ly.unnecessary.backend.api.CommunityOuterClass.CommunityFilter;
 import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
 import ly.unnecessary.backend.api.CommunityServiceGrpc;
@@ -35,6 +37,27 @@ public class Application extends javafx.application.Application {
 
         var communityComponent = new CommunityComponent();
 
+        // Handlers
+        Consumer<Community> handleCommunityChange = (c) -> {
+            communityComponent.selectCommunityLink(c);
+            communityComponent.setCommunityTitle(c.getDisplayName());
+
+            communityComponent.replaceOwner(c.getOwner());
+            communityComponent.replaceMemberList(c.getMembersList());
+
+            // TODO: Handle channelsChange
+            var channels = c.getChannelsList();
+            if (channels.size() == 0) {
+                communityComponent.setChannelTitle("");
+            } else {
+                var initialChannel = c.getChannels(0);
+
+                if (initialChannel != null) {
+                    communityComponent.setChannelTitle(initialChannel.getDisplayName());
+                }
+            }
+        };
+
         // Queries on UI
         communityComponent.setOnCreateChat(chat -> new Thread(() -> {
             if (chat.equals("")) {
@@ -48,10 +71,7 @@ public class Application extends javafx.application.Application {
             communityClient.createChat(newChat);
         }).start());
 
-        communityComponent.setOnClickCommunityLink(c -> Platform.runLater(() -> {
-            communityComponent.selectCommunityLink(c);
-            communityComponent.setCommunityTitle(c.getDisplayName());
-        }));
+        communityComponent.setOnClickCommunityLink(c -> Platform.runLater(() -> handleCommunityChange.accept(c)));
 
         communityComponent.setOnChannelClick(c -> Platform.runLater(() -> {
             communityComponent.setChannelTitle(c.getDisplayName());
