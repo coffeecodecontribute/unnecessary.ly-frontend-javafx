@@ -3,6 +3,8 @@ package ly.unnecessary.frontend;
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,12 +22,16 @@ import ly.unnecessary.backend.api.CommunityOuterClass.Channel;
 import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
 import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 import ly.unnecessary.backend.api.CommunityOuterClass.CommunityFilter;
+import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
 import ly.unnecessary.backend.api.UserOuterClass.User;
 import ly.unnecessary.backend.api.CommunityServiceGrpc;
 
 public class Application extends javafx.application.Application {
     public static Metadata.Key<String> USER_EMAIL_KEY = Metadata.Key.of("x-uly-email", ASCII_STRING_MARSHALLER);
     public static Metadata.Key<String> USER_PASSWORD_KEY = Metadata.Key.of("x-uly-password", ASCII_STRING_MARSHALLER);
+
+    private long currentChannelId = -1;
+    private Map<Long, Boolean> chatListeners = new ConcurrentHashMap<>();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -45,6 +51,8 @@ public class Application extends javafx.application.Application {
         // Create handlers
         Consumer<Channel> handleChannelSwitch = (newChannel) -> {
             if (newChannel == null) {
+                this.setCurrentChannelId(-1);
+
                 Platform.runLater(() -> {
                     communityComponent.setChannelTitle("");
                     communityComponent.setChats(List.of());
@@ -52,6 +60,8 @@ public class Application extends javafx.application.Application {
 
                 return;
             }
+
+            this.setCurrentChannelId(newChannel.getId());
 
             Platform.runLater(() -> {
                 communityComponent.setChannelTitle(newChannel.getDisplayName());
@@ -69,10 +79,28 @@ public class Application extends javafx.application.Application {
 
             var stream = communityClient.subscribeToChannelChats(channelFilter);
 
-            new Thread(() -> stream.forEachRemaining(newChat -> Platform.runLater(() -> {
-                communityComponent.addChat(newChat);
-                communityComponent.scrollChatsToBottom();
-            }))).start();
+            new Thread(() -> {
+                var listenerExists = false;
+
+                try {
+                    listenerExists = this.chatListeners.get(newChannel.getId());
+                } catch (NullPointerException e) {
+
+                }
+
+                if (!listenerExists) {
+                    this.chatListeners.put(newChannel.getId(), true);
+
+                    stream.forEachRemaining(newChat -> {
+                        if (newChat.getChannelId() == this.getCurrentChannelId()) {
+                            Platform.runLater(() -> {
+                                communityComponent.addChat(newChat);
+                                communityComponent.scrollChatsToBottom();
+                            });
+                        }
+                    });
+                }
+            }).start();
         };
 
         Consumer<Community> handleCommunitySwitch = (communityToFetch) -> {
@@ -113,6 +141,14 @@ public class Application extends javafx.application.Application {
             }
         };
 
+        Consumer<String> handleCreateChat = (c) -> {
+            Platform.runLater(() -> communityComponent.clearAndFocusNewChatFieldText());
+
+            var chat = NewChat.newBuilder().setChannelId(this.getCurrentChannelId()).setMessage(c).build();
+
+            communityClient.createChat(chat);
+        };
+
         Consumer<List<Community>> handleInit = (newCommunities) -> {
             Platform.runLater(() -> {
                 communityComponent.setCommunities(newCommunities);
@@ -126,9 +162,11 @@ public class Application extends javafx.application.Application {
         };
 
         // Connect handlers
-        communityComponent.setOnSwitchCommunity((newCommunity) -> handleCommunitySwitch.accept(newCommunity));
+        communityComponent.setOnSwitchCommunity(handleCommunitySwitch);
 
-        communityComponent.setOnSwitchChannel((newChannel) -> handleChannelSwitch.accept(newChannel));
+        communityComponent.setOnSwitchChannel(handleChannelSwitch);
+
+        communityComponent.setOnCreateChat(handleCreateChat);
 
         // Set initial state
         new Thread(() -> {
@@ -152,5 +190,13 @@ public class Application extends javafx.application.Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    public long getCurrentChannelId() {
+        return currentChannelId;
+    }
+
+    public void setCurrentChannelId(long currentChannelId) {
+        this.currentChannelId = currentChannelId;
     }
 }
