@@ -232,7 +232,12 @@ public class Application extends javafx.application.Application {
                 return false;
             }
 
-            var updatedCommunity = this.communityClient.acceptInvitation(invite);
+            final Community updatedCommunity;
+            try {
+                updatedCommunity = this.communityClient.acceptInvitation(invite);
+            } catch (Exception e) {
+                return false;
+            }
 
             var updatedCommunities = handleCommunitiesRefresh.get();
             handleCommunitiesChange.accept(updatedCommunities);

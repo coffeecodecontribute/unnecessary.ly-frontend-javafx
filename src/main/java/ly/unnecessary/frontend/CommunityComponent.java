@@ -22,6 +22,7 @@ import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -31,6 +32,7 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -272,6 +274,10 @@ public class CommunityComponent {
 
         var communityJoinButton = this.createCommunityAction(FontAwesomeSolid.SIGN_IN_ALT, "Join community");
         communityJoinButton.setOnAction((e) -> {
+            var invalidJoinDialog = new Alert(AlertType.ERROR);
+            invalidJoinDialog.setHeaderText("Invalid or used token");
+            invalidJoinDialog.setContentText("This invite token is invalid or has been used before.");
+
             var popoverContent = new VBox();
             popoverContent.setAlignment(Pos.CENTER_RIGHT);
 
@@ -282,6 +288,8 @@ public class CommunityComponent {
             nameField.setOnAction((event) -> {
                 if (this.onJoinCommunity.apply(nameField.getText())) {
                     popover.hide();
+                } else {
+                    invalidJoinDialog.show();
                 }
             });
 
@@ -290,6 +298,8 @@ public class CommunityComponent {
             createButton.setOnAction((event) -> {
                 if (this.onJoinCommunity.apply(nameField.getText())) {
                     popover.hide();
+                } else {
+                    invalidJoinDialog.show();
                 }
             });
 
