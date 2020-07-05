@@ -2,6 +2,7 @@ package ly.unnecessary.frontend;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,6 +16,7 @@ import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import ly.unnecessary.backend.api.CommunityOuterClass.Channel;
 import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
 import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 import ly.unnecessary.backend.api.CommunityOuterClass.CommunityFilter;
@@ -38,6 +40,50 @@ public class Application extends javafx.application.Application {
         var communityComponent = new CommunityComponent();
 
         // Handlers
+        Consumer<Channel> handleChannelsSelect = (c) -> {
+            communityComponent.setChannelTitle(c.getDisplayName());
+
+            new Thread(() -> {
+                var channelFilter = ChannelFilter.newBuilder().setChannelId(c.getId()).build();
+
+                var chats = communityClient.listChatsForChannel(channelFilter);
+
+                Platform.runLater(() -> {
+                    communityComponent.replaceChats(chats.getChatsList());
+
+                    communityComponent.scrollChatsToBottom();
+                });
+            }).start();
+        };
+
+        Runnable handleEmptyChats = () -> {
+            communityComponent.replaceChats(List.of());
+        };
+
+        Runnable handleEmptyChannel = () -> {
+            communityComponent.setChannelTitle("");
+
+            communityComponent.setChannelList(List.of());
+
+            handleEmptyChats.run();
+        };
+
+        Consumer<List<Channel>> handleChannelsChange = (c) -> {
+            if (c.size() == 0) {
+                handleEmptyChannel.run();
+            } else {
+                var initialChannel = c.get(0);
+
+                if (initialChannel != null) {
+                    handleChannelsSelect.accept(initialChannel);
+                } else {
+                    handleEmptyChats.run();
+                }
+
+                communityComponent.setChannelList(c);
+            }
+        };
+
         Consumer<Community> handleCommunityChange = (c) -> {
             communityComponent.selectCommunityLink(c);
             communityComponent.setCommunityTitle(c.getDisplayName());
@@ -45,17 +91,7 @@ public class Application extends javafx.application.Application {
             communityComponent.replaceOwner(c.getOwner());
             communityComponent.replaceMemberList(c.getMembersList());
 
-            // TODO: Handle channelsChange
-            var channels = c.getChannelsList();
-            if (channels.size() == 0) {
-                communityComponent.setChannelTitle("");
-            } else {
-                var initialChannel = c.getChannels(0);
-
-                if (initialChannel != null) {
-                    communityComponent.setChannelTitle(initialChannel.getDisplayName());
-                }
-            }
+            handleChannelsChange.accept(c.getChannelsList());
         };
 
         // Queries on UI
@@ -73,9 +109,7 @@ public class Application extends javafx.application.Application {
 
         communityComponent.setOnClickCommunityLink(c -> Platform.runLater(() -> handleCommunityChange.accept(c)));
 
-        communityComponent.setOnChannelClick(c -> Platform.runLater(() -> {
-            communityComponent.setChannelTitle(c.getDisplayName());
-        }));
+        communityComponent.setOnChannelClick(c -> Platform.runLater(() -> handleChannelsSelect.accept(c)));
 
         // Mutations on UI
         new Thread(() -> {

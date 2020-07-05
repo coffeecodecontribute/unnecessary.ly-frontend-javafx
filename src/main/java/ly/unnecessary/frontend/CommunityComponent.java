@@ -120,7 +120,7 @@ public class CommunityComponent {
         }
 
         this.communityChannelsList.getItems()
-                .addAll(channels.stream().map(c -> new Label(c.getDisplayName())).collect(Collectors.toList()));
+                .setAll(channels.stream().map(c -> new Label(c.getDisplayName())).collect(Collectors.toList()));
     }
 
     public void replaceOwner(User owner) {
