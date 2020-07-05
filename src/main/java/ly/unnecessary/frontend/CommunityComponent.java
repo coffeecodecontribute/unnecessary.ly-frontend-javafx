@@ -57,6 +57,8 @@ public class CommunityComponent {
     private User currentUser;
     private ScrollPane memberListWrapper;
     private VBox communityDetails;
+    private User owner;
+    private List<User> members;
 
     private Consumer<String> onCreateChat;
     private Consumer<Community> onClickCommunityLink;
@@ -75,13 +77,17 @@ public class CommunityComponent {
     }
 
     public void addChat(Chat chat) {
-        this.chatList.getChildren().add(this.createChat(channel.widthProperty(), "FP", chat.getMessage(),
-                chat.getUserId() == this.currentUser.getId()));
+        this.chatList.getChildren()
+                .add(this.createChat(channel.widthProperty(), this.getInitialsForUserId(chat.getUserId()),
+                        chat.getMessage(), chat.getUserId() == this.currentUser.getId()));
     }
 
     public void setChats(List<Chat> chats) {
-        this.chatList.getChildren().setAll(chats.stream().map(c -> this.createChat(channel.widthProperty(), "FP",
-                c.getMessage(), c.getUserId() == this.currentUser.getId())).collect(Collectors.toList()));
+        this.chatList.getChildren()
+                .setAll(chats.stream()
+                        .map(c -> this.createChat(channel.widthProperty(), this.getInitialsForUserId(c.getUserId()),
+                                c.getMessage(), c.getUserId() == this.currentUser.getId()))
+                        .collect(Collectors.toList()));
     }
 
     public void clearAndFocusNewChatFieldText() {
@@ -134,11 +140,15 @@ public class CommunityComponent {
     }
 
     public void setOwner(User owner) {
+        this.owner = owner;
+
         this.ownerList.getChildren().setAll(this.createHeader("Owner"),
                 this.createUserPersona(this.getInitials(owner.getDisplayName()), owner.getDisplayName()));
     }
 
     public void setMembers(List<User> members) {
+        this.members = members;
+
         var memberUserList = members.stream()
                 .map(m -> this.createUserPersona(this.getInitials(m.getDisplayName()), m.getDisplayName()))
                 .collect(Collectors.toList());
@@ -434,6 +444,24 @@ public class CommunityComponent {
             shorthand = initials[0].substring(0, 1) + initials[1].substring(0, 1);
         return shorthand;
 
+    }
+
+    private String getInitialsForUserId(long id) {
+        if (this.currentUser.getId() == id) {
+            return this.getInitials(this.currentUser.getDisplayName());
+        }
+
+        if (this.owner.getId() == id) {
+            return this.getInitials(this.owner.getDisplayName());
+        }
+
+        var member = this.members.stream().filter(m -> m.getId() == id).findFirst();
+
+        if (member.isPresent()) {
+            return this.getInitials(member.get().getDisplayName());
+        }
+
+        return "-";
     }
 
     private static String SIDEBAR_BUTTON_STYLES = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16; -fx-font-weight: bold;";
