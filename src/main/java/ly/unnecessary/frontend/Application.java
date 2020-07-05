@@ -315,15 +315,21 @@ public class Application extends javafx.application.Application {
             return 0;
         };
 
-        // Sign in
-        var signInComponent = new SignInComponent();
-        signInComponent.setOnSignIn(handleSignIn);
+        Runnable handleStart = () -> {
+            // Sign in
+            var signInComponent = new SignInComponent();
+            signInComponent.setOnSignIn(handleSignIn);
 
-        // Render initial state
-        var scene = new Scene((Parent) signInComponent.render(), 480, 320);
+            // Render initial state
+            var scene = new Scene((Parent) signInComponent.render(), 480, 320);
 
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("Sign in to unnecessary.ly");
+            primaryStage.setScene(scene);
+            primaryStage.setTitle("Sign in to unnecessary.ly");
+        };
+
+        communityComponent.setOnSignOut(handleStart);
+
+        handleStart.run();
 
         primaryStage.show();
     }

@@ -60,22 +60,26 @@ public class SignInComponent {
         header.setStyle("-fx-font-size: 42; -fx-font-weight: bold");
         header.setPadding(new Insets(0, 0, 24, 0));
 
-        var apiUrlField = new TextField();
+        var apiUrlField = new TextField("localhost:1999");
         apiUrlField.setPromptText("API URL");
         apiUrlField.setMaxWidth(300);
+        apiUrlField.setStyle("-fx-background-radius: 16");
 
-        var emailField = new TextField();
+        var emailField = new TextField("felix@pojtinger.com");
         emailField.setPromptText("Email");
         emailField.setMaxWidth(300);
+        emailField.setStyle("-fx-background-radius: 16");
 
         var passwordField = new PasswordField();
+        passwordField.setText("pass1234");
         passwordField.setPromptText("Password");
         passwordField.setMaxWidth(300);
+        passwordField.setStyle("-fx-background-radius: 16");
 
         var signInButtonWrapper = new HBox();
 
         var signInButton = new Button("Sign in");
-        signInButton.setStyle("-fx-base: royalblue");
+        signInButton.setStyle("-fx-base: royalblue; -fx-background-radius: 16");
 
         signInButtonWrapper.getChildren().add(signInButton);
         signInButtonWrapper.setAlignment(Pos.CENTER_RIGHT);

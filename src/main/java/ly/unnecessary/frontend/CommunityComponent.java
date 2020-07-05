@@ -79,6 +79,7 @@ public class CommunityComponent {
     private Function<String, Boolean> onCreateCommunity;
     private Function<String, Boolean> onJoinCommunity;
     private Supplier<String> onRequestInvite;
+    private Runnable onSignOut;
 
     public void setOnCreateChat(Consumer<String> onCreateChat) {
         this.onCreateChat = onCreateChat;
@@ -106,6 +107,10 @@ public class CommunityComponent {
 
     public void setOnJoinCommunity(Function<String, Boolean> onJoinCommunity) {
         this.onJoinCommunity = onJoinCommunity;
+    }
+
+    public void setOnSignOut(Runnable onSignOut) {
+        this.onSignOut = onSignOut;
     }
 
     public void addChat(Chat chat) {
@@ -219,6 +224,20 @@ public class CommunityComponent {
         var newAvatarHeader = this.createUserMenu(this.getInitials(this.currentUser.getDisplayName()),
                 this.currentUser.getDisplayName());
         newAvatarHeader.setMaxWidth(Double.MAX_VALUE);
+
+        var userMenu = new UserMenu();
+
+        var popover = new PopOver(userMenu.render());
+
+        newAvatarHeader.setOnAction((e) -> {
+            popover.show(newAvatarHeader);
+
+            userMenu.setOnSignOut(() -> {
+                this.onSignOut.run();
+
+                popover.hide();
+            });
+        });
 
         this.communityDetails.getChildren().setAll(this.memberListWrapper, newAvatarHeader);
     }
