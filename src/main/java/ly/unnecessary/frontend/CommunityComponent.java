@@ -218,7 +218,7 @@ public class CommunityComponent {
         var communityContent = new HBox();
 
         this.communityHeader = new HBox();
-        communityHeader.getChildren().add(this.createHeader("Community 1"));
+        communityHeader.getChildren().add(this.createHeader(""));
 
         var communityChannels = new VBox();
 

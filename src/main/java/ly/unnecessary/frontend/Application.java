@@ -20,6 +20,7 @@ import ly.unnecessary.backend.api.CommunityOuterClass.Channel;
 import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
 import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 import ly.unnecessary.backend.api.CommunityOuterClass.CommunityFilter;
+import ly.unnecessary.backend.api.UserOuterClass.User;
 import ly.unnecessary.backend.api.CommunityServiceGrpc;
 
 public class Application extends javafx.application.Application {
@@ -43,6 +44,15 @@ public class Application extends javafx.application.Application {
 
         // Create handlers
         Consumer<Channel> handleChannelSwitch = (newChannel) -> {
+            if (newChannel == null) {
+                Platform.runLater(() -> {
+                    communityComponent.setChannelTitle("");
+                    communityComponent.setChats(List.of());
+                });
+
+                return;
+            }
+
             Platform.runLater(() -> {
                 communityComponent.setChannelTitle(newChannel.getDisplayName());
                 communityComponent.setSelectedChannel(newChannel);
@@ -66,6 +76,19 @@ public class Application extends javafx.application.Application {
         };
 
         Consumer<Community> handleCommunitySwitch = (communityToFetch) -> {
+            if (communityToFetch == null) {
+                Platform.runLater(() -> {
+                    communityComponent.setCommunityTitle("");
+                    communityComponent.setOwner(User.newBuilder().setDisplayName("-").build());
+                    communityComponent.setMembers(List.of(User.newBuilder().setDisplayName("-").build()));
+                    communityComponent.setChannels(List.of());
+
+                    handleChannelSwitch.accept(null);
+                });
+
+                return;
+            }
+
             var communityFilter = CommunityFilter.newBuilder().setCommunityId(communityToFetch.getId()).build();
 
             var newCommunity = communityClient.getCommunity(communityFilter);
@@ -79,16 +102,26 @@ public class Application extends javafx.application.Application {
 
             var newChannels = communityClient.listChannelsForCommunity(communityFilter).getChannelsList();
 
-            Platform.runLater(() -> communityComponent.setChannels(newChannels));
+            if (newChannels.size() == 0) {
+                Platform.runLater(() -> communityComponent.setChannels(List.of()));
 
-            handleChannelSwitch.accept(newChannels.get(0));
+                handleChannelSwitch.accept(null);
+            } else {
+                Platform.runLater(() -> communityComponent.setChannels(newChannels));
+
+                handleChannelSwitch.accept(newChannels.get(0));
+            }
         };
 
         Consumer<List<Community>> handleInit = (newCommunities) -> {
             Platform.runLater(() -> {
                 communityComponent.setCommunities(newCommunities);
 
-                handleCommunitySwitch.accept(newCommunities.get(0));
+                if (newCommunities.size() == 0) {
+                    handleCommunitySwitch.accept(null);
+                } else {
+                    handleCommunitySwitch.accept(newCommunities.get(0));
+                }
             });
         };
 
