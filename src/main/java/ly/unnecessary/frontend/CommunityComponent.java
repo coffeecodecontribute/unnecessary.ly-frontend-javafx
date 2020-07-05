@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.controlsfx.control.PopOver;
@@ -26,6 +27,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
@@ -53,6 +56,8 @@ public class CommunityComponent {
     private HBox channelHeader;
     private ListView<Node> communityChannelsList;
     private Map<Integer, Channel> indexToChannelMap = new HashMap<>();
+    private HBox invitePeopleWrapper;
+    private Tooltip invitePeopleTooltip;
     private Button invitePeopleButton;
     private VBox ownerList;
     private VBox memberList;
@@ -70,6 +75,7 @@ public class CommunityComponent {
     private Consumer<Channel> onChannelClick;
     private Function<String, Boolean> onCreateChannel;
     private Function<String, Boolean> onCreateCommunity;
+    private Supplier<String> onRequestInvite;
 
     public void setOnCreateChat(Consumer<String> onCreateChat) {
         this.onCreateChat = onCreateChat;
@@ -89,6 +95,10 @@ public class CommunityComponent {
 
     public void setOnCreateCommunity(Function<String, Boolean> onCreateCommunity) {
         this.onCreateCommunity = onCreateCommunity;
+    }
+
+    public void setOnRequestInvite(Supplier<String> onRequestInvite) {
+        this.onRequestInvite = onRequestInvite;
     }
 
     public void addChat(Chat chat) {
@@ -135,9 +145,18 @@ public class CommunityComponent {
                     "Only the owner of this community (%s) can create channels in this community; please ask them to create a channel for you.",
                     this.owner.getDisplayName()));
             Tooltip.install(this.addChannelButtonWrapper, this.addChannelTooltip);
+
+            this.invitePeopleButton.setDisable(true);
+            this.invitePeopleTooltip = new Tooltip(String.format(
+                    "Only the owner of this community (%s) can invite people to this community; please ask them to invite the latter for you.",
+                    this.owner.getDisplayName()));
+            Tooltip.install(this.invitePeopleWrapper, this.invitePeopleTooltip);
         } else {
             this.addChannelButton.setDisable(false);
             Tooltip.uninstall(this.addChannelButtonWrapper, this.addChannelTooltip);
+
+            this.invitePeopleButton.setDisable(false);
+            Tooltip.uninstall(this.invitePeopleButton, this.invitePeopleTooltip);
         }
     }
 
@@ -182,7 +201,7 @@ public class CommunityComponent {
         var nodeList = new ArrayList<Node>();
         nodeList.add(this.createHeader("Members"));
         nodeList.addAll(memberUserList);
-        nodeList.add(this.invitePeopleButton);
+        nodeList.add(this.invitePeopleWrapper);
 
         this.memberList.getChildren().setAll(nodeList);
     }
@@ -271,12 +290,45 @@ public class CommunityComponent {
 
         this.memberList = new VBox();
 
-        this.invitePeopleButton = this.createPrimaryAction(FontAwesomeSolid.USER_PLUS, "Invite people");
-        invitePeopleButton.setMaxWidth(Double.MAX_VALUE);
+        this.invitePeopleWrapper = new HBox();
 
-        memberList.getChildren().addAll(this.createHeader("Members"), this.invitePeopleButton);
+        this.invitePeopleButton = this.createPrimaryAction(FontAwesomeSolid.USER_PLUS, "Invite people");
+        this.invitePeopleButton.setOnAction((e) -> {
+            var popoverContent = new VBox();
+            popoverContent.setAlignment(Pos.CENTER);
+
+            var popover = new PopOver(popoverContent);
+
+            var inviteToken = this.onRequestInvite.get();
+
+            var descriptionLabel = new Label("Share this code with the person you want to invite:");
+            var tokenLabel = new Label(inviteToken);
+            tokenLabel.setStyle("-fx-font-weight: bold");
+            var copyToClipboardButton = new Button("Copy token to clipboard");
+            copyToClipboardButton.setStyle("-fx-base: royalblue");
+            copyToClipboardButton.setOnAction((event) -> {
+                var clipboard = Clipboard.getSystemClipboard();
+
+                var content = new ClipboardContent();
+                content.putString(inviteToken);
+
+                clipboard.setContent(content);
+            });
+
+            popoverContent.getChildren().setAll(descriptionLabel, tokenLabel, copyToClipboardButton);
+            popoverContent.setSpacing(8);
+            popoverContent.setPadding(new Insets(8));
+
+            popover.show(this.invitePeopleButton);
+        });
+        HBox.setHgrow(this.invitePeopleButton, Priority.ALWAYS);
+        this.invitePeopleWrapper.getChildren().add(this.invitePeopleButton);
+        this.invitePeopleWrapper.setMaxWidth(Double.MAX_VALUE);
+
+        memberList.getChildren().addAll(this.createHeader("Members"), this.invitePeopleWrapper);
         memberList.setSpacing(8);
         memberList.setPadding(new Insets(0, 0, 8, 0));
+        memberList.setMaxWidth(Double.MAX_VALUE);
 
         userList.getChildren().addAll(ownerList, memberList);
 

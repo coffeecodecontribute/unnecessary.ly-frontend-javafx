@@ -225,6 +225,12 @@ public class Application extends javafx.application.Application {
 
         communityComponent.setOnCreateCommunity(handleCreateCommunity);
 
+        communityComponent.setOnRequestInvite(() -> {
+            // TODO: Request invite and return protobuf as byte.toString
+
+            return "asdf";
+        });
+
         // Set initial state
         new Thread(() -> {
             // Connection details
