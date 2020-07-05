@@ -20,7 +20,6 @@ import ly.unnecessary.backend.api.CommunityOuterClass.Channel;
 import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
 import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 import ly.unnecessary.backend.api.CommunityOuterClass.CommunityFilter;
-import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
 import ly.unnecessary.backend.api.CommunityServiceGrpc;
 
 public class Application extends javafx.application.Application {
@@ -39,102 +38,55 @@ public class Application extends javafx.application.Application {
 
         var communityComponent = new CommunityComponent();
 
-        // Handlers
-        Consumer<Channel> handleChannelsSelect = (c) -> {
-            communityComponent.setChannelTitle(c.getDisplayName());
+        Consumer<Channel> handleChannelSwitch = (newChannel) -> {
+            Platform.runLater(() -> {
+                communityComponent.setChannelTitle(newChannel.getDisplayName());
+                communityComponent.setSelectedChannel(newChannel);
+            });
 
-            new Thread(() -> {
-                var channelFilter = ChannelFilter.newBuilder().setChannelId(c.getId()).build();
+            var channelFilter = ChannelFilter.newBuilder().setChannelId(newChannel.getId()).build();
 
-                var chats = communityClient.listChatsForChannel(channelFilter);
+            var newChats = communityClient.listChatsForChannel(channelFilter).getChatsList();
 
-                Platform.runLater(() -> {
-                    communityComponent.replaceChats(chats.getChatsList());
-
-                    communityComponent.scrollChatsToBottom();
-                });
-            }).start();
-        };
-
-        Runnable handleEmptyChats = () -> {
-            communityComponent.replaceChats(List.of());
-        };
-
-        Runnable handleEmptyChannel = () -> {
-            communityComponent.setChannelTitle("");
-
-            communityComponent.setChannelList(List.of());
-
-            handleEmptyChats.run();
-        };
-
-        Consumer<List<Channel>> handleChannelsChange = (c) -> {
-            if (c.size() == 0) {
-                handleEmptyChannel.run();
-            } else {
-                var initialChannel = c.get(0);
-
-                if (initialChannel != null) {
-                    handleChannelsSelect.accept(initialChannel);
-                } else {
-                    handleEmptyChats.run();
-                }
-
-                communityComponent.setChannelList(c);
-            }
-        };
-
-        Consumer<Community> handleCommunityChange = (c) -> {
-            communityComponent.selectCommunityLink(c);
-            communityComponent.setCommunityTitle(c.getDisplayName());
-
-            communityComponent.replaceOwner(c.getOwner());
-            communityComponent.replaceMemberList(c.getMembersList());
-
-            handleChannelsChange.accept(c.getChannelsList());
-        };
-
-        // Queries on UI
-        communityComponent.setOnCreateChat(chat -> new Thread(() -> {
-            if (chat.equals("")) {
-                return;
-            }
-
-            Platform.runLater(() -> communityComponent.clearAndFocusNewChatFieldText());
-
-            var newChat = NewChat.newBuilder().setChannelId(1).setMessage(chat).build();
-
-            communityClient.createChat(newChat);
-        }).start());
-
-        communityComponent.setOnClickCommunityLink(c -> Platform.runLater(() -> handleCommunityChange.accept(c)));
-
-        communityComponent.setOnChannelClick(c -> Platform.runLater(() -> handleChannelsSelect.accept(c)));
-
-        // Mutations on UI
-        new Thread(() -> {
-            var channelFilter = ChannelFilter.newBuilder().setChannelId(1).build();
+            Platform.runLater(() -> {
+                communityComponent.setChats(newChats);
+                communityComponent.scrollChatsToBottom();
+            });
 
             var stream = communityClient.subscribeToChannelChats(channelFilter);
 
-            stream.forEachRemaining(c -> Platform.runLater(() -> {
-                communityComponent.addChat(c);
-
+            new Thread(() -> stream.forEachRemaining(newChat -> Platform.runLater(() -> {
+                communityComponent.addChat(newChat);
                 communityComponent.scrollChatsToBottom();
-            }));
-        }).start();
+            }))).start();
+        };
 
-        new Thread(() -> {
-            var channelFilter = ChannelFilter.newBuilder().setChannelId(1).build();
+        Consumer<Community> handleCommunitySwitch = (communityToFetch) -> {
+            var communityFilter = CommunityFilter.newBuilder().setCommunityId(communityToFetch.getId()).build();
 
-            var chats = communityClient.listChatsForChannel(channelFilter);
+            var newCommunity = communityClient.getCommunity(communityFilter);
 
             Platform.runLater(() -> {
-                communityComponent.replaceChats(chats.getChatsList());
-
-                communityComponent.scrollChatsToBottom();
+                communityComponent.setSelectedCommunity(newCommunity);
+                communityComponent.setCommunityTitle(newCommunity.getDisplayName());
+                communityComponent.setOwner(newCommunity.getOwner());
+                communityComponent.setMembers(newCommunity.getMembersList());
             });
-        }).start();
+
+            var newChannels = communityClient.listChannelsForCommunity(communityFilter).getChannelsList();
+
+            Platform.runLater(() -> communityComponent.setChannels(newChannels));
+
+            handleChannelSwitch.accept(newChannels.get(0));
+        };
+
+        Consumer<List<Community>> handleInit = (newCommunities) -> {
+            Platform.runLater(() -> {
+                communityComponent.setCommunities(newCommunities);
+
+                handleCommunitySwitch.accept(newCommunities.get(0));
+            });
+        };
 
         new Thread(() -> {
             var ownedCommunities = communityClient.listCommunitiesForOwner(Empty.newBuilder().build());
@@ -143,34 +95,7 @@ public class Application extends javafx.application.Application {
             var allCommunities = Stream.concat(ownedCommunities.getCommunitiesList().stream(),
                     memberCommunities.getCommunitiesList().stream()).collect(Collectors.toList());
 
-            Platform.runLater(() -> {
-                communityComponent.replaceCommunities(allCommunities);
-
-                var initialCommunity = allCommunities.get(0);
-                if (initialCommunity != null) {
-                    communityComponent.selectCommunityLink(initialCommunity);
-                    communityComponent.setCommunityTitle(initialCommunity.getDisplayName());
-
-                    communityComponent.replaceOwner(initialCommunity.getOwner());
-                    communityComponent.replaceMemberList(initialCommunity.getMembersList());
-
-                    var initialChannel = initialCommunity.getChannels(0);
-
-                    if (initialChannel != null) {
-                        communityComponent.setChannelTitle(initialChannel.getDisplayName());
-                    }
-                }
-            });
-        }).start();
-
-        new Thread(() -> {
-            var communityFilter = CommunityFilter.newBuilder().setCommunityId(1).build();
-
-            var channels = communityClient.listChannelsForCommunity(communityFilter);
-
-            Platform.runLater(() -> {
-                communityComponent.setChannelList(channels.getChannelsList());
-            });
+            handleInit.accept(allCommunities);
         }).start();
 
         var scene = new Scene((Parent) communityComponent.render(), 1080, 720);

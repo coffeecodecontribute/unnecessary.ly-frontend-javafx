@@ -75,7 +75,7 @@ public class CommunityComponent {
         this.chatList.getChildren().add(this.createChat(channel.widthProperty(), "FP", chat.getMessage(), true));
     }
 
-    public void replaceChats(List<Chat> chats) {
+    public void setChats(List<Chat> chats) {
         this.chatList.getChildren()
                 .setAll(chats.stream().map(c -> this.createChat(channel.widthProperty(), "FP", c.getMessage(), true))
                         .collect(Collectors.toList()));
@@ -93,12 +93,12 @@ public class CommunityComponent {
         animation.play();
     }
 
-    public void replaceCommunities(List<Community> communities) {
+    public void setCommunities(List<Community> communities) {
         this.communities.getChildren()
                 .setAll(communities.stream().map(c -> this.createCommunityLink(c, false)).collect(Collectors.toList()));
     }
 
-    public void selectCommunityLink(Community community) {
+    public void setSelectedCommunity(Community community) {
         this.communityToCommmunityLink.values().stream().forEach(b -> b.setStyle(SIDEBAR_BUTTON_INACTIVE_STYLES));
 
         var buttonForCommunity = this.communityToCommmunityLink.get(community);
@@ -114,7 +114,7 @@ public class CommunityComponent {
         this.channelHeader.getChildren().setAll(this.createHeader(channelTitle));
     }
 
-    public void setChannelList(List<Channel> channels) {
+    public void setChannels(List<Channel> channels) {
         for (var i = 0; i < channels.size(); i++) {
             this.indexToChannelMap.put(i, channels.get(i));
         }
@@ -123,12 +123,19 @@ public class CommunityComponent {
                 .setAll(channels.stream().map(c -> new Label(c.getDisplayName())).collect(Collectors.toList()));
     }
 
-    public void replaceOwner(User owner) {
+    public void setSelectedChannel(Channel channel) {
+        var indexToSelect = this.indexToChannelMap.entrySet().stream().filter((e) -> e.getValue().equals(channel))
+                .map((e) -> e.getKey()).findFirst();
+
+        this.communityChannelsList.getSelectionModel().select(indexToSelect.get());
+    }
+
+    public void setOwner(User owner) {
         this.ownerList.getChildren().setAll(this.createHeader("Owner"),
                 this.createUserPersona(this.getInitials(owner.getDisplayName()), owner.getDisplayName()));
     }
 
-    public void replaceMemberList(List<User> members) {
+    public void setMembers(List<User> members) {
         var memberUserList = members.stream()
                 .map(m -> this.createUserPersona(this.getInitials(m.getDisplayName()), m.getDisplayName()))
                 .collect(Collectors.toList());
