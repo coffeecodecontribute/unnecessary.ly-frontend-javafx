@@ -54,6 +54,9 @@ public class CommunityComponent {
     private Button invitePeopleButton;
     private VBox ownerList;
     private VBox memberList;
+    private User currentUser;
+    private ScrollPane memberListWrapper;
+    private VBox communityDetails;
 
     private Consumer<String> onCreateChat;
     private Consumer<Community> onClickCommunityLink;
@@ -72,13 +75,13 @@ public class CommunityComponent {
     }
 
     public void addChat(Chat chat) {
-        this.chatList.getChildren().add(this.createChat(channel.widthProperty(), "FP", chat.getMessage(), true));
+        this.chatList.getChildren().add(this.createChat(channel.widthProperty(), "FP", chat.getMessage(),
+                chat.getUserId() == this.currentUser.getId()));
     }
 
     public void setChats(List<Chat> chats) {
-        this.chatList.getChildren()
-                .setAll(chats.stream().map(c -> this.createChat(channel.widthProperty(), "FP", c.getMessage(), true))
-                        .collect(Collectors.toList()));
+        this.chatList.getChildren().setAll(chats.stream().map(c -> this.createChat(channel.widthProperty(), "FP",
+                c.getMessage(), c.getUserId() == this.currentUser.getId())).collect(Collectors.toList()));
     }
 
     public void clearAndFocusNewChatFieldText() {
@@ -148,6 +151,16 @@ public class CommunityComponent {
         this.memberList.getChildren().setAll(nodeList);
     }
 
+    public void setCurrentUser(User newCurrentUser) {
+        this.currentUser = newCurrentUser;
+
+        var newAvatarHeader = this.createUserMenu(this.getInitials(this.currentUser.getDisplayName()),
+                this.currentUser.getDisplayName());
+        newAvatarHeader.setMaxWidth(Double.MAX_VALUE);
+
+        this.communityDetails.getChildren().setAll(this.memberListWrapper, newAvatarHeader);
+    }
+
     public Node render() {
         var wrapper = new BorderPane();
 
@@ -177,12 +190,12 @@ public class CommunityComponent {
         communitySwitcher.getChildren().addAll(communityList, communityMainActions);
 
         // Community details
-        var communityDetails = new VBox();
+        this.communityDetails = new VBox();
 
-        var avatarHeader = this.createUserMenu("FP", "Felix Pojtinger");
+        var avatarHeader = this.createUserMenu("", "");
         avatarHeader.setMaxWidth(Double.MAX_VALUE);
 
-        var memberListWrapper = new ScrollPane();
+        this.memberListWrapper = new ScrollPane();
 
         var userList = new VBox();
 

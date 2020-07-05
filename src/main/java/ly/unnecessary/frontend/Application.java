@@ -23,8 +23,12 @@ import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
 import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 import ly.unnecessary.backend.api.CommunityOuterClass.CommunityFilter;
 import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
+import ly.unnecessary.backend.api.CommunityServiceGrpc.CommunityServiceBlockingStub;
 import ly.unnecessary.backend.api.UserOuterClass.User;
+import ly.unnecessary.backend.api.UserOuterClass.UserSignInRequest;
+import ly.unnecessary.backend.api.UserServiceGrpc.UserServiceBlockingStub;
 import ly.unnecessary.backend.api.CommunityServiceGrpc;
+import ly.unnecessary.backend.api.UserServiceGrpc;
 
 public class Application extends javafx.application.Application {
     public static Metadata.Key<String> USER_EMAIL_KEY = Metadata.Key.of("x-uly-email", ASCII_STRING_MARSHALLER);
@@ -32,19 +36,11 @@ public class Application extends javafx.application.Application {
 
     private long currentChannelId = -1;
     private Map<Long, Boolean> chatListeners = new ConcurrentHashMap<>();
+    private UserServiceBlockingStub userClient;
+    private CommunityServiceBlockingStub communityClient;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // Setup authentication
-        var ch = ManagedChannelBuilder.forTarget("localhost:1999").usePlaintext().build();
-
-        var metadata = new Metadata();
-        metadata.put(USER_EMAIL_KEY, "felix@pojtinger.com");
-        metadata.put(USER_PASSWORD_KEY, "pass1234");
-
-        // Create clients
-        var communityClient = MetadataUtils.attachHeaders(CommunityServiceGrpc.newBlockingStub(ch), metadata);
-
         // Create components
         var communityComponent = new CommunityComponent();
 
@@ -70,14 +66,14 @@ public class Application extends javafx.application.Application {
 
             var channelFilter = ChannelFilter.newBuilder().setChannelId(newChannel.getId()).build();
 
-            var newChats = communityClient.listChatsForChannel(channelFilter).getChatsList();
+            var newChats = this.communityClient.listChatsForChannel(channelFilter).getChatsList();
 
             Platform.runLater(() -> {
                 communityComponent.setChats(newChats);
                 communityComponent.scrollChatsToBottom();
             });
 
-            var stream = communityClient.subscribeToChannelChats(channelFilter);
+            var stream = this.communityClient.subscribeToChannelChats(channelFilter);
 
             new Thread(() -> {
                 var listenerExists = false;
@@ -119,7 +115,7 @@ public class Application extends javafx.application.Application {
 
             var communityFilter = CommunityFilter.newBuilder().setCommunityId(communityToFetch.getId()).build();
 
-            var newCommunity = communityClient.getCommunity(communityFilter);
+            var newCommunity = this.communityClient.getCommunity(communityFilter);
 
             Platform.runLater(() -> {
                 communityComponent.setSelectedCommunity(newCommunity);
@@ -128,7 +124,7 @@ public class Application extends javafx.application.Application {
                 communityComponent.setMembers(newCommunity.getMembersList());
             });
 
-            var newChannels = communityClient.listChannelsForCommunity(communityFilter).getChannelsList();
+            var newChannels = this.communityClient.listChannelsForCommunity(communityFilter).getChannelsList();
 
             if (newChannels.size() == 0) {
                 Platform.runLater(() -> communityComponent.setChannels(List.of()));
@@ -146,7 +142,7 @@ public class Application extends javafx.application.Application {
 
             var chat = NewChat.newBuilder().setChannelId(this.getCurrentChannelId()).setMessage(c).build();
 
-            communityClient.createChat(chat);
+            this.communityClient.createChat(chat);
         };
 
         Consumer<List<Community>> handleInit = (newCommunities) -> {
@@ -161,6 +157,10 @@ public class Application extends javafx.application.Application {
             });
         };
 
+        Consumer<User> handleUserChange = (newUser) -> {
+            Platform.runLater(() -> communityComponent.setCurrentUser(newUser));
+        };
+
         // Connect handlers
         communityComponent.setOnSwitchCommunity(handleCommunitySwitch);
 
@@ -170,8 +170,33 @@ public class Application extends javafx.application.Application {
 
         // Set initial state
         new Thread(() -> {
-            var ownedCommunities = communityClient.listCommunitiesForOwner(Empty.newBuilder().build());
-            var memberCommunities = communityClient.listCommunitiesForMember(Empty.newBuilder().build());
+            // Connection details
+            var apiUrl = "localhost:1999";
+            var email = "felix@pojtinger.com";
+            var password = "pass1234";
+
+            // Setup connection
+            var ch = ManagedChannelBuilder.forTarget(apiUrl).usePlaintext().build();
+
+            // Sign in
+            var signInClient = UserServiceGrpc.newBlockingStub(ch);
+            var user = signInClient
+                    .signIn(UserSignInRequest.newBuilder().setEmail(email).setPassword(password).build());
+
+            handleUserChange.accept(user);
+
+            // Setup authentication
+            var metadata = new Metadata();
+            metadata.put(USER_EMAIL_KEY, email);
+            metadata.put(USER_PASSWORD_KEY, password);
+
+            // Create clients
+            this.userClient = MetadataUtils.attachHeaders(UserServiceGrpc.newBlockingStub(ch), metadata);
+            this.communityClient = MetadataUtils.attachHeaders(CommunityServiceGrpc.newBlockingStub(ch), metadata);
+
+            // Fetch owned communities
+            var ownedCommunities = this.communityClient.listCommunitiesForOwner(Empty.newBuilder().build());
+            var memberCommunities = this.communityClient.listCommunitiesForMember(Empty.newBuilder().build());
 
             var allCommunities = Stream.concat(ownedCommunities.getCommunitiesList().stream(),
                     memberCommunities.getCommunitiesList().stream()).collect(Collectors.toList());
