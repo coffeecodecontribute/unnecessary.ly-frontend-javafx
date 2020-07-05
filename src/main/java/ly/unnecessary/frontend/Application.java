@@ -36,6 +36,10 @@ public class Application extends javafx.application.Application {
 
         // Queries on UI
         communityComponent.setOnCreateChat(chat -> new Thread(() -> {
+            if (chat.equals("")) {
+                return;
+            }
+
             Platform.runLater(() -> communityComponent.clearAndFocusNewChatFieldText());
 
             var newChat = NewChat.newBuilder().setChannelId(1).setMessage(chat).build();
