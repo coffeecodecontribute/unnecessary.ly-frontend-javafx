@@ -264,7 +264,8 @@ public class CommunityComponent {
 
             popover.show(communityAddButton);
         });
-        var communityJoinButton = this.createCommunityAction(FontAwesomeSolid.DOOR_OPEN, "Join community");
+
+        var communityJoinButton = this.createCommunityAction(FontAwesomeSolid.SIGN_IN_ALT, "Join community");
 
         var communityMainActions = new VBox(communityAddButton, communityJoinButton);
         communityMainActions.setSpacing(8);
