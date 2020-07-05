@@ -46,7 +46,7 @@ public class CommunityComponent {
     private VBox channel;
     private ScrollPane chatListWrapper;
     private VBox communities;
-    private Map<Community, Button> communityToCommmunityLink = new HashMap<>();
+    private Map<Long, Button> communityIdToCommmunityLink = new HashMap<>();
     private HBox communityHeader;
     private HBox channelHeader;
     private ListView<Node> communityChannelsList;
@@ -108,9 +108,9 @@ public class CommunityComponent {
     }
 
     public void setSelectedCommunity(Community community) {
-        this.communityToCommmunityLink.values().stream().forEach(b -> b.setStyle(SIDEBAR_BUTTON_INACTIVE_STYLES));
+        this.communityIdToCommmunityLink.values().stream().forEach(b -> b.setStyle(SIDEBAR_BUTTON_INACTIVE_STYLES));
 
-        var buttonForCommunity = this.communityToCommmunityLink.get(community);
+        var buttonForCommunity = this.communityIdToCommmunityLink.get(community.getId());
 
         buttonForCommunity.setStyle(SIDEBAR_BUTTON_ACTIVE_STYLES);
     }
@@ -341,7 +341,7 @@ public class CommunityComponent {
             this.onClickCommunityLink.accept(community);
         });
 
-        this.communityToCommmunityLink.put(community, link);
+        this.communityIdToCommmunityLink.put(community.getId(), link);
 
         return link;
     }

@@ -138,11 +138,13 @@ public class Application extends javafx.application.Application {
         };
 
         Consumer<String> handleCreateChat = (c) -> {
-            Platform.runLater(() -> communityComponent.clearAndFocusNewChatFieldText());
+            if (!c.isEmpty()) {
+                Platform.runLater(() -> communityComponent.clearAndFocusNewChatFieldText());
 
-            var chat = NewChat.newBuilder().setChannelId(this.getCurrentChannelId()).setMessage(c).build();
+                var chat = NewChat.newBuilder().setChannelId(this.getCurrentChannelId()).setMessage(c).build();
 
-            this.communityClient.createChat(chat);
+                this.communityClient.createChat(chat);
+            }
         };
 
         Consumer<List<Community>> handleInit = (newCommunities) -> {
