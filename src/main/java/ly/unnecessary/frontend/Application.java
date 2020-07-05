@@ -53,6 +53,10 @@ public class Application extends javafx.application.Application {
             communityComponent.setCommunityTitle(c.getDisplayName());
         }));
 
+        communityComponent.setOnChannelClick(c -> Platform.runLater(() -> {
+            communityComponent.setChannelTitle(c.getDisplayName());
+        }));
+
         // Mutations on UI
         new Thread(() -> {
             var channelFilter = ChannelFilter.newBuilder().setChannelId(1).build();
@@ -89,9 +93,17 @@ public class Application extends javafx.application.Application {
                 communityComponent.replaceCommunities(allCommunities);
 
                 var initialCommunity = allCommunities.get(0);
+                if (initialCommunity != null) {
 
-                communityComponent.selectCommunityLink(initialCommunity);
-                communityComponent.setCommunityTitle(initialCommunity.getDisplayName());
+                    communityComponent.selectCommunityLink(initialCommunity);
+                    communityComponent.setCommunityTitle(initialCommunity.getDisplayName());
+
+                    var initialChannel = initialCommunity.getChannels(0);
+
+                    if (initialChannel != null) {
+                        communityComponent.setChannelTitle(initialChannel.getDisplayName());
+                    }
+                }
             });
         }).start();
 

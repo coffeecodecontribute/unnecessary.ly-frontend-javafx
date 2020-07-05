@@ -46,11 +46,13 @@ public class CommunityComponent {
     private VBox communities;
     private Map<Community, Button> communityToCommmunityLink = new HashMap<>();
     private HBox communityHeader;
+    private HBox channelHeader;
     private ListView<Node> communityChannelsList;
     private Map<Integer, Channel> indexToChannelMap = new HashMap<>();
 
     private Consumer<String> onCreateChat;
     private Consumer<Community> onClickCommunityLink;
+    private Consumer<Channel> onChannelClick;
 
     public void setOnCreateChat(Consumer<String> onCreateChat) {
         this.onCreateChat = onCreateChat;
@@ -58,6 +60,10 @@ public class CommunityComponent {
 
     public void setOnClickCommunityLink(Consumer<Community> onClickCommunityLink) {
         this.onClickCommunityLink = onClickCommunityLink;
+    }
+
+    public void setOnChannelClick(Consumer<Channel> onChannelClick) {
+        this.onChannelClick = onChannelClick;
     }
 
     public void addChat(Chat chat) {
@@ -97,6 +103,10 @@ public class CommunityComponent {
 
     public void setCommunityTitle(String communityTitle) {
         this.communityHeader.getChildren().setAll(this.createHeader(communityTitle));
+    }
+
+    public void setChannelTitle(String channelTitle) {
+        this.channelHeader.getChildren().setAll(this.createHeader(channelTitle));
     }
 
     public void setChannelList(List<Channel> channels) {
@@ -186,6 +196,8 @@ public class CommunityComponent {
 
         this.communityChannelsList = new ListView<>();
         communityChannelsList.setMaxWidth(175);
+        communityChannelsList.setOnMouseClicked((e) -> this.onChannelClick
+                .accept(this.indexToChannelMap.get(communityChannelsList.getSelectionModel().getSelectedIndex())));
 
         var addChannelButtonWrapper = new HBox();
         var addChannelButton = createPrimaryAction(FontAwesomeSolid.PLUS_SQUARE, "Create channel");
@@ -202,8 +214,7 @@ public class CommunityComponent {
 
         this.channel = new VBox();
 
-        var channelHeader = new HBox();
-        channelHeader.getChildren().add(this.createHeader("Channel 1"));
+        this.channelHeader = new HBox();
 
         this.chatListWrapper = new ScrollPane();
 
