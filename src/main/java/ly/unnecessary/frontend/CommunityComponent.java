@@ -495,10 +495,9 @@ public class CommunityComponent {
         wrapper.setLeft(communitySwitcher);
         wrapper.setCenter(communityContent);
         wrapper.setRight(communityDetails);
+        wrapper.setStyle("-fx-font-family: 'Arial';");
 
         Platform.runLater(() -> newChatField.requestFocus());
-
-        wrapper.setStyle("-fx-font-family: 'Arial';");
 
         return wrapper;
     }

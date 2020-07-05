@@ -37,6 +37,7 @@ import ly.unnecessary.backend.api.UserOuterClass.User;
 import ly.unnecessary.backend.api.UserOuterClass.UserSignInRequest;
 import ly.unnecessary.backend.api.UserServiceGrpc;
 import ly.unnecessary.backend.api.UserServiceGrpc.UserServiceBlockingStub;
+import ly.unnecessary.frontend.SignInComponent.SignInInfo;
 
 public class Application extends javafx.application.Application {
     public static Metadata.Key<String> USER_EMAIL_KEY = Metadata.Key.of("x-uly-email", ASCII_STRING_MARSHALLER);
@@ -269,27 +270,32 @@ public class Application extends javafx.application.Application {
 
         communityComponent.setOnJoinCommunity(handleJoinCommunity);
 
-        // Set initial state
-        new Thread(() -> {
-            // Connection details
-            var apiUrl = "localhost:1999";
-            var email = "felix@pojtinger.com";
-            var password = "pass1234";
+        Function<SignInInfo, Integer> handleSignIn = (signInInfo) -> {
+            // Validate connection details
+            if (signInInfo.getApiUrl().isEmpty() || signInInfo.getEmail().isEmpty()
+                    || signInInfo.getPassword().isEmpty()) {
+                return 1;
+            }
 
             // Setup connection
-            var ch = ManagedChannelBuilder.forTarget(apiUrl).usePlaintext().build();
+            var ch = ManagedChannelBuilder.forTarget(signInInfo.getApiUrl()).usePlaintext().build();
 
             // Sign in
-            var signInClient = UserServiceGrpc.newBlockingStub(ch);
-            var user = signInClient
-                    .signIn(UserSignInRequest.newBuilder().setEmail(email).setPassword(password).build());
+            final User user;
+            try {
+                var signInClient = UserServiceGrpc.newBlockingStub(ch);
+                user = signInClient.signIn(UserSignInRequest.newBuilder().setEmail(signInInfo.getEmail())
+                        .setPassword(signInInfo.getPassword()).build());
+            } catch (Exception e) {
+                return 2;
+            }
 
             handleUserChange.accept(user);
 
             // Setup authentication
             var metadata = new Metadata();
-            metadata.put(USER_EMAIL_KEY, email);
-            metadata.put(USER_PASSWORD_KEY, password);
+            metadata.put(USER_EMAIL_KEY, signInInfo.getEmail());
+            metadata.put(USER_PASSWORD_KEY, signInInfo.getPassword());
 
             // Create clients
             this.userClient = MetadataUtils.attachHeaders(UserServiceGrpc.newBlockingStub(ch), metadata);
@@ -299,13 +305,25 @@ public class Application extends javafx.application.Application {
             var allCommunities = handleCommunitiesRefresh.get();
 
             handleInit.accept(allCommunities);
-        }).start();
+
+            // Render main component
+            var scene = new Scene((Parent) communityComponent.render(), 1080, 720);
+
+            primaryStage.setScene(scene);
+            primaryStage.setTitle("unnecessary.ly");
+
+            return 0;
+        };
+
+        // Sign in
+        var signInComponent = new SignInComponent();
+        signInComponent.setOnSignIn(handleSignIn);
 
         // Render initial state
-        var scene = new Scene((Parent) communityComponent.render(), 1080, 720);
+        var scene = new Scene((Parent) signInComponent.render(), 480, 320);
 
         primaryStage.setScene(scene);
-        primaryStage.setTitle("unnecessary.ly");
+        primaryStage.setTitle("Sign in to unnecessary.ly");
 
         primaryStage.show();
     }
