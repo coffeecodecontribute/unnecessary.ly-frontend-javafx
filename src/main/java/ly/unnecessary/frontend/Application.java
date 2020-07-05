@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.protobuf.Empty;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
@@ -25,6 +26,7 @@ import ly.unnecessary.backend.api.CommunityOuterClass.Channel;
 import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
 import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 import ly.unnecessary.backend.api.CommunityOuterClass.CommunityFilter;
+import ly.unnecessary.backend.api.CommunityOuterClass.Invitation;
 import ly.unnecessary.backend.api.CommunityOuterClass.InvitationCreateRequest;
 import ly.unnecessary.backend.api.CommunityOuterClass.NewChannel;
 import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
@@ -194,7 +196,7 @@ public class Application extends javafx.application.Application {
             var memberCommunities = this.communityClient.listCommunitiesForMember(Empty.newBuilder().build());
 
             var allCommunities = Stream.concat(ownedCommunities.getCommunitiesList().stream(),
-                    memberCommunities.getCommunitiesList().stream()).collect(Collectors.toList());
+                    memberCommunities.getCommunitiesList().stream()).distinct().collect(Collectors.toList());
 
             return allCommunities;
         };
@@ -207,6 +209,30 @@ public class Application extends javafx.application.Application {
             var newCommunity = NewCommunity.newBuilder().setDisplayName(newCommunityName).build();
 
             var updatedCommunity = this.communityClient.createCommunity(newCommunity);
+
+            var updatedCommunities = handleCommunitiesRefresh.get();
+            handleCommunitiesChange.accept(updatedCommunities);
+
+            handleCommunitySwitch.accept(updatedCommunity);
+
+            return true;
+        };
+
+        Function<String, Boolean> handleJoinCommunity = (joinToken) -> {
+            if (joinToken.isEmpty()) {
+                return false;
+            }
+
+            var inviteAsBytes = Base64.getDecoder().decode(joinToken);
+
+            final Invitation invite;
+            try {
+                invite = Invitation.parseFrom(inviteAsBytes);
+            } catch (InvalidProtocolBufferException e) {
+                return false;
+            }
+
+            var updatedCommunity = this.communityClient.acceptInvitation(invite);
 
             var updatedCommunities = handleCommunitiesRefresh.get();
             handleCommunitiesChange.accept(updatedCommunities);
@@ -235,6 +261,8 @@ public class Application extends javafx.application.Application {
 
             return Base64.getEncoder().encodeToString(invite.toByteArray());
         });
+
+        communityComponent.setOnJoinCommunity(handleJoinCommunity);
 
         // Set initial state
         new Thread(() -> {

@@ -75,6 +75,7 @@ public class CommunityComponent {
     private Consumer<Channel> onChannelClick;
     private Function<String, Boolean> onCreateChannel;
     private Function<String, Boolean> onCreateCommunity;
+    private Function<String, Boolean> onJoinCommunity;
     private Supplier<String> onRequestInvite;
 
     public void setOnCreateChat(Consumer<String> onCreateChat) {
@@ -99,6 +100,10 @@ public class CommunityComponent {
 
     public void setOnRequestInvite(Supplier<String> onRequestInvite) {
         this.onRequestInvite = onRequestInvite;
+    }
+
+    public void setOnJoinCommunity(Function<String, Boolean> onJoinCommunity) {
+        this.onJoinCommunity = onJoinCommunity;
     }
 
     public void addChat(Chat chat) {
@@ -266,6 +271,34 @@ public class CommunityComponent {
         });
 
         var communityJoinButton = this.createCommunityAction(FontAwesomeSolid.SIGN_IN_ALT, "Join community");
+        communityJoinButton.setOnAction((e) -> {
+            var popoverContent = new VBox();
+            popoverContent.setAlignment(Pos.CENTER_RIGHT);
+
+            var popover = new PopOver(popoverContent);
+
+            var nameField = new TextField();
+            nameField.setPromptText("Join token");
+            nameField.setOnAction((event) -> {
+                if (this.onJoinCommunity.apply(nameField.getText())) {
+                    popover.hide();
+                }
+            });
+
+            var createButton = new Button("Join community");
+            createButton.setStyle("-fx-base: royalblue");
+            createButton.setOnAction((event) -> {
+                if (this.onJoinCommunity.apply(nameField.getText())) {
+                    popover.hide();
+                }
+            });
+
+            popoverContent.getChildren().setAll(nameField, createButton);
+            popoverContent.setSpacing(8);
+            popoverContent.setPadding(new Insets(8));
+
+            popover.show(communityJoinButton);
+        });
 
         var communityMainActions = new VBox(communityAddButton, communityJoinButton);
         communityMainActions.setSpacing(8);
@@ -302,7 +335,7 @@ public class CommunityComponent {
 
             var inviteToken = this.onRequestInvite.get();
 
-            var descriptionLabel = new Label("Share this code with the person you want to invite:");
+            var descriptionLabel = new Label("Share this token with the person you want to invite:");
             var tokenLabel = new Label(inviteToken);
             tokenLabel.setStyle("-fx-font-weight: bold");
             var copyToClipboardButton = new Button("Copy token to clipboard");
