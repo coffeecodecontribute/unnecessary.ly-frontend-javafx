@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,6 +23,7 @@ import ly.unnecessary.backend.api.CommunityOuterClass.Channel;
 import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
 import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 import ly.unnecessary.backend.api.CommunityOuterClass.CommunityFilter;
+import ly.unnecessary.backend.api.CommunityOuterClass.NewChannel;
 import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
 import ly.unnecessary.backend.api.CommunityServiceGrpc.CommunityServiceBlockingStub;
 import ly.unnecessary.backend.api.UserOuterClass.User;
@@ -35,6 +37,7 @@ public class Application extends javafx.application.Application {
     public static Metadata.Key<String> USER_PASSWORD_KEY = Metadata.Key.of("x-uly-password", ASCII_STRING_MARSHALLER);
 
     private long currentChannelId = -1;
+    private long currentCommunityId = -1;
     private Map<Long, Boolean> chatListeners = new ConcurrentHashMap<>();
     private UserServiceBlockingStub userClient;
     private CommunityServiceBlockingStub communityClient;
@@ -113,6 +116,8 @@ public class Application extends javafx.application.Application {
                 return;
             }
 
+            this.setCurrentCommunityId(communityToFetch.getId());
+
             var communityFilter = CommunityFilter.newBuilder().setCommunityId(communityToFetch.getId()).build();
 
             var newCommunity = this.communityClient.getCommunity(communityFilter);
@@ -163,12 +168,29 @@ public class Application extends javafx.application.Application {
             Platform.runLater(() -> communityComponent.setCurrentUser(newUser));
         };
 
+        Function<String, Boolean> handleCreateChannel = (newChannelName) -> {
+            if (newChannelName.isEmpty()) {
+                return false;
+            }
+
+            var newChannel = NewChannel.newBuilder().setCommunityId(this.getCurrentCommunityId())
+                    .setDisplayName(newChannelName).build();
+
+            this.communityClient.createChannel(newChannel);
+
+            handleCommunitySwitch.accept(Community.newBuilder().setId(this.getCurrentCommunityId()).build());
+
+            return true;
+        };
+
         // Connect handlers
         communityComponent.setOnSwitchCommunity(handleCommunitySwitch);
 
         communityComponent.setOnSwitchChannel(handleChannelSwitch);
 
         communityComponent.setOnCreateChat(handleCreateChat);
+
+        communityComponent.setOnCreateChannel(handleCreateChannel);
 
         // Set initial state
         new Thread(() -> {
@@ -225,5 +247,13 @@ public class Application extends javafx.application.Application {
 
     public void setCurrentChannelId(long currentChannelId) {
         this.currentChannelId = currentChannelId;
+    }
+
+    public long getCurrentCommunityId() {
+        return currentCommunityId;
+    }
+
+    public void setCurrentCommunityId(long currentCommunityId) {
+        this.currentCommunityId = currentCommunityId;
     }
 }

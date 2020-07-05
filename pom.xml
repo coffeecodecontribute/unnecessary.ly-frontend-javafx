@@ -99,6 +99,12 @@
             <artifactId>ikonli-fontawesome5-pack</artifactId>
             <version>11.5.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.controlsfx</groupId>
+            <artifactId>controlsfx</artifactId>
+            <version>11.0.2</version>
+        </dependency>
     </dependencies>
 
     <build>

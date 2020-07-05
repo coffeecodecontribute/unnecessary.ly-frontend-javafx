@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.controlsfx.control.PopOver;
 import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -63,6 +65,7 @@ public class CommunityComponent {
     private Consumer<String> onCreateChat;
     private Consumer<Community> onClickCommunityLink;
     private Consumer<Channel> onChannelClick;
+    private Function<String, Boolean> onCreateChannel;
 
     public void setOnCreateChat(Consumer<String> onCreateChat) {
         this.onCreateChat = onCreateChat;
@@ -74,6 +77,10 @@ public class CommunityComponent {
 
     public void setOnSwitchChannel(Consumer<Channel> onChannelClick) {
         this.onChannelClick = onChannelClick;
+    }
+
+    public void setOnCreateChannel(Function<String, Boolean> onCreateChannel) {
+        this.onCreateChannel = onCreateChannel;
     }
 
     public void addChat(Chat chat) {
@@ -257,6 +264,34 @@ public class CommunityComponent {
 
         var addChannelButtonWrapper = new HBox();
         var addChannelButton = createPrimaryAction(FontAwesomeSolid.PLUS_SQUARE, "Create channel");
+        addChannelButton.setOnAction((e) -> {
+            var popoverContent = new VBox();
+            popoverContent.setAlignment(Pos.CENTER_RIGHT);
+
+            var popover = new PopOver(popoverContent);
+
+            var nameField = new TextField();
+            nameField.setPromptText("New channel name");
+            nameField.setOnAction((event) -> {
+                if (this.onCreateChannel.apply(nameField.getText())) {
+                    popover.hide();
+                }
+            });
+
+            var createButton = new Button("Create channel");
+            createButton.setStyle("-fx-base: royalblue");
+            createButton.setOnAction((event) -> {
+                if (this.onCreateChannel.apply(nameField.getText())) {
+                    popover.hide();
+                }
+            });
+
+            popoverContent.getChildren().setAll(nameField, createButton);
+            popoverContent.setSpacing(8);
+            popoverContent.setPadding(new Insets(8));
+
+            popover.show(addChannelButton);
+        });
         addChannelButton.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(addChannelButton, Priority.ALWAYS);
         addChannelButtonWrapper.getChildren().add(addChannelButton);
