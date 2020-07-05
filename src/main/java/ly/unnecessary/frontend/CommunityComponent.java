@@ -34,6 +34,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
+import ly.unnecessary.backend.api.CommunityOuterClass.Channel;
 import ly.unnecessary.backend.api.CommunityOuterClass.Chat;
 import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 
@@ -45,6 +46,8 @@ public class CommunityComponent {
     private VBox communities;
     private Map<Community, Button> communityToCommmunityLink = new HashMap<>();
     private HBox communityHeader;
+    private ListView<Node> communityChannelsList;
+    private Map<Integer, Channel> indexToChannelMap = new HashMap<>();
 
     private Consumer<String> onCreateChat;
     private Consumer<Community> onClickCommunityLink;
@@ -94,6 +97,15 @@ public class CommunityComponent {
 
     public void setCommunityTitle(String communityTitle) {
         this.communityHeader.getChildren().setAll(this.createHeader(communityTitle));
+    }
+
+    public void setChannelList(List<Channel> channels) {
+        for (var i = 0; i < channels.size(); i++) {
+            this.indexToChannelMap.put(i, channels.get(i));
+        }
+
+        this.communityChannelsList.getItems()
+                .addAll(channels.stream().map(c -> new Label(c.getDisplayName())).collect(Collectors.toList()));
     }
 
     public Node render() {
@@ -172,8 +184,7 @@ public class CommunityComponent {
 
         var communityChannels = new VBox();
 
-        var communityChannelsList = new ListView<>();
-        communityChannelsList.getItems().addAll(new Label("Channel 1"), new Label("Channel 2"), new Label("Channel 3"));
+        this.communityChannelsList = new ListView<>();
         communityChannelsList.setMaxWidth(175);
 
         var addChannelButtonWrapper = new HBox();

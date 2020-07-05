@@ -15,6 +15,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
+import ly.unnecessary.backend.api.CommunityOuterClass.CommunityFilter;
 import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
 import ly.unnecessary.backend.api.CommunityServiceGrpc;
 
@@ -91,6 +92,16 @@ public class Application extends javafx.application.Application {
 
                 communityComponent.selectCommunityLink(initialCommunity);
                 communityComponent.setCommunityTitle(initialCommunity.getDisplayName());
+            });
+        }).start();
+
+        new Thread(() -> {
+            var communityFilter = CommunityFilter.newBuilder().setCommunityId(1).build();
+
+            var channels = communityClient.listChannelsForCommunity(communityFilter);
+
+            Platform.runLater(() -> {
+                communityComponent.setChannelList(channels.getChannelsList());
             });
         }).start();
 
