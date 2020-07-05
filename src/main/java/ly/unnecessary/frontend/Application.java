@@ -35,26 +35,18 @@ public class Application extends javafx.application.Application {
         var communityComponent = new CommunityComponent();
 
         // Queries on UI
-        communityComponent.setOnCreateChat(chat -> {
-            new Thread(() -> {
-                var newChat = NewChat.newBuilder().setChannelId(1).setMessage(chat).build();
+        communityComponent.setOnCreateChat(chat -> new Thread(() -> {
+            Platform.runLater(() -> communityComponent.clearAndFocusNewChatFieldText());
 
-                communityClient.createChat(newChat);
+            var newChat = NewChat.newBuilder().setChannelId(1).setMessage(chat).build();
 
-                Platform.runLater(() -> communityComponent.clearAndFocusNewChatFieldText());
-            }).start();
+            communityClient.createChat(newChat);
+        }).start());
 
-            return 0;
-        });
-
-        communityComponent.setOnClickCommunityLink(c -> {
-            Platform.runLater(() -> {
-                communityComponent.selectCommunityLink(c);
-                communityComponent.setCommunityTitle(c.getDisplayName());
-            });
-
-            return 0;
-        });
+        communityComponent.setOnClickCommunityLink(c -> Platform.runLater(() -> {
+            communityComponent.selectCommunityLink(c);
+            communityComponent.setCommunityTitle(c.getDisplayName());
+        }));
 
         // Mutations on UI
         new Thread(() -> {

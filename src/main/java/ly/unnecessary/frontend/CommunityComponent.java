@@ -3,7 +3,7 @@ package ly.unnecessary.frontend;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.kordamp.ikonli.Ikon;
@@ -46,14 +46,14 @@ public class CommunityComponent {
     private Map<Community, Button> communityToCommmunityLink = new HashMap<>();
     private HBox communityHeader;
 
-    private Function<String, Integer> onCreateChat;
-    private Function<Community, Integer> onClickCommunityLink;
+    private Consumer<String> onCreateChat;
+    private Consumer<Community> onClickCommunityLink;
 
-    public void setOnCreateChat(Function<String, Integer> onCreateChat) {
+    public void setOnCreateChat(Consumer<String> onCreateChat) {
         this.onCreateChat = onCreateChat;
     }
 
-    public void setOnClickCommunityLink(Function<Community, Integer> onClickCommunityLink) {
+    public void setOnClickCommunityLink(Consumer<Community> onClickCommunityLink) {
         this.onClickCommunityLink = onClickCommunityLink;
     }
 
@@ -211,14 +211,14 @@ public class CommunityComponent {
         newChatField.setPromptText("New chat");
         newChatField.setPadding(new Insets(9));
         newChatField.setStyle("-fx-background-radius: 16 0 0 16");
-        newChatField.setOnAction((e) -> this.onCreateChat.apply(newChatField.getText()));
+        newChatField.setOnAction((e) -> this.onCreateChat.accept(newChatField.getText()));
         var sendChatButton = new Button();
         var sendIcon = new FontIcon(FontAwesomeSolid.PAPER_PLANE);
         sendIcon.setIconColor(Paint.valueOf("white"));
         sendChatButton.setGraphic(sendIcon);
         sendChatButton.setStyle("-fx-background-radius: 0 16 16 0; -fx-base: royalblue");
         sendChatButton.setPadding(new Insets(9, 14, 9, 9));
-        sendChatButton.setOnAction((e) -> this.onCreateChat.apply(newChatField.getText()));
+        sendChatButton.setOnAction((e) -> this.onCreateChat.accept(newChatField.getText()));
         HBox.setHgrow(newChatField, Priority.ALWAYS);
         newChatWrapper.getChildren().addAll(newChatField, sendChatButton);
         newChatWrapper.setAlignment(Pos.CENTER);
@@ -263,7 +263,7 @@ public class CommunityComponent {
         }
 
         link.setOnAction((e) -> {
-            this.onClickCommunityLink.apply(community);
+            this.onClickCommunityLink.accept(community);
         });
 
         this.communityToCommmunityLink.put(community, link);
