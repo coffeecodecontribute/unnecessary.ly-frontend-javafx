@@ -2,6 +2,7 @@ package ly.unnecessary.frontend;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,15 +25,16 @@ import ly.unnecessary.backend.api.CommunityOuterClass.Channel;
 import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
 import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 import ly.unnecessary.backend.api.CommunityOuterClass.CommunityFilter;
+import ly.unnecessary.backend.api.CommunityOuterClass.InvitationCreateRequest;
 import ly.unnecessary.backend.api.CommunityOuterClass.NewChannel;
 import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
 import ly.unnecessary.backend.api.CommunityOuterClass.NewCommunity;
+import ly.unnecessary.backend.api.CommunityServiceGrpc;
 import ly.unnecessary.backend.api.CommunityServiceGrpc.CommunityServiceBlockingStub;
 import ly.unnecessary.backend.api.UserOuterClass.User;
 import ly.unnecessary.backend.api.UserOuterClass.UserSignInRequest;
-import ly.unnecessary.backend.api.UserServiceGrpc.UserServiceBlockingStub;
-import ly.unnecessary.backend.api.CommunityServiceGrpc;
 import ly.unnecessary.backend.api.UserServiceGrpc;
+import ly.unnecessary.backend.api.UserServiceGrpc.UserServiceBlockingStub;
 
 public class Application extends javafx.application.Application {
     public static Metadata.Key<String> USER_EMAIL_KEY = Metadata.Key.of("x-uly-email", ASCII_STRING_MARSHALLER);
@@ -226,9 +228,12 @@ public class Application extends javafx.application.Application {
         communityComponent.setOnCreateCommunity(handleCreateCommunity);
 
         communityComponent.setOnRequestInvite(() -> {
-            // TODO: Request invite and return protobuf as byte.toString
+            var invitationCreateRequest = InvitationCreateRequest.newBuilder()
+                    .setCommunityId(this.getCurrentCommunityId()).build();
 
-            return "asdf";
+            var invite = this.communityClient.createInvitation(invitationCreateRequest);
+
+            return Base64.getEncoder().encodeToString(invite.toByteArray());
         });
 
         // Set initial state
