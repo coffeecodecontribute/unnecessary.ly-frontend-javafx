@@ -28,16 +28,20 @@ public class Application extends javafx.application.Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        // Setup authentication
         var ch = ManagedChannelBuilder.forTarget("localhost:1999").usePlaintext().build();
 
         var metadata = new Metadata();
         metadata.put(USER_EMAIL_KEY, "felix@pojtinger.com");
         metadata.put(USER_PASSWORD_KEY, "pass1234");
 
+        // Create clients
         var communityClient = MetadataUtils.attachHeaders(CommunityServiceGrpc.newBlockingStub(ch), metadata);
 
+        // Create components
         var communityComponent = new CommunityComponent();
 
+        // Create handlers
         Consumer<Channel> handleChannelSwitch = (newChannel) -> {
             Platform.runLater(() -> {
                 communityComponent.setChannelTitle(newChannel.getDisplayName());
@@ -88,6 +92,12 @@ public class Application extends javafx.application.Application {
             });
         };
 
+        // Connect handlers
+        communityComponent.setOnSwitchCommunity((newCommunity) -> handleCommunitySwitch.accept(newCommunity));
+
+        communityComponent.setOnSwitchChannel((newChannel) -> handleChannelSwitch.accept(newChannel));
+
+        // Set initial state
         new Thread(() -> {
             var ownedCommunities = communityClient.listCommunitiesForOwner(Empty.newBuilder().build());
             var memberCommunities = communityClient.listCommunitiesForMember(Empty.newBuilder().build());
@@ -98,6 +108,7 @@ public class Application extends javafx.application.Application {
             handleInit.accept(allCommunities);
         }).start();
 
+        // Render initial state
         var scene = new Scene((Parent) communityComponent.render(), 1080, 720);
 
         primaryStage.setScene(scene);

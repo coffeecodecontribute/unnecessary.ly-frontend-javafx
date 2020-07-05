@@ -63,11 +63,11 @@ public class CommunityComponent {
         this.onCreateChat = onCreateChat;
     }
 
-    public void setOnClickCommunityLink(Consumer<Community> onClickCommunityLink) {
+    public void setOnSwitchCommunity(Consumer<Community> onClickCommunityLink) {
         this.onClickCommunityLink = onClickCommunityLink;
     }
 
-    public void setOnChannelClick(Consumer<Channel> onChannelClick) {
+    public void setOnSwitchChannel(Consumer<Channel> onChannelClick) {
         this.onChannelClick = onChannelClick;
     }
 
