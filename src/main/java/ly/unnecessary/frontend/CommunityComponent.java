@@ -449,6 +449,7 @@ public class CommunityComponent {
         this.channel = new VBox();
 
         this.channelHeader = new HBox();
+        channelHeader.getChildren().add(this.createHeader(""));
 
         this.chatListWrapper = new ScrollPane();
 
@@ -558,7 +559,7 @@ public class CommunityComponent {
 
         var chatContent = new Text(message);
 
-        chatContent.wrappingWidthProperty().bind(width.subtract(48));
+        chatContent.wrappingWidthProperty().bind(width.subtract(64));
 
         if (fromSelf) {
             chat.getChildren().addAll(chatContent, avatarPlaceholder);
@@ -567,6 +568,9 @@ public class CommunityComponent {
             chat.getChildren().addAll(avatarPlaceholder, chatContent);
         }
 
+        chat.setStyle(
+                "-fx-background-color: white; -fx-background-radius: 16; -fx-border-radius: 16; -fx-border-color: lightgrey;");
+        chat.setPadding(new Insets(8));
         chat.setSpacing(8);
         chat.setAlignment(Pos.CENTER);
 
