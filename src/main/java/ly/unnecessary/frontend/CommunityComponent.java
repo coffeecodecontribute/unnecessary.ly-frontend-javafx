@@ -61,6 +61,9 @@ public class CommunityComponent {
     private VBox communityDetails;
     private User owner;
     private List<User> members;
+    private Button addChannelButton;
+    private Tooltip addChannelTooltip;
+    private HBox addChannelButtonWrapper;
 
     private Consumer<String> onCreateChat;
     private Consumer<Community> onClickCommunityLink;
@@ -120,6 +123,17 @@ public class CommunityComponent {
         var buttonForCommunity = this.communityIdToCommmunityLink.get(community.getId());
 
         buttonForCommunity.setStyle(SIDEBAR_BUTTON_ACTIVE_STYLES);
+
+        if (community.getOwner().getId() != this.currentUser.getId()) {
+            this.addChannelButton.setDisable(true);
+            this.addChannelTooltip = new Tooltip(String.format(
+                    "Only the owner of this community (%s) can create channels in this community; please ask them to create a channel for you.",
+                    this.owner.getDisplayName()));
+            Tooltip.install(this.addChannelButtonWrapper, this.addChannelTooltip);
+        } else {
+            this.addChannelButton.setDisable(false);
+            Tooltip.uninstall(this.addChannelButtonWrapper, this.addChannelTooltip);
+        }
     }
 
     public void setCommunityTitle(String communityTitle) {
@@ -262,8 +276,8 @@ public class CommunityComponent {
             }
         });
 
-        var addChannelButtonWrapper = new HBox();
-        var addChannelButton = createPrimaryAction(FontAwesomeSolid.PLUS_SQUARE, "Create channel");
+        this.addChannelButtonWrapper = new HBox();
+        this.addChannelButton = createPrimaryAction(FontAwesomeSolid.PLUS_SQUARE, "Create channel");
         addChannelButton.setOnAction((e) -> {
             var popoverContent = new VBox();
             popoverContent.setAlignment(Pos.CENTER_RIGHT);

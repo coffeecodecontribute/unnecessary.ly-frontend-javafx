@@ -123,10 +123,10 @@ public class Application extends javafx.application.Application {
             var newCommunity = this.communityClient.getCommunity(communityFilter);
 
             Platform.runLater(() -> {
-                communityComponent.setSelectedCommunity(newCommunity);
                 communityComponent.setCommunityTitle(newCommunity.getDisplayName());
                 communityComponent.setOwner(newCommunity.getOwner());
                 communityComponent.setMembers(newCommunity.getMembersList());
+                communityComponent.setSelectedCommunity(newCommunity);
             });
 
             var newChannels = this.communityClient.listChannelsForCommunity(communityFilter).getChannelsList();
