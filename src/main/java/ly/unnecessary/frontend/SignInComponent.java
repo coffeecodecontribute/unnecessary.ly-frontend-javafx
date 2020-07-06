@@ -143,7 +143,7 @@ public class SignInComponent {
         actionWrapper.getChildren().addAll(passwordResetButton, signUpButton, signInButton);
         actionWrapper.setAlignment(Pos.CENTER_RIGHT);
         actionWrapper.setMaxWidth(FORM_WIDTH);
-        actionWrapper.setSpacing(8);
+        actionWrapper.setSpacing(Constants.DEFAULT_SPACING);
         actionWrapper.setPadding(new Insets(16, 0, 0, 0));
 
         var signInInfo = new SignInInfo();
@@ -240,7 +240,7 @@ public class SignInComponent {
         wrapper.getChildren().addAll(header, apiUrlField, displayNameField, emailField, passwordField, actionWrapper);
         wrapper.setAlignment(Pos.CENTER);
         wrapper.setPadding(Constants.DEFAULT_INSETS);
-        wrapper.setSpacing(8);
+        wrapper.setSpacing(Constants.DEFAULT_SPACING);
         wrapper.setStyle("-fx-font-family: 'Arial';");
 
         return wrapper;

@@ -48,49 +48,63 @@ import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 import ly.unnecessary.backend.api.UserOuterClass.User;
 
 public class CommunityComponent {
+    // Style constants
+    private static String SIDEBAR_BUTTON_STYLES = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16; -fx-font-weight: bold;";
+    private static String SIDEBAR_BUTTON_INACTIVE_STYLES = "-fx-background-radius: 32; " + SIDEBAR_BUTTON_STYLES;
+    private static String SIDEBAR_BUTTON_ACTIVE_STYLES = "-fx-base: royalblue; -fx-background-radius: 16; "
+            + SIDEBAR_BUTTON_STYLES;
+    private static int TOOLBAR_HEIGHT = 56;
+
+    // Component references
     private TextField newChatField;
     private VBox chatList;
     private VBox channel;
     private ScrollPane chatListWrapper;
     private VBox communities;
-    private Map<Long, Button> communityIdToCommmunityLink = new HashMap<>();
     private HBox communityHeader;
     private HBox channelHeader;
     private ListView<Node> communityChannelsList;
-    private Map<Integer, Channel> indexToChannelMap = new HashMap<>();
     private HBox invitePeopleWrapper;
     private Tooltip invitePeopleTooltip;
     private Button invitePeopleButton;
     private VBox ownerList;
     private VBox memberList;
-    private User currentUser;
     private ScrollPane memberListWrapper;
     private VBox communityDetails;
-    private User owner;
-    private List<User> members;
     private Button addChannelButton;
     private Tooltip addChannelTooltip;
     private HBox addChannelButtonWrapper;
 
+    // State
+    private User currentUser;
+    private User owner;
+    private List<User> members;
+
+    // State to component mappers
+    private Map<Long, Button> communityToLink = new HashMap<>();
+    private Map<Integer, Channel> indexToChannel = new HashMap<>();
+
+    // Event handlers
     private Consumer<String> onCreateChat;
-    private Consumer<Community> onClickCommunityLink;
-    private Consumer<Channel> onChannelClick;
+    private Consumer<Community> onSwitchCommunity;
+    private Consumer<Channel> onSwitchChannel;
     private Function<String, Boolean> onCreateChannel;
     private Function<String, Boolean> onCreateCommunity;
     private Function<String, Boolean> onJoinCommunity;
     private Supplier<String> onRequestInvite;
     private Runnable onSignOut;
 
+    // Event handler settings
     public void setOnCreateChat(Consumer<String> onCreateChat) {
         this.onCreateChat = onCreateChat;
     }
 
-    public void setOnSwitchCommunity(Consumer<Community> onClickCommunityLink) {
-        this.onClickCommunityLink = onClickCommunityLink;
+    public void setOnSwitchCommunity(Consumer<Community> onSwitchCommunity) {
+        this.onSwitchCommunity = onSwitchCommunity;
     }
 
-    public void setOnSwitchChannel(Consumer<Channel> onChannelClick) {
-        this.onChannelClick = onChannelClick;
+    public void setOnSwitchChannel(Consumer<Channel> onSwitchChannel) {
+        this.onSwitchChannel = onSwitchChannel;
     }
 
     public void setOnCreateChannel(Function<String, Boolean> onCreateChannel) {
@@ -113,17 +127,19 @@ public class CommunityComponent {
         this.onSignOut = onSignOut;
     }
 
+    // State and view mutators
     public void addChat(Chat chat) {
         this.chatList.getChildren()
-                .add(this.createChat(channel.widthProperty(), this.getInitialsForUserId(chat.getUserId()),
+                .add(this.createChatComponent(channel.widthProperty(), this.getInitialsForId(chat.getUserId()),
                         chat.getMessage(), chat.getUserId() == this.currentUser.getId()));
     }
 
     public void setChats(List<Chat> chats) {
         this.chatList.getChildren()
                 .setAll(chats.stream()
-                        .map(c -> this.createChat(channel.widthProperty(), this.getInitialsForUserId(c.getUserId()),
-                                c.getMessage(), c.getUserId() == this.currentUser.getId()))
+                        .map(c -> this.createChatComponent(channel.widthProperty(),
+                                this.getInitialsForId(c.getUserId()), c.getMessage(),
+                                c.getUserId() == this.currentUser.getId()))
                         .collect(Collectors.toList()));
     }
 
@@ -140,14 +156,14 @@ public class CommunityComponent {
     }
 
     public void setCommunities(List<Community> communities) {
-        this.communities.getChildren()
-                .setAll(communities.stream().map(c -> this.createCommunityLink(c, false)).collect(Collectors.toList()));
+        this.communities.getChildren().setAll(communities.stream().map(c -> this.createCommunityLinkComponent(c, false))
+                .collect(Collectors.toList()));
     }
 
     public void setSelectedCommunity(Community community) {
-        this.communityIdToCommmunityLink.values().stream().forEach(b -> b.setStyle(SIDEBAR_BUTTON_INACTIVE_STYLES));
+        this.communityToLink.values().stream().forEach(b -> b.setStyle(SIDEBAR_BUTTON_INACTIVE_STYLES));
 
-        var buttonForCommunity = this.communityIdToCommmunityLink.get(community.getId());
+        var buttonForCommunity = this.communityToLink.get(community.getId());
 
         buttonForCommunity.setStyle(SIDEBAR_BUTTON_ACTIVE_STYLES);
 
@@ -173,16 +189,16 @@ public class CommunityComponent {
     }
 
     public void setCommunityTitle(String communityTitle) {
-        this.communityHeader.getChildren().setAll(this.createHeader(communityTitle));
+        this.communityHeader.getChildren().setAll(this.createHeaderComponent(communityTitle));
     }
 
     public void setChannelTitle(String channelTitle) {
-        this.channelHeader.getChildren().setAll(this.createHeader(channelTitle));
+        this.channelHeader.getChildren().setAll(this.createHeaderComponent(channelTitle));
     }
 
     public void setChannels(List<Channel> channels) {
         for (var i = 0; i < channels.size(); i++) {
-            this.indexToChannelMap.put(i, channels.get(i));
+            this.indexToChannel.put(i, channels.get(i));
         }
 
         this.communityChannelsList.getItems()
@@ -190,7 +206,7 @@ public class CommunityComponent {
     }
 
     public void setSelectedChannel(Channel channel) {
-        var indexToSelect = this.indexToChannelMap.entrySet().stream().filter((e) -> e.getValue().equals(channel))
+        var indexToSelect = this.indexToChannel.entrySet().stream().filter((e) -> e.getValue().equals(channel))
                 .map((e) -> e.getKey()).findFirst();
 
         this.communityChannelsList.getSelectionModel().select(indexToSelect.get());
@@ -199,7 +215,7 @@ public class CommunityComponent {
     public void setOwner(User owner) {
         this.owner = owner;
 
-        this.ownerList.getChildren().setAll(this.createHeader("Owner"),
+        this.ownerList.getChildren().setAll(this.createHeaderComponent("Owner"),
                 this.createUserPersona(this.getInitials(owner.getDisplayName()), owner.getDisplayName()));
     }
 
@@ -211,7 +227,7 @@ public class CommunityComponent {
                 .collect(Collectors.toList());
 
         var nodeList = new ArrayList<Node>();
-        nodeList.add(this.createHeader("Members"));
+        nodeList.add(this.createHeaderComponent("Members"));
         nodeList.addAll(memberUserList);
         nodeList.add(this.invitePeopleWrapper);
 
@@ -221,7 +237,7 @@ public class CommunityComponent {
     public void setCurrentUser(User newCurrentUser) {
         this.currentUser = newCurrentUser;
 
-        var newAvatarHeader = this.createUserMenu(this.getInitials(this.currentUser.getDisplayName()),
+        var newAvatarHeader = this.createUserMenuComponent(this.getInitials(this.currentUser.getDisplayName()),
                 this.currentUser.getDisplayName());
         newAvatarHeader.setMaxWidth(Double.MAX_VALUE);
 
@@ -242,6 +258,151 @@ public class CommunityComponent {
         this.communityDetails.getChildren().setAll(this.memberListWrapper, newAvatarHeader);
     }
 
+    // Component factories
+    private Button createCommunityLinkComponent(Community community, boolean active) {
+        var shorthand = this.getInitials(community.getDisplayName());
+
+        var link = new Button(shorthand);
+        var tooltip = new Tooltip(community.getDisplayName());
+        Tooltip.install(link, tooltip);
+
+        if (active) {
+            link.setStyle(SIDEBAR_BUTTON_ACTIVE_STYLES);
+        } else {
+            link.setStyle(SIDEBAR_BUTTON_INACTIVE_STYLES);
+        }
+
+        link.setOnAction((e) -> {
+            this.onSwitchCommunity.accept(community);
+        });
+
+        this.communityToLink.put(community.getId(), link);
+
+        return link;
+    }
+
+    private Button createCommunityActionComponent(Ikon iconName, String action) {
+        var button = new Button();
+        button.setGraphic(new FontIcon(iconName));
+        var tooltip = new Tooltip(action);
+        Tooltip.install(button, tooltip);
+
+        button.setStyle("-fx-background-radius: 32; " + SIDEBAR_BUTTON_STYLES);
+
+        return button;
+    }
+
+    private Button createPrimaryActionComponent(Ikon iconName, String action) {
+        var button = new Button();
+        var innerAvatar = new HBox();
+        var avatar = new FontIcon(iconName);
+        var name = new Label(action);
+        innerAvatar.setSpacing(Constants.DEFAULT_SPACING);
+        innerAvatar.setPadding(new Insets(4));
+        innerAvatar.getChildren().addAll(avatar, name);
+        innerAvatar.setAlignment(Pos.CENTER);
+
+        button.setGraphic(innerAvatar);
+        button.setStyle("-fx-background-radius: 16;");
+
+        return button;
+    }
+
+    private HBox createChatComponent(ReadOnlyDoubleProperty width, String initials, String message, boolean fromSelf) {
+        var chat = new HBox();
+
+        var avatarPlaceholder = this.createProfilePictureComponent(initials);
+
+        var chatContent = new Text(message);
+
+        chatContent.wrappingWidthProperty().bind(width.subtract(64));
+
+        if (fromSelf) {
+            chat.getChildren().addAll(chatContent, avatarPlaceholder);
+            chatContent.setTextAlignment(TextAlignment.RIGHT);
+        } else {
+            chat.getChildren().addAll(avatarPlaceholder, chatContent);
+        }
+
+        chat.setStyle(
+                "-fx-background-color: white; -fx-background-radius: 16; -fx-border-radius: 16; -fx-border-color: lightgrey;");
+        chat.setPadding(Constants.DEFAULT_INSETS);
+        chat.setSpacing(Constants.DEFAULT_SPACING);
+        chat.setAlignment(Pos.CENTER);
+
+        return chat;
+    }
+
+    private Button createUserMenuComponent(String initials, String fullName) {
+        var avatarHeader = new Button();
+        var innerAvatar = this.createUserPersona(initials, fullName);
+
+        avatarHeader.setGraphic(innerAvatar);
+        avatarHeader.setStyle("-fx-background-radius: 16; -fx-min-height: 64; -fx-max-height: 64");
+
+        return avatarHeader;
+    }
+
+    private HBox createUserPersona(String initials, String fullName) {
+        var innerAvatar = new HBox();
+        var avatar = this.createProfilePictureComponent(initials);
+
+        var name = new Label(fullName);
+        innerAvatar.setSpacing(Constants.DEFAULT_SPACING);
+        innerAvatar.setPadding(new Insets(4));
+        innerAvatar.getChildren().addAll(avatar, name);
+        innerAvatar.setAlignment(Pos.CENTER_LEFT);
+
+        return innerAvatar;
+    }
+
+    private Label createProfilePictureComponent(String initials) {
+        var avatar = new Label(initials);
+        avatar.setAlignment(Pos.CENTER);
+        avatar.setShape(new Circle(Constants.DEFAULT_SPACING));
+        avatar.setStyle(
+                "-fx-background-color: black; -fx-text-fill: white; -fx-min-width: 32; -fx-min-height: 32; -fx-max-width: 32; -fx-max-height: 32; -fx-font-size: 10; -fx-font-weight: bold;");
+        avatar.setPadding(Constants.DEFAULT_INSETS);
+
+        return avatar;
+    }
+
+    private Label createHeaderComponent(String title) {
+        var ownerHeader = new Label(title);
+
+        ownerHeader.setStyle("-fx-font-weight: bold;");
+
+        return ownerHeader;
+    }
+
+    // State helpers
+    private String getInitials(String displayName) {
+        var shorthand = displayName.substring(0, 2).toUpperCase();
+        var initials = displayName.toUpperCase().split(" ");
+        if (initials[1] != null)
+            shorthand = initials[0].substring(0, 1) + initials[1].substring(0, 1);
+        return shorthand;
+
+    }
+
+    private String getInitialsForId(long id) {
+        if (this.currentUser.getId() == id) {
+            return this.getInitials(this.currentUser.getDisplayName());
+        }
+
+        if (this.owner.getId() == id) {
+            return this.getInitials(this.owner.getDisplayName());
+        }
+
+        var member = this.members.stream().filter(m -> m.getId() == id).findFirst();
+
+        if (member.isPresent()) {
+            return this.getInitials(member.get().getDisplayName());
+        }
+
+        return "-";
+    }
+
     public Node render() {
         var wrapper = new BorderPane();
 
@@ -251,7 +412,7 @@ public class CommunityComponent {
         var communityList = new ScrollPane();
 
         this.communities = new VBox();
-        communities.setSpacing(8);
+        communities.setSpacing(Constants.DEFAULT_SPACING);
         communities.setPadding(new Insets(8, 0, 8, 8));
 
         communityList.setContent(communities);
@@ -261,7 +422,7 @@ public class CommunityComponent {
 
         VBox.setVgrow(communityList, Priority.ALWAYS);
 
-        var communityAddButton = this.createCommunityAction(FontAwesomeSolid.PLUS, "Create community");
+        var communityAddButton = this.createCommunityActionComponent(FontAwesomeSolid.PLUS, "Create community");
         communityAddButton.setOnAction((e) -> {
             var popoverContent = new VBox();
             popoverContent.setAlignment(Pos.CENTER_RIGHT);
@@ -285,13 +446,13 @@ public class CommunityComponent {
             });
 
             popoverContent.getChildren().setAll(nameField, createButton);
-            popoverContent.setSpacing(8);
+            popoverContent.setSpacing(Constants.DEFAULT_SPACING);
             popoverContent.setPadding(Constants.DEFAULT_INSETS);
 
             popover.show(communityAddButton);
         });
 
-        var communityJoinButton = this.createCommunityAction(FontAwesomeSolid.SIGN_IN_ALT, "Join community");
+        var communityJoinButton = this.createCommunityActionComponent(FontAwesomeSolid.SIGN_IN_ALT, "Join community");
         communityJoinButton.setOnAction((e) -> {
             var invalidJoinDialog = new Alert(AlertType.ERROR);
             invalidJoinDialog.setHeaderText("Invalid or used token");
@@ -323,14 +484,14 @@ public class CommunityComponent {
             });
 
             popoverContent.getChildren().setAll(nameField, createButton);
-            popoverContent.setSpacing(8);
+            popoverContent.setSpacing(Constants.DEFAULT_SPACING);
             popoverContent.setPadding(Constants.DEFAULT_INSETS);
 
             popover.show(communityJoinButton);
         });
 
         var communityMainActions = new VBox(communityAddButton, communityJoinButton);
-        communityMainActions.setSpacing(8);
+        communityMainActions.setSpacing(Constants.DEFAULT_SPACING);
         communityMainActions.setPadding(Constants.DEFAULT_INSETS);
 
         communitySwitcher.getChildren().addAll(communityList, communityMainActions);
@@ -338,7 +499,7 @@ public class CommunityComponent {
         // Community details
         this.communityDetails = new VBox();
 
-        var avatarHeader = this.createUserMenu("", "");
+        var avatarHeader = this.createUserMenuComponent("", "");
         avatarHeader.setMaxWidth(Double.MAX_VALUE);
 
         this.memberListWrapper = new ScrollPane();
@@ -347,15 +508,15 @@ public class CommunityComponent {
 
         this.ownerList = new VBox();
 
-        ownerList.getChildren().addAll(this.createHeader("Owner"));
-        ownerList.setSpacing(8);
+        ownerList.getChildren().addAll(this.createHeaderComponent("Owner"));
+        ownerList.setSpacing(Constants.DEFAULT_SPACING);
         ownerList.setPadding(new Insets(0, 0, 8, 0));
 
         this.memberList = new VBox();
 
         this.invitePeopleWrapper = new HBox();
 
-        this.invitePeopleButton = this.createPrimaryAction(FontAwesomeSolid.USER_PLUS, "Invite people");
+        this.invitePeopleButton = this.createPrimaryActionComponent(FontAwesomeSolid.USER_PLUS, "Invite people");
         this.invitePeopleButton.setOnAction((e) -> {
             var popoverContent = new VBox();
             popoverContent.setAlignment(Pos.CENTER);
@@ -379,7 +540,7 @@ public class CommunityComponent {
             });
 
             popoverContent.getChildren().setAll(descriptionLabel, tokenLabel, copyToClipboardButton);
-            popoverContent.setSpacing(8);
+            popoverContent.setSpacing(Constants.DEFAULT_SPACING);
             popoverContent.setPadding(Constants.DEFAULT_INSETS);
 
             popover.show(this.invitePeopleButton);
@@ -388,8 +549,8 @@ public class CommunityComponent {
         this.invitePeopleWrapper.getChildren().add(this.invitePeopleButton);
         this.invitePeopleWrapper.setMaxWidth(Double.MAX_VALUE);
 
-        memberList.getChildren().addAll(this.createHeader("Members"), this.invitePeopleWrapper);
-        memberList.setSpacing(8);
+        memberList.getChildren().addAll(this.createHeaderComponent("Members"), this.invitePeopleWrapper);
+        memberList.setSpacing(Constants.DEFAULT_SPACING);
         memberList.setPadding(new Insets(0, 0, 8, 0));
         memberList.setMaxWidth(Double.MAX_VALUE);
 
@@ -403,14 +564,14 @@ public class CommunityComponent {
         VBox.setVgrow(memberListWrapper, Priority.ALWAYS);
 
         communityDetails.getChildren().addAll(memberListWrapper, avatarHeader);
-        communityDetails.setSpacing(8);
+        communityDetails.setSpacing(Constants.DEFAULT_SPACING);
         communityDetails.setPadding(Constants.DEFAULT_INSETS);
 
         // Community content
         var communityContent = new HBox();
 
         this.communityHeader = new HBox();
-        communityHeader.getChildren().add(this.createHeader(""));
+        communityHeader.getChildren().add(this.createHeaderComponent(""));
 
         var communityChannels = new VBox();
 
@@ -420,12 +581,12 @@ public class CommunityComponent {
             var index = communityChannelsList.getSelectionModel().getSelectedIndex();
 
             if (index != -1) {
-                this.onChannelClick.accept(this.indexToChannelMap.get(index));
+                this.onSwitchChannel.accept(this.indexToChannel.get(index));
             }
         });
 
         this.addChannelButtonWrapper = new HBox();
-        this.addChannelButton = createPrimaryAction(FontAwesomeSolid.PLUS_SQUARE, "Create channel");
+        this.addChannelButton = createPrimaryActionComponent(FontAwesomeSolid.PLUS_SQUARE, "Create channel");
         addChannelButton.setOnAction((e) -> {
             var popoverContent = new VBox();
             popoverContent.setAlignment(Pos.CENTER_RIGHT);
@@ -449,7 +610,7 @@ public class CommunityComponent {
             });
 
             popoverContent.getChildren().setAll(nameField, createButton);
-            popoverContent.setSpacing(8);
+            popoverContent.setSpacing(Constants.DEFAULT_SPACING);
             popoverContent.setPadding(Constants.DEFAULT_INSETS);
 
             popover.show(addChannelButton);
@@ -458,17 +619,17 @@ public class CommunityComponent {
         HBox.setHgrow(addChannelButton, Priority.ALWAYS);
         addChannelButtonWrapper.getChildren().add(addChannelButton);
         addChannelButtonWrapper.setAlignment(Pos.CENTER);
-        addChannelButtonWrapper.setMinHeight(56);
+        addChannelButtonWrapper.setMinHeight(TOOLBAR_HEIGHT);
 
         VBox.setVgrow(communityChannelsList, Priority.ALWAYS);
 
         communityChannels.getChildren().addAll(communityHeader, communityChannelsList, addChannelButtonWrapper);
-        communityChannels.setSpacing(8);
+        communityChannels.setSpacing(Constants.DEFAULT_SPACING);
 
         this.channel = new VBox();
 
         this.channelHeader = new HBox();
-        channelHeader.getChildren().add(this.createHeader(""));
+        channelHeader.getChildren().add(this.createHeaderComponent(""));
 
         this.chatListWrapper = new ScrollPane();
 
@@ -477,7 +638,7 @@ public class CommunityComponent {
         chatListWrapper.setFitToWidth(true);
 
         this.chatList = new VBox();
-        chatList.setSpacing(8);
+        chatList.setSpacing(Constants.DEFAULT_SPACING);
         chatListWrapper.setContent(chatList);
         chatListWrapper.setHbarPolicy(ScrollBarPolicy.NEVER);
         chatListWrapper.setStyle("-fx-background-color: transparent");
@@ -498,17 +659,17 @@ public class CommunityComponent {
         HBox.setHgrow(newChatField, Priority.ALWAYS);
         newChatWrapper.getChildren().addAll(newChatField, sendChatButton);
         newChatWrapper.setAlignment(Pos.CENTER);
-        newChatWrapper.setMinHeight(56);
+        newChatWrapper.setMinHeight(TOOLBAR_HEIGHT);
 
         VBox.setVgrow(chatListWrapper, Priority.ALWAYS);
 
         channel.getChildren().addAll(channelHeader, chatListWrapper, newChatWrapper);
-        channel.setSpacing(8);
+        channel.setSpacing(Constants.DEFAULT_SPACING);
 
         HBox.setHgrow(channel, Priority.ALWAYS);
 
         communityContent.getChildren().addAll(communityChannels, channel);
-        communityContent.setSpacing(8);
+        communityContent.setSpacing(Constants.DEFAULT_SPACING);
         communityContent.setPadding(Constants.DEFAULT_INSETS);
 
         wrapper.setLeft(communitySwitcher);
@@ -520,152 +681,4 @@ public class CommunityComponent {
 
         return wrapper;
     }
-
-    private Button createCommunityLink(Community community, boolean active) {
-        var shorthand = this.getInitials(community.getDisplayName());
-
-        var link = new Button(shorthand);
-        var tooltip = new Tooltip(community.getDisplayName());
-        Tooltip.install(link, tooltip);
-
-        if (active) {
-            link.setStyle(SIDEBAR_BUTTON_ACTIVE_STYLES);
-        } else {
-            link.setStyle(SIDEBAR_BUTTON_INACTIVE_STYLES);
-        }
-
-        link.setOnAction((e) -> {
-            this.onClickCommunityLink.accept(community);
-        });
-
-        this.communityIdToCommmunityLink.put(community.getId(), link);
-
-        return link;
-    }
-
-    private Button createCommunityAction(Ikon iconName, String action) {
-        var button = new Button();
-        button.setGraphic(new FontIcon(iconName));
-        var tooltip = new Tooltip(action);
-        Tooltip.install(button, tooltip);
-
-        button.setStyle("-fx-background-radius: 32; " + SIDEBAR_BUTTON_STYLES);
-
-        return button;
-    }
-
-    private Button createPrimaryAction(Ikon iconName, String action) {
-        var button = new Button();
-        var innerAvatar = new HBox();
-        var avatar = new FontIcon(iconName);
-        var name = new Label(action);
-        innerAvatar.setSpacing(8);
-        innerAvatar.setPadding(new Insets(4));
-        innerAvatar.getChildren().addAll(avatar, name);
-        innerAvatar.setAlignment(Pos.CENTER);
-
-        button.setGraphic(innerAvatar);
-        button.setStyle("-fx-background-radius: 16;");
-
-        return button;
-    }
-
-    private HBox createChat(ReadOnlyDoubleProperty width, String initials, String message, boolean fromSelf) {
-        var chat = new HBox();
-
-        var avatarPlaceholder = this.createProfilePicture(initials);
-
-        var chatContent = new Text(message);
-
-        chatContent.wrappingWidthProperty().bind(width.subtract(64));
-
-        if (fromSelf) {
-            chat.getChildren().addAll(chatContent, avatarPlaceholder);
-            chatContent.setTextAlignment(TextAlignment.RIGHT);
-        } else {
-            chat.getChildren().addAll(avatarPlaceholder, chatContent);
-        }
-
-        chat.setStyle(
-                "-fx-background-color: white; -fx-background-radius: 16; -fx-border-radius: 16; -fx-border-color: lightgrey;");
-        chat.setPadding(Constants.DEFAULT_INSETS);
-        chat.setSpacing(8);
-        chat.setAlignment(Pos.CENTER);
-
-        return chat;
-    }
-
-    private Button createUserMenu(String initials, String fullName) {
-        var avatarHeader = new Button();
-        var innerAvatar = this.createUserPersona(initials, fullName);
-
-        avatarHeader.setGraphic(innerAvatar);
-        avatarHeader.setStyle("-fx-background-radius: 16; -fx-min-height: 64; -fx-max-height: 64");
-
-        return avatarHeader;
-    }
-
-    private HBox createUserPersona(String initials, String fullName) {
-        var innerAvatar = new HBox();
-        var avatar = this.createProfilePicture(initials);
-
-        var name = new Label(fullName);
-        innerAvatar.setSpacing(8);
-        innerAvatar.setPadding(new Insets(4));
-        innerAvatar.getChildren().addAll(avatar, name);
-        innerAvatar.setAlignment(Pos.CENTER_LEFT);
-
-        return innerAvatar;
-    }
-
-    private Label createProfilePicture(String initials) {
-        var avatar = new Label(initials);
-        avatar.setAlignment(Pos.CENTER);
-        avatar.setShape(new Circle(8));
-        avatar.setStyle(
-                "-fx-background-color: black; -fx-text-fill: white; -fx-min-width: 32; -fx-min-height: 32; -fx-max-width: 32; -fx-max-height: 32; -fx-font-size: 10; -fx-font-weight: bold;");
-        avatar.setPadding(Constants.DEFAULT_INSETS);
-
-        return avatar;
-    }
-
-    private Label createHeader(String title) {
-        var ownerHeader = new Label(title);
-
-        ownerHeader.setStyle("-fx-font-weight: bold;");
-
-        return ownerHeader;
-    }
-
-    private String getInitials(String displayName) {
-        var shorthand = displayName.substring(0, 2).toUpperCase();
-        var initials = displayName.toUpperCase().split(" ");
-        if (initials[1] != null)
-            shorthand = initials[0].substring(0, 1) + initials[1].substring(0, 1);
-        return shorthand;
-
-    }
-
-    private String getInitialsForUserId(long id) {
-        if (this.currentUser.getId() == id) {
-            return this.getInitials(this.currentUser.getDisplayName());
-        }
-
-        if (this.owner.getId() == id) {
-            return this.getInitials(this.owner.getDisplayName());
-        }
-
-        var member = this.members.stream().filter(m -> m.getId() == id).findFirst();
-
-        if (member.isPresent()) {
-            return this.getInitials(member.get().getDisplayName());
-        }
-
-        return "-";
-    }
-
-    private static String SIDEBAR_BUTTON_STYLES = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16; -fx-font-weight: bold;";
-    private static String SIDEBAR_BUTTON_INACTIVE_STYLES = "-fx-background-radius: 32; " + SIDEBAR_BUTTON_STYLES;
-    private static String SIDEBAR_BUTTON_ACTIVE_STYLES = "-fx-base: royalblue; -fx-background-radius: 16; "
-            + SIDEBAR_BUTTON_STYLES;
 }
