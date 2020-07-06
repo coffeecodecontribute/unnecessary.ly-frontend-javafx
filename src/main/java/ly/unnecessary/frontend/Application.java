@@ -40,7 +40,6 @@ import ly.unnecessary.backend.api.UserOuterClass.UserSignInRequest;
 import ly.unnecessary.backend.api.UserOuterClass.UserSignUpConfirmation;
 import ly.unnecessary.backend.api.UserOuterClass.UserSignUpRequest;
 import ly.unnecessary.backend.api.UserServiceGrpc;
-import ly.unnecessary.backend.api.UserServiceGrpc.UserServiceBlockingStub;
 import ly.unnecessary.frontend.SignInComponent.SignInInfo;
 
 public class Application extends javafx.application.Application {
@@ -50,7 +49,6 @@ public class Application extends javafx.application.Application {
     private long currentChannelId = -1;
     private long currentCommunityId = -1;
     private Map<Long, Boolean> chatListeners = new ConcurrentHashMap<>();
-    private UserServiceBlockingStub userClient;
     private CommunityServiceBlockingStub communityClient;
 
     @Override
@@ -253,11 +251,13 @@ public class Application extends javafx.application.Application {
         };
 
         // Connect handlers
-        communityComponent.setOnSwitchCommunity(handleCommunitySwitch);
+        // We start in seperate threads and return to the JavaFX thread with
+        // Platform#runLater so that we don't block the UI
+        communityComponent.setOnSwitchCommunity((t) -> new Thread(() -> handleCommunitySwitch.accept(t)).start());
 
-        communityComponent.setOnSwitchChannel(handleChannelSwitch);
+        communityComponent.setOnSwitchChannel((t) -> new Thread(() -> handleChannelSwitch.accept(t)).start());
 
-        communityComponent.setOnCreateChat(handleCreateChat);
+        communityComponent.setOnCreateChat((t) -> new Thread(() -> handleCreateChat.accept(t)).start());
 
         communityComponent.setOnCreateChannel(handleCreateChannel);
 
@@ -304,7 +304,6 @@ public class Application extends javafx.application.Application {
             metadata.put(USER_PASSWORD_KEY, signInInfo.getPassword());
 
             // Create clients
-            this.userClient = MetadataUtils.attachHeaders(UserServiceGrpc.newBlockingStub(ch), metadata);
             this.communityClient = MetadataUtils.attachHeaders(CommunityServiceGrpc.newBlockingStub(ch), metadata);
 
             // Fetch owned communities
