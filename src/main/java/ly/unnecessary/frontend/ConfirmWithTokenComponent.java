@@ -36,7 +36,7 @@ public class ConfirmWithTokenComponent {
 
         var tokenField = this.isPassword ? new PasswordField() : new TextField();
         tokenField.setPromptText(this.tokenFieldDescription);
-        tokenField.setStyle("-fx-background-radius: 16");
+        tokenField.setStyle(Constants.DEFAULT_BACKGROUND_RADIUS);
         tokenField.setMaxWidth(300);
 
         var tokenSubmitWrapper = new HBox();
@@ -72,7 +72,7 @@ public class ConfirmWithTokenComponent {
 
         wrapper.getChildren().addAll(tokenDescription, tokenField, tokenSubmitWrapper);
         wrapper.setAlignment(Pos.CENTER);
-        wrapper.setPadding(new Insets(8));
+        wrapper.setPadding(Constants.DEFAULT_INSETS);
         wrapper.setSpacing(8);
         wrapper.setStyle("-fx-font-family: 'Arial';");
 

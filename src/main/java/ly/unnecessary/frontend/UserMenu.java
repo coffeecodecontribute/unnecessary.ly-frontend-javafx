@@ -1,6 +1,5 @@
 package ly.unnecessary.frontend;
 
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -17,11 +16,11 @@ public class UserMenu {
         var wrapper = new VBox();
 
         var signOutButton = new Button("Sign out");
-        signOutButton.setStyle("-fx-background-radius: 16");
+        signOutButton.setStyle(Constants.DEFAULT_BACKGROUND_RADIUS);
         signOutButton.setOnAction((e) -> onSignOut.run());
 
         wrapper.getChildren().addAll(signOutButton);
-        wrapper.setPadding(new Insets(8));
+        wrapper.setPadding(Constants.DEFAULT_INSETS);
         wrapper.setAlignment(Pos.CENTER);
 
         return wrapper;

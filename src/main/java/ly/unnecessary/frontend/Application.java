@@ -315,7 +315,7 @@ public class Application extends javafx.application.Application {
             var scene = new Scene((Parent) communityComponent.render(), 1080, 720);
 
             primaryStage.setScene(scene);
-            primaryStage.setTitle("unnecessary.ly");
+            primaryStage.setTitle(Constants.APP_NAME);
 
             return 0;
         };

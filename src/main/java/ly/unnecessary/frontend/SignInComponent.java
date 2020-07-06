@@ -18,9 +18,12 @@ public class SignInComponent {
     private Function<SignInInfo, Integer> onSignIn;
     private Function<SignInInfo, Integer> onSignUp;
     private Function<SignInInfo, Integer> onPasswordReset;
+
     private Runnable handleSignInActivate;
     private Runnable handleSignUpActivate;
     private Runnable handlePasswordResetActivate;
+
+    private static int FORM_WIDTH = 300;
 
     public void setOnSignIn(Function<SignInInfo, Integer> onSignIn) {
         this.onSignIn = onSignIn;
@@ -99,32 +102,32 @@ public class SignInComponent {
     public Node render() {
         var wrapper = new VBox();
 
-        var header = new Label("unnecessary.ly");
+        var header = new Label(Constants.APP_NAME);
         header.setStyle("-fx-font-size: 42; -fx-font-weight: bold");
         header.setPadding(new Insets(0, 0, 24, 0));
 
         var apiUrlField = new TextField("localhost:1999");
         apiUrlField.setPromptText("API URL");
-        apiUrlField.setMaxWidth(300);
-        apiUrlField.setStyle("-fx-background-radius: 16");
+        apiUrlField.setMaxWidth(FORM_WIDTH);
+        apiUrlField.setStyle(Constants.DEFAULT_BACKGROUND_RADIUS);
 
         var displayNameField = new TextField();
         displayNameField.setPromptText("Display name");
-        displayNameField.setMaxWidth(300);
-        displayNameField.setStyle("-fx-background-radius: 16");
+        displayNameField.setMaxWidth(FORM_WIDTH);
+        displayNameField.setStyle(Constants.DEFAULT_BACKGROUND_RADIUS);
         displayNameField.setVisible(false);
         displayNameField.setManaged(false);
 
         var emailField = new TextField("felix@pojtinger.com");
         emailField.setPromptText("Email");
-        emailField.setMaxWidth(300);
-        emailField.setStyle("-fx-background-radius: 16");
+        emailField.setMaxWidth(FORM_WIDTH);
+        emailField.setStyle(Constants.DEFAULT_BACKGROUND_RADIUS);
 
         var passwordField = new PasswordField();
         passwordField.setText("pass1234");
         passwordField.setPromptText("Password");
-        passwordField.setMaxWidth(300);
-        passwordField.setStyle("-fx-background-radius: 16");
+        passwordField.setMaxWidth(FORM_WIDTH);
+        passwordField.setStyle(Constants.DEFAULT_BACKGROUND_RADIUS);
 
         var actionWrapper = new HBox();
 
@@ -132,14 +135,14 @@ public class SignInComponent {
         signInButton.setStyle("-fx-base: royalblue; -fx-background-radius: 16");
 
         var signUpButton = new Button("Sign up");
-        signUpButton.setStyle("-fx-background-radius: 16");
+        signUpButton.setStyle(Constants.DEFAULT_BACKGROUND_RADIUS);
 
         var passwordResetButton = new Button("Reset password");
-        passwordResetButton.setStyle("-fx-background-radius: 16");
+        passwordResetButton.setStyle(Constants.DEFAULT_BACKGROUND_RADIUS);
 
         actionWrapper.getChildren().addAll(passwordResetButton, signUpButton, signInButton);
         actionWrapper.setAlignment(Pos.CENTER_RIGHT);
-        actionWrapper.setMaxWidth(300);
+        actionWrapper.setMaxWidth(FORM_WIDTH);
         actionWrapper.setSpacing(8);
         actionWrapper.setPadding(new Insets(16, 0, 0, 0));
 
@@ -236,7 +239,7 @@ public class SignInComponent {
 
         wrapper.getChildren().addAll(header, apiUrlField, displayNameField, emailField, passwordField, actionWrapper);
         wrapper.setAlignment(Pos.CENTER);
-        wrapper.setPadding(new Insets(8));
+        wrapper.setPadding(Constants.DEFAULT_INSETS);
         wrapper.setSpacing(8);
         wrapper.setStyle("-fx-font-family: 'Arial';");
 

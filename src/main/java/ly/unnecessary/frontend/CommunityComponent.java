@@ -286,7 +286,7 @@ public class CommunityComponent {
 
             popoverContent.getChildren().setAll(nameField, createButton);
             popoverContent.setSpacing(8);
-            popoverContent.setPadding(new Insets(8));
+            popoverContent.setPadding(Constants.DEFAULT_INSETS);
 
             popover.show(communityAddButton);
         });
@@ -324,14 +324,14 @@ public class CommunityComponent {
 
             popoverContent.getChildren().setAll(nameField, createButton);
             popoverContent.setSpacing(8);
-            popoverContent.setPadding(new Insets(8));
+            popoverContent.setPadding(Constants.DEFAULT_INSETS);
 
             popover.show(communityJoinButton);
         });
 
         var communityMainActions = new VBox(communityAddButton, communityJoinButton);
         communityMainActions.setSpacing(8);
-        communityMainActions.setPadding(new Insets(8));
+        communityMainActions.setPadding(Constants.DEFAULT_INSETS);
 
         communitySwitcher.getChildren().addAll(communityList, communityMainActions);
 
@@ -380,7 +380,7 @@ public class CommunityComponent {
 
             popoverContent.getChildren().setAll(descriptionLabel, tokenLabel, copyToClipboardButton);
             popoverContent.setSpacing(8);
-            popoverContent.setPadding(new Insets(8));
+            popoverContent.setPadding(Constants.DEFAULT_INSETS);
 
             popover.show(this.invitePeopleButton);
         });
@@ -404,7 +404,7 @@ public class CommunityComponent {
 
         communityDetails.getChildren().addAll(memberListWrapper, avatarHeader);
         communityDetails.setSpacing(8);
-        communityDetails.setPadding(new Insets(8));
+        communityDetails.setPadding(Constants.DEFAULT_INSETS);
 
         // Community content
         var communityContent = new HBox();
@@ -450,7 +450,7 @@ public class CommunityComponent {
 
             popoverContent.getChildren().setAll(nameField, createButton);
             popoverContent.setSpacing(8);
-            popoverContent.setPadding(new Insets(8));
+            popoverContent.setPadding(Constants.DEFAULT_INSETS);
 
             popover.show(addChannelButton);
         });
@@ -509,7 +509,7 @@ public class CommunityComponent {
 
         communityContent.getChildren().addAll(communityChannels, channel);
         communityContent.setSpacing(8);
-        communityContent.setPadding(new Insets(8));
+        communityContent.setPadding(Constants.DEFAULT_INSETS);
 
         wrapper.setLeft(communitySwitcher);
         wrapper.setCenter(communityContent);
@@ -588,7 +588,7 @@ public class CommunityComponent {
 
         chat.setStyle(
                 "-fx-background-color: white; -fx-background-radius: 16; -fx-border-radius: 16; -fx-border-color: lightgrey;");
-        chat.setPadding(new Insets(8));
+        chat.setPadding(Constants.DEFAULT_INSETS);
         chat.setSpacing(8);
         chat.setAlignment(Pos.CENTER);
 
@@ -624,7 +624,7 @@ public class CommunityComponent {
         avatar.setShape(new Circle(8));
         avatar.setStyle(
                 "-fx-background-color: black; -fx-text-fill: white; -fx-min-width: 32; -fx-min-height: 32; -fx-max-width: 32; -fx-max-height: 32; -fx-font-size: 10; -fx-font-weight: bold;");
-        avatar.setPadding(new Insets(8));
+        avatar.setPadding(Constants.DEFAULT_INSETS);
 
         return avatar;
     }
