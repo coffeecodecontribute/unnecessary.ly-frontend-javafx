@@ -42,6 +42,9 @@ import ly.unnecessary.backend.api.UserOuterClass.UserSignUpRequest;
 import ly.unnecessary.backend.api.UserServiceGrpc;
 import ly.unnecessary.frontend.SignInComponent.SignInInfo;
 
+/**
+ * Main app
+ */
 public class Application extends javafx.application.Application {
     public static Metadata.Key<String> USER_EMAIL_KEY = Metadata.Key.of("x-uly-email", ASCII_STRING_MARSHALLER);
     public static Metadata.Key<String> USER_PASSWORD_KEY = Metadata.Key.of("x-uly-password", ASCII_STRING_MARSHALLER);
@@ -51,6 +54,12 @@ public class Application extends javafx.application.Application {
     private Map<Long, Boolean> chatListeners = new ConcurrentHashMap<>();
     private CommunityServiceBlockingStub communityClient;
 
+    /**
+     * Show main app
+     * 
+     * @param primaryStage
+     * @throws Exception
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         // Create components
@@ -491,22 +500,47 @@ public class Application extends javafx.application.Application {
         primaryStage.show();
     }
 
+    /**
+     * Run main app
+     * 
+     * @param args
+     */
     public static void main(String[] args) {
         launch(args);
     }
 
+    /**
+     * Get the current channel's id
+     * 
+     * @return long
+     */
     public long getCurrentChannelId() {
         return currentChannelId;
     }
 
+    /**
+     * Set the current channel's id
+     * 
+     * @param currentChannelId
+     */
     public void setCurrentChannelId(long currentChannelId) {
         this.currentChannelId = currentChannelId;
     }
 
+    /**
+     * Get the current community's id
+     * 
+     * @return long
+     */
     public long getCurrentCommunityId() {
         return currentCommunityId;
     }
 
+    /**
+     * Set the current communitiy's id
+     * 
+     * @param currentCommunityId
+     */
     public void setCurrentCommunityId(long currentCommunityId) {
         this.currentCommunityId = currentCommunityId;
     }

@@ -14,6 +14,9 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+/**
+ * Confirmation component
+ */
 public class ConfirmWithTokenComponent {
     private Function<String, Integer> onSubmit;
     private String invalidHeader;
@@ -23,34 +26,74 @@ public class ConfirmWithTokenComponent {
     private String tokenSubmitDescription;
     private Boolean isPassword = false;
 
+    /**
+     * Set submit handler
+     * 
+     * @param onSubmit
+     */
     public void setOnSubmit(Function<String, Integer> onSubmit) {
         this.onSubmit = onSubmit;
     }
 
+    /**
+     * Set header for invalid state
+     * 
+     * @param invalidHeader
+     */
     public void setInvalidHeader(String invalidHeader) {
         this.invalidHeader = invalidHeader;
     }
 
+    /**
+     * Set description for invalid state
+     * 
+     * @param invalidDescription
+     */
     public void setInvalidDescription(String invalidDescription) {
         this.invalidDescription = invalidDescription;
     }
 
+    /**
+     * Set token description
+     * 
+     * @param tokenDescription
+     */
     public void setTokenDescription(String tokenDescription) {
         this.tokenDescription = tokenDescription;
     }
 
+    /**
+     * Set token prompt text description
+     * 
+     * @param tokenFieldDescription
+     */
     public void setTokenFieldDescription(String tokenFieldDescription) {
         this.tokenFieldDescription = tokenFieldDescription;
     }
 
+    /**
+     * Set token submit description
+     * 
+     * @param tokenSubmitDescription
+     */
     public void setTokenSubmitDescription(String tokenSubmitDescription) {
         this.tokenSubmitDescription = tokenSubmitDescription;
     }
 
+    /**
+     * Enable/disable password field
+     * 
+     * @param isPassword
+     */
     public void setIsPassword(Boolean isPassword) {
         this.isPassword = isPassword;
     }
 
+    /**
+     * Render component
+     * 
+     * @return Node
+     */
     public Node render() {
         var wrapper = new VBox();
 

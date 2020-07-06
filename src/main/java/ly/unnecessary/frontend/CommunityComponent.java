@@ -47,6 +47,9 @@ import ly.unnecessary.backend.api.CommunityOuterClass.Chat;
 import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 import ly.unnecessary.backend.api.UserOuterClass.User;
 
+/**
+ * Community component (main multi-tenancy view)
+ */
 public class CommunityComponent {
     // Style constants
     private static String SIDEBAR_BUTTON_STYLES = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16; -fx-font-weight: bold;";
@@ -95,45 +98,95 @@ public class CommunityComponent {
     private Runnable onSignOut;
 
     // Event handler settings
+    /**
+     * Set create chat handler
+     * 
+     * @param onCreateChat
+     */
     public void setOnCreateChat(Consumer<String> onCreateChat) {
         this.onCreateChat = onCreateChat;
     }
 
+    /**
+     * Set community switch handler
+     * 
+     * @param onSwitchCommunity
+     */
     public void setOnSwitchCommunity(Consumer<Community> onSwitchCommunity) {
         this.onSwitchCommunity = onSwitchCommunity;
     }
 
+    /**
+     * Set channel switch handler
+     * 
+     * @param onSwitchChannel
+     */
     public void setOnSwitchChannel(Consumer<Channel> onSwitchChannel) {
         this.onSwitchChannel = onSwitchChannel;
     }
 
+    /**
+     * Set create channel handler
+     * 
+     * @param onCreateChannel
+     */
     public void setOnCreateChannel(Function<String, Boolean> onCreateChannel) {
         this.onCreateChannel = onCreateChannel;
     }
 
+    /**
+     * Set create community handler
+     * 
+     * @param onCreateCommunity
+     */
     public void setOnCreateCommunity(Function<String, Boolean> onCreateCommunity) {
         this.onCreateCommunity = onCreateCommunity;
     }
 
+    /**
+     * Set invite request handler
+     * 
+     * @param onRequestInvite
+     */
     public void setOnRequestInvite(Supplier<String> onRequestInvite) {
         this.onRequestInvite = onRequestInvite;
     }
 
+    /**
+     * Set community join handler
+     * 
+     * @param onJoinCommunity
+     */
     public void setOnJoinCommunity(Function<String, Boolean> onJoinCommunity) {
         this.onJoinCommunity = onJoinCommunity;
     }
 
+    /**
+     * Set sign out handler
+     * 
+     * @param onSignOut
+     */
     public void setOnSignOut(Runnable onSignOut) {
         this.onSignOut = onSignOut;
     }
 
     // State and view mutators
+    /**
+     * Add a chat
+     * 
+     * @param chat
+     */
     public void addChat(Chat chat) {
         this.chatList.getChildren()
                 .add(this.createChatComponent(channel.widthProperty(), this.getInitialsForId(chat.getUserId()),
                         chat.getMessage(), chat.getUserId() == this.currentUser.getId()));
     }
 
+    /**
+     * Replace chats
+     * 
+     * @param chats
+     */
     public void setChats(List<Chat> chats) {
         this.chatList.getChildren()
                 .setAll(chats.stream()
@@ -155,11 +208,21 @@ public class CommunityComponent {
         animation.play();
     }
 
+    /**
+     * Replace communities
+     * 
+     * @param communities
+     */
     public void setCommunities(List<Community> communities) {
         this.communities.getChildren().setAll(communities.stream().map(c -> this.createCommunityLinkComponent(c, false))
                 .collect(Collectors.toList()));
     }
 
+    /**
+     * Set the currently selected community
+     * 
+     * @param community
+     */
     public void setSelectedCommunity(Community community) {
         this.communityToLink.values().stream().forEach(b -> b.setStyle(SIDEBAR_BUTTON_INACTIVE_STYLES));
 
@@ -188,14 +251,29 @@ public class CommunityComponent {
         }
     }
 
+    /**
+     * Set community title
+     * 
+     * @param communityTitle
+     */
     public void setCommunityTitle(String communityTitle) {
         this.communityHeader.getChildren().setAll(this.createHeaderComponent(communityTitle));
     }
 
+    /**
+     * Set channel title
+     * 
+     * @param channelTitle
+     */
     public void setChannelTitle(String channelTitle) {
         this.channelHeader.getChildren().setAll(this.createHeaderComponent(channelTitle));
     }
 
+    /**
+     * Replace channels
+     * 
+     * @param channels
+     */
     public void setChannels(List<Channel> channels) {
         for (var i = 0; i < channels.size(); i++) {
             this.indexToChannel.put(i, channels.get(i));
@@ -205,6 +283,11 @@ public class CommunityComponent {
                 .setAll(channels.stream().map(c -> new Label(c.getDisplayName())).collect(Collectors.toList()));
     }
 
+    /**
+     * Set currently selected channel
+     * 
+     * @param channel
+     */
     public void setSelectedChannel(Channel channel) {
         var indexToSelect = this.indexToChannel.entrySet().stream().filter((e) -> e.getValue().equals(channel))
                 .map((e) -> e.getKey()).findFirst();
@@ -212,6 +295,11 @@ public class CommunityComponent {
         this.communityChannelsList.getSelectionModel().select(indexToSelect.get());
     }
 
+    /**
+     * Set owner
+     * 
+     * @param owner
+     */
     public void setOwner(User owner) {
         this.owner = owner;
 
@@ -219,6 +307,11 @@ public class CommunityComponent {
                 this.createUserPersona(this.getInitials(owner.getDisplayName()), owner.getDisplayName()));
     }
 
+    /**
+     * Replace members
+     * 
+     * @param members
+     */
     public void setMembers(List<User> members) {
         this.members = members;
 
@@ -234,6 +327,11 @@ public class CommunityComponent {
         this.memberList.getChildren().setAll(nodeList);
     }
 
+    /**
+     * Set current user
+     * 
+     * @param newCurrentUser
+     */
     public void setCurrentUser(User newCurrentUser) {
         this.currentUser = newCurrentUser;
 
@@ -259,6 +357,13 @@ public class CommunityComponent {
     }
 
     // Component factories
+    /**
+     * Create community link component
+     * 
+     * @param community
+     * @param active
+     * @return Button
+     */
     private Button createCommunityLinkComponent(Community community, boolean active) {
         var shorthand = this.getInitials(community.getDisplayName());
 
@@ -281,6 +386,13 @@ public class CommunityComponent {
         return link;
     }
 
+    /**
+     * Create community action component
+     * 
+     * @param iconName
+     * @param action
+     * @return Button
+     */
     private Button createCommunityActionComponent(Ikon iconName, String action) {
         var button = new Button();
         button.setGraphic(new FontIcon(iconName));
@@ -292,6 +404,13 @@ public class CommunityComponent {
         return button;
     }
 
+    /**
+     * Create primary action component
+     * 
+     * @param iconName
+     * @param action
+     * @return Button
+     */
     private Button createPrimaryActionComponent(Ikon iconName, String action) {
         var button = new Button();
         var innerAvatar = new HBox();
@@ -308,6 +427,15 @@ public class CommunityComponent {
         return button;
     }
 
+    /**
+     * Create chat component
+     * 
+     * @param width
+     * @param initials
+     * @param message
+     * @param fromSelf
+     * @return HBox
+     */
     private HBox createChatComponent(ReadOnlyDoubleProperty width, String initials, String message, boolean fromSelf) {
         var chat = new HBox();
 
@@ -333,6 +461,13 @@ public class CommunityComponent {
         return chat;
     }
 
+    /**
+     * Create user menu component
+     * 
+     * @param initials
+     * @param fullName
+     * @return Button
+     */
     private Button createUserMenuComponent(String initials, String fullName) {
         var avatarHeader = new Button();
         var innerAvatar = this.createUserPersona(initials, fullName);
@@ -343,6 +478,13 @@ public class CommunityComponent {
         return avatarHeader;
     }
 
+    /**
+     * Create user persona component
+     * 
+     * @param initials
+     * @param fullName
+     * @return HBox
+     */
     private HBox createUserPersona(String initials, String fullName) {
         var innerAvatar = new HBox();
         var avatar = this.createProfilePictureComponent(initials);
@@ -356,6 +498,12 @@ public class CommunityComponent {
         return innerAvatar;
     }
 
+    /**
+     * Create profile picture component
+     * 
+     * @param initials
+     * @return Label
+     */
     private Label createProfilePictureComponent(String initials) {
         var avatar = new Label(initials);
         avatar.setAlignment(Pos.CENTER);
@@ -367,6 +515,12 @@ public class CommunityComponent {
         return avatar;
     }
 
+    /**
+     * Create header component
+     * 
+     * @param title
+     * @return Label
+     */
     private Label createHeaderComponent(String title) {
         var ownerHeader = new Label(title);
 
@@ -376,6 +530,12 @@ public class CommunityComponent {
     }
 
     // State helpers
+    /**
+     * Get initials of display name
+     * 
+     * @param displayName
+     * @return String
+     */
     private String getInitials(String displayName) {
         var shorthand = displayName.substring(0, 2).toUpperCase();
         var initials = displayName.toUpperCase().split(" ");
@@ -385,6 +545,12 @@ public class CommunityComponent {
 
     }
 
+    /**
+     * Get initials for user by their id
+     * 
+     * @param id
+     * @return String
+     */
     private String getInitialsForId(long id) {
         if (this.currentUser.getId() == id) {
             return this.getInitials(this.currentUser.getDisplayName());
@@ -403,6 +569,11 @@ public class CommunityComponent {
         return "-";
     }
 
+    /**
+     * Render component
+     * 
+     * @return Node
+     */
     public Node render() {
         var wrapper = new BorderPane();
 

@@ -14,6 +14,9 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 
+/**
+ * Sign in/up/password reset component
+ */
 public class SignInComponent {
     private Function<SignInInfo, Integer> onSignIn;
     private Function<SignInInfo, Integer> onSignUp;
@@ -25,18 +28,36 @@ public class SignInComponent {
 
     private static int FORM_WIDTH = 300;
 
+    /**
+     * Set sign in handler
+     * 
+     * @param onSignIn
+     */
     public void setOnSignIn(Function<SignInInfo, Integer> onSignIn) {
         this.onSignIn = onSignIn;
     }
 
+    /**
+     * Set sign up handler
+     * 
+     * @param onSignUp
+     */
     public void setOnSignUp(Function<SignInInfo, Integer> onSignUp) {
         this.onSignUp = onSignUp;
     }
 
+    /**
+     * Set password reset handler
+     * 
+     * @param onPasswordReset
+     */
     public void setOnPasswordReset(Function<SignInInfo, Integer> onPasswordReset) {
         this.onPasswordReset = onPasswordReset;
     }
 
+    /**
+     * Utility class with sign in/up/password reset info
+     */
     public class SignInInfo {
         private String apiUrl;
 
@@ -99,6 +120,11 @@ public class SignInComponent {
         }
     }
 
+    /**
+     * Render component
+     * 
+     * @return Node
+     */
     public Node render() {
         var wrapper = new VBox();
 
