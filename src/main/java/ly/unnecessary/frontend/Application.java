@@ -35,6 +35,8 @@ import ly.unnecessary.backend.api.CommunityServiceGrpc;
 import ly.unnecessary.backend.api.CommunityServiceGrpc.CommunityServiceBlockingStub;
 import ly.unnecessary.backend.api.UserOuterClass.User;
 import ly.unnecessary.backend.api.UserOuterClass.UserSignInRequest;
+import ly.unnecessary.backend.api.UserOuterClass.UserSignUpConfirmation;
+import ly.unnecessary.backend.api.UserOuterClass.UserSignUpRequest;
 import ly.unnecessary.backend.api.UserServiceGrpc;
 import ly.unnecessary.backend.api.UserServiceGrpc.UserServiceBlockingStub;
 import ly.unnecessary.frontend.SignInComponent.SignInInfo;
@@ -287,6 +289,8 @@ public class Application extends javafx.application.Application {
                 user = signInClient.signIn(UserSignInRequest.newBuilder().setEmail(signInInfo.getEmail())
                         .setPassword(signInInfo.getPassword()).build());
             } catch (Exception e) {
+                e.printStackTrace();
+
                 return 2;
             }
 
@@ -315,12 +319,73 @@ public class Application extends javafx.application.Application {
             return 0;
         };
 
+        Function<SignInInfo, Integer> handleSignUp = (signInInfo) -> {
+            // Validate connection details
+            if (signInInfo.getApiUrl().isEmpty() || signInInfo.getDisplayName().isEmpty()
+                    || signInInfo.getEmail().isEmpty() || signInInfo.getPassword().isEmpty()) {
+                return 1;
+            }
+
+            // Setup connection
+            var ch = ManagedChannelBuilder.forTarget(signInInfo.getApiUrl()).usePlaintext().build();
+
+            // Sign in
+            try {
+                var signUpClient = UserServiceGrpc.newBlockingStub(ch);
+
+                var signUpRequest = UserSignUpRequest.newBuilder().setDisplayName(signInInfo.getDisplayName())
+                        .setEmail(signInInfo.getEmail()).setPassword(signInInfo.getPassword()).build();
+
+                signUpClient.requestSignUp(signUpRequest);
+
+                var confirmWithToken = new ConfirmWithTokenComponent();
+
+                confirmWithToken.setInvalidHeader("Invalid confirmation token");
+                confirmWithToken
+                        .setInvalidDescription("The provided confirmation token can't be used to confirm the sign up.");
+                confirmWithToken
+                        .setTokenDescription(String.format("We've send a token to %s.", signUpRequest.getEmail()));
+                confirmWithToken.setTokenFieldDescription("Confirmation token");
+                confirmWithToken.setTokenSubmitDescription("Confirm token");
+                confirmWithToken.setOnSubmit((newToken) -> {
+                    if (newToken.isEmpty()) {
+                        return 1;
+                    }
+
+                    var signUpConfirmation = UserSignUpConfirmation.newBuilder().setEmail(signInInfo.getEmail())
+                            .setToken(newToken).build();
+                    try {
+                        signUpClient.confirmSignUp(signUpConfirmation);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                        return 2;
+                    }
+
+                    return handleSignIn.apply(signInInfo);
+                });
+
+                // Render confirmation component
+                var scene = new Scene((Parent) confirmWithToken.render(), 480, 320);
+
+                primaryStage.setScene(scene);
+                primaryStage.setTitle("Confirm sign up to unnecessary.ly");
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                return 2;
+            }
+
+            return 0;
+        };
+
         Runnable handleStart = () -> {
             // Sign in
             var signInComponent = new SignInComponent();
             signInComponent.setOnSignIn(handleSignIn);
+            signInComponent.setOnSignUp(handleSignUp);
 
-            // Render initial state
+            // Render sign up/in component
             var scene = new Scene((Parent) signInComponent.render(), 480, 320);
 
             primaryStage.setScene(scene);

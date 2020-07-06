@@ -16,17 +16,28 @@ import javafx.scene.layout.HBox;
 
 public class SignInComponent {
     private Function<SignInInfo, Integer> onSignIn;
+    private Function<SignInInfo, Integer> onSignUp;
+    private Runnable handleSignInActivate;
+    private Runnable handleSignUpActivate;
 
     public void setOnSignIn(Function<SignInInfo, Integer> onSignIn) {
         this.onSignIn = onSignIn;
     }
 
+    public void setOnSignUp(Function<SignInInfo, Integer> onSignUp) {
+        this.onSignUp = onSignUp;
+    }
+
     public class SignInInfo {
         private String apiUrl;
+
+        private String displayName;
 
         private String email;
 
         private String password;
+
+        private Boolean isSignUp = false;
 
         public String getApiUrl() {
             return apiUrl;
@@ -44,12 +55,28 @@ public class SignInComponent {
             this.email = email;
         }
 
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
+
         public String getPassword() {
             return password;
         }
 
         public void setPassword(String password) {
             this.password = password;
+        }
+
+        public Boolean getIsSignUp() {
+            return isSignUp;
+        }
+
+        public void setIsSignUp(Boolean isSignUp) {
+            this.isSignUp = isSignUp;
         }
     }
 
@@ -65,6 +92,13 @@ public class SignInComponent {
         apiUrlField.setMaxWidth(300);
         apiUrlField.setStyle("-fx-background-radius: 16");
 
+        var displayNameField = new TextField();
+        displayNameField.setPromptText("Display name");
+        displayNameField.setMaxWidth(300);
+        displayNameField.setStyle("-fx-background-radius: 16");
+        displayNameField.setVisible(false);
+        displayNameField.setManaged(false);
+
         var emailField = new TextField("felix@pojtinger.com");
         emailField.setPromptText("Email");
         emailField.setMaxWidth(300);
@@ -76,31 +110,43 @@ public class SignInComponent {
         passwordField.setMaxWidth(300);
         passwordField.setStyle("-fx-background-radius: 16");
 
-        var signInButtonWrapper = new HBox();
+        var actionWrapper = new HBox();
 
         var signInButton = new Button("Sign in");
         signInButton.setStyle("-fx-base: royalblue; -fx-background-radius: 16");
 
-        signInButtonWrapper.getChildren().add(signInButton);
-        signInButtonWrapper.setAlignment(Pos.CENTER_RIGHT);
-        signInButtonWrapper.setMaxWidth(300);
+        var signUpButton = new Button("Sign up");
+        signUpButton.setStyle("-fx-background-radius: 16");
+
+        actionWrapper.getChildren().addAll(signUpButton, signInButton);
+        actionWrapper.setAlignment(Pos.CENTER_RIGHT);
+        actionWrapper.setMaxWidth(300);
+        actionWrapper.setSpacing(8);
+        actionWrapper.setPadding(new Insets(16, 0, 0, 0));
+
+        var signInInfo = new SignInInfo();
 
         Runnable submitHandler = () -> {
             var invalidSignInInfoAlert = new Alert(AlertType.ERROR);
-            invalidSignInInfoAlert.setHeaderText("Invalid sign in info");
+            invalidSignInInfoAlert.setHeaderText("Invalid credentials");
             invalidSignInInfoAlert.setContentText("Invalid API URL, email or password.");
 
-            var signInInfo = new SignInInfo();
-
             signInInfo.setApiUrl(apiUrlField.getText());
+            signInInfo.setDisplayName(displayNameField.getText());
             signInInfo.setEmail(emailField.getText());
             signInInfo.setPassword(passwordField.getText());
 
-            var rv = this.onSignIn.apply(signInInfo);
+            final int rv;
+            if (!signInInfo.getIsSignUp()) {
+                rv = this.onSignIn.apply(signInInfo);
+            } else {
+                rv = this.onSignUp.apply(signInInfo);
+            }
 
             switch (rv) {
                 case 0:
                     apiUrlField.clear();
+                    displayNameField.clear();
                     emailField.clear();
                     passwordField.clear();
 
@@ -114,12 +160,35 @@ public class SignInComponent {
             }
         };
 
+        this.handleSignInActivate = () -> {
+            signInInfo.setIsSignUp(false);
+
+            displayNameField.setVisible(false);
+            displayNameField.setManaged(false);
+
+            signInButton.setOnAction((e) -> submitHandler.run());
+
+            signUpButton.setOnAction((e) -> this.handleSignUpActivate.run());
+        };
+
+        this.handleSignUpActivate = () -> {
+            signInInfo.setIsSignUp(true);
+
+            displayNameField.setVisible(true);
+            displayNameField.setManaged(true);
+
+            signInButton.setOnAction((e) -> this.handleSignInActivate.run());
+
+            signUpButton.setOnAction((e) -> submitHandler.run());
+        };
+
         apiUrlField.setOnAction((e) -> submitHandler.run());
         emailField.setOnAction((e) -> submitHandler.run());
         passwordField.setOnAction((e) -> submitHandler.run());
+        signUpButton.setOnAction((e) -> this.handleSignUpActivate.run());
         signInButton.setOnAction((e) -> submitHandler.run());
 
-        wrapper.getChildren().addAll(header, apiUrlField, emailField, passwordField, signInButtonWrapper);
+        wrapper.getChildren().addAll(header, apiUrlField, displayNameField, emailField, passwordField, actionWrapper);
         wrapper.setAlignment(Pos.CENTER);
         wrapper.setPadding(new Insets(8));
         wrapper.setSpacing(8);
