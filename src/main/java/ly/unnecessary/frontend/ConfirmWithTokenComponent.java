@@ -8,6 +8,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
@@ -20,6 +21,7 @@ public class ConfirmWithTokenComponent {
     private String tokenDescription;
     private String tokenFieldDescription;
     private String tokenSubmitDescription;
+    private Boolean isPassword = false;
 
     public Node render() {
         var wrapper = new VBox();
@@ -32,7 +34,7 @@ public class ConfirmWithTokenComponent {
         tokenDescription.setMaxWidth(300);
         tokenDescription.setPadding(new Insets(0, 0, 16, 0));
 
-        var tokenField = new TextField();
+        var tokenField = this.isPassword ? new PasswordField() : new TextField();
         tokenField.setPromptText(this.tokenFieldDescription);
         tokenField.setStyle("-fx-background-radius: 16");
         tokenField.setMaxWidth(300);
@@ -99,5 +101,9 @@ public class ConfirmWithTokenComponent {
 
     public void setTokenSubmitDescription(String tokenSubmitDescription) {
         this.tokenSubmitDescription = tokenSubmitDescription;
+    }
+
+    public void setIsPassword(Boolean isPassword) {
+        this.isPassword = isPassword;
     }
 }

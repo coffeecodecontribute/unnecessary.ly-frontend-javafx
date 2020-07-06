@@ -34,6 +34,8 @@ import ly.unnecessary.backend.api.CommunityOuterClass.NewCommunity;
 import ly.unnecessary.backend.api.CommunityServiceGrpc;
 import ly.unnecessary.backend.api.CommunityServiceGrpc.CommunityServiceBlockingStub;
 import ly.unnecessary.backend.api.UserOuterClass.User;
+import ly.unnecessary.backend.api.UserOuterClass.UserPasswordResetConfirmation;
+import ly.unnecessary.backend.api.UserOuterClass.UserPasswordResetRequest;
 import ly.unnecessary.backend.api.UserOuterClass.UserSignInRequest;
 import ly.unnecessary.backend.api.UserOuterClass.UserSignUpConfirmation;
 import ly.unnecessary.backend.api.UserOuterClass.UserSignUpRequest;
@@ -379,11 +381,102 @@ public class Application extends javafx.application.Application {
             return 0;
         };
 
+        Function<SignInInfo, Integer> handlePasswordReset = (signInInfo) -> {
+            // Validate connection details
+            if (signInInfo.getApiUrl().isEmpty() || signInInfo.getEmail().isEmpty()) {
+                return 1;
+            }
+
+            // Setup connection
+            var ch = ManagedChannelBuilder.forTarget(signInInfo.getApiUrl()).usePlaintext().build();
+
+            // Sign in
+            try {
+                var passwordResetClient = UserServiceGrpc.newBlockingStub(ch);
+
+                var passwordResetRequest = UserPasswordResetRequest.newBuilder().setEmail(signInInfo.getEmail())
+                        .build();
+
+                passwordResetClient.requestPasswordReset(passwordResetRequest);
+
+                var confirmWithToken = new ConfirmWithTokenComponent();
+
+                confirmWithToken.setInvalidHeader("Invalid confirmation token");
+                confirmWithToken
+                        .setInvalidDescription("The provided confirmation token can't be used to confirm the sign up.");
+                confirmWithToken.setTokenDescription(String.format("We've send a token to %s.", signInInfo.getEmail()));
+                confirmWithToken.setTokenFieldDescription("Confirmation token");
+                confirmWithToken.setTokenSubmitDescription("Confirm token");
+                confirmWithToken.setOnSubmit((newToken) -> {
+                    if (newToken.isEmpty()) {
+                        return 1;
+                    }
+
+                    try {
+                        var confirmWithNewPassword = new ConfirmWithTokenComponent();
+
+                        confirmWithNewPassword.setIsPassword(true);
+                        confirmWithNewPassword.setInvalidHeader("Invalid password");
+                        confirmWithNewPassword.setInvalidDescription(
+                                "The provided password can't be used to confirm the password reset.");
+                        confirmWithNewPassword.setTokenDescription("All set! Now, please enter your new password.");
+                        confirmWithNewPassword.setTokenFieldDescription("New password");
+                        confirmWithNewPassword.setTokenSubmitDescription("Reset password");
+                        confirmWithNewPassword.setOnSubmit((newPassword) -> {
+                            if (newPassword.isEmpty()) {
+                                return 1;
+                            }
+
+                            var passwordResetConfirmation = UserPasswordResetConfirmation.newBuilder()
+                                    .setEmail(signInInfo.getEmail()).setNewPassword(newPassword).setToken(newToken)
+                                    .build();
+                            try {
+                                passwordResetClient.confirmPasswordReset(passwordResetConfirmation);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
+                                return 2;
+                            }
+
+                            signInInfo.setPassword(newPassword);
+
+                            return handleSignIn.apply(signInInfo);
+                        });
+
+                        // Render confirmation component
+                        var scene = new Scene((Parent) confirmWithNewPassword.render(), 480, 320);
+
+                        primaryStage.setScene(scene);
+                        primaryStage.setTitle("Set new password on unnecessary.ly");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                        return 2;
+                    }
+
+                    return 0;
+                });
+
+                // Render confirmation component
+                var scene = new Scene((Parent) confirmWithToken.render(), 480, 320);
+
+                primaryStage.setScene(scene);
+                primaryStage.setTitle("Confirm password reset on unnecessary.ly");
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                return 2;
+            }
+
+            return 0;
+        };
+
         Runnable handleStart = () -> {
             // Sign in
             var signInComponent = new SignInComponent();
             signInComponent.setOnSignIn(handleSignIn);
             signInComponent.setOnSignUp(handleSignUp);
+            signInComponent.setOnPasswordReset(handlePasswordReset);
 
             // Render sign up/in component
             var scene = new Scene((Parent) signInComponent.render(), 480, 320);

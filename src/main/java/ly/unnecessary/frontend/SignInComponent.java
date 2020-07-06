@@ -17,8 +17,10 @@ import javafx.scene.layout.HBox;
 public class SignInComponent {
     private Function<SignInInfo, Integer> onSignIn;
     private Function<SignInInfo, Integer> onSignUp;
+    private Function<SignInInfo, Integer> onPasswordReset;
     private Runnable handleSignInActivate;
     private Runnable handleSignUpActivate;
+    private Runnable handlePasswordResetActivate;
 
     public void setOnSignIn(Function<SignInInfo, Integer> onSignIn) {
         this.onSignIn = onSignIn;
@@ -26,6 +28,10 @@ public class SignInComponent {
 
     public void setOnSignUp(Function<SignInInfo, Integer> onSignUp) {
         this.onSignUp = onSignUp;
+    }
+
+    public void setOnPasswordReset(Function<SignInInfo, Integer> onPasswordReset) {
+        this.onPasswordReset = onPasswordReset;
     }
 
     public class SignInInfo {
@@ -38,6 +44,8 @@ public class SignInComponent {
         private String password;
 
         private Boolean isSignUp = false;
+
+        private Boolean isPasswordReset = false;
 
         public String getApiUrl() {
             return apiUrl;
@@ -77,6 +85,14 @@ public class SignInComponent {
 
         public void setIsSignUp(Boolean isSignUp) {
             this.isSignUp = isSignUp;
+        }
+
+        public Boolean getIsPasswordReset() {
+            return isPasswordReset;
+        }
+
+        public void setIsPasswordReset(Boolean isPasswordReset) {
+            this.isPasswordReset = isPasswordReset;
         }
     }
 
@@ -118,7 +134,10 @@ public class SignInComponent {
         var signUpButton = new Button("Sign up");
         signUpButton.setStyle("-fx-background-radius: 16");
 
-        actionWrapper.getChildren().addAll(signUpButton, signInButton);
+        var passwordResetButton = new Button("Reset password");
+        passwordResetButton.setStyle("-fx-background-radius: 16");
+
+        actionWrapper.getChildren().addAll(passwordResetButton, signUpButton, signInButton);
         actionWrapper.setAlignment(Pos.CENTER_RIGHT);
         actionWrapper.setMaxWidth(300);
         actionWrapper.setSpacing(8);
@@ -137,10 +156,12 @@ public class SignInComponent {
             signInInfo.setPassword(passwordField.getText());
 
             final int rv;
-            if (!signInInfo.getIsSignUp()) {
+            if (signInInfo.getIsSignUp()) {
+                rv = this.onSignUp.apply(signInInfo);
+            } else if (!signInInfo.getIsPasswordReset()) {
                 rv = this.onSignIn.apply(signInInfo);
             } else {
-                rv = this.onSignUp.apply(signInInfo);
+                rv = this.onPasswordReset.apply(signInInfo);
             }
 
             switch (rv) {
@@ -162,31 +183,56 @@ public class SignInComponent {
 
         this.handleSignInActivate = () -> {
             signInInfo.setIsSignUp(false);
+            signInInfo.setIsPasswordReset(false);
 
             displayNameField.setVisible(false);
             displayNameField.setManaged(false);
 
-            signInButton.setOnAction((e) -> submitHandler.run());
+            passwordField.setVisible(true);
+            passwordField.setManaged(true);
 
+            signInButton.setOnAction((e) -> submitHandler.run());
             signUpButton.setOnAction((e) -> this.handleSignUpActivate.run());
+            passwordResetButton.setOnAction((e) -> this.handlePasswordResetActivate.run());
         };
 
         this.handleSignUpActivate = () -> {
             signInInfo.setIsSignUp(true);
+            signInInfo.setIsPasswordReset(false);
 
             displayNameField.setVisible(true);
             displayNameField.setManaged(true);
 
-            signInButton.setOnAction((e) -> this.handleSignInActivate.run());
+            passwordField.setVisible(true);
+            passwordField.setManaged(true);
 
+            signInButton.setOnAction((e) -> this.handleSignInActivate.run());
             signUpButton.setOnAction((e) -> submitHandler.run());
+            passwordResetButton.setOnAction((e) -> this.handlePasswordResetActivate.run());
+        };
+
+        this.handlePasswordResetActivate = () -> {
+            signInInfo.setIsSignUp(false);
+            signInInfo.setIsPasswordReset(true);
+
+            displayNameField.setVisible(false);
+            displayNameField.setManaged(false);
+
+            passwordField.setVisible(false);
+            passwordField.setManaged(false);
+
+            signInButton.setOnAction((e) -> this.handleSignInActivate.run());
+            signUpButton.setOnAction((e) -> this.handleSignUpActivate.run());
+            passwordResetButton.setOnAction((e) -> submitHandler.run());
         };
 
         apiUrlField.setOnAction((e) -> submitHandler.run());
         emailField.setOnAction((e) -> submitHandler.run());
+        displayNameField.setOnAction((e) -> submitHandler.run());
         passwordField.setOnAction((e) -> submitHandler.run());
         signUpButton.setOnAction((e) -> this.handleSignUpActivate.run());
         signInButton.setOnAction((e) -> submitHandler.run());
+        passwordResetButton.setOnAction((e) -> this.handlePasswordResetActivate.run());
 
         wrapper.getChildren().addAll(header, apiUrlField, displayNameField, emailField, passwordField, actionWrapper);
         wrapper.setAlignment(Pos.CENTER);
