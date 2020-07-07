@@ -37,7 +37,7 @@ public class PowerupComponent extends Component {
 
     @Override
     public void onAdded() {
-        entity.getTransformComponent().setAnchoredPosition(entity.getCenter());
+        //entity.getTransformComponent().setAnchoredPosition(entity.getCenter());
     }
 
     @Override

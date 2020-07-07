@@ -113,7 +113,7 @@ public class GameEntityFactory implements EntityFactory {
 
         String type = "";
         Color c = Color.DARKGRAY;
-        if(FXGLMath.randomBoolean()) {
+        if(true) {
             type = "MULTIBALL";
             c = Color.RED;
         } else {
@@ -133,6 +133,7 @@ public class GameEntityFactory implements EntityFactory {
                 .build();
     }
 
+    /*
     @Spawns("powerup")
     public Entity newPowerup(SpawnData data) {
 
@@ -142,7 +143,7 @@ public class GameEntityFactory implements EntityFactory {
                 //.with(new PowerupComponent())
                 .build();
     }
-
+    */
     @Spawns("powerupSpawnPlayerGun")
     public Entity newPowerupSpawnPlayerGun(SpawnData data) {
         var e = new Rectangle(0,0,100,100);
