@@ -5,6 +5,10 @@ import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.app.scene.FXGLMenu;
 import com.almasb.fxgl.app.scene.SceneFactory;
+import com.almasb.fxgl.app.services.AssetLoaderService;
+import com.almasb.fxgl.audio.Music;
+import com.almasb.fxgl.audio.Sound;
+import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.components.IrremovableComponent;
@@ -99,12 +103,20 @@ public class Application extends GameApplication {
             }
         });
         gameSettings.setFullScreenAllowed(true);
-        gameSettings.setFullScreenFromStart(true);
+        gameSettings.setFullScreenFromStart(false);
     }
 
     @Override
     protected void onPreInit() {
         getAssetLoader().loadSound("asset.wav");
+        Sound loop_1 = getAssetLoader().loadSound("alpha/loop_1_arp.wav");
+        Sound loop_2 = getAssetLoader().loadSound("alpha/loop_1_plomg.wav");
+        getAssetLoader().loadSound("alpha/ball_collide_brick.wav");
+        getAssetLoader().loadSound("alpha/ball_collide_player_1.wav");
+        getAssetLoader().loadSound("alpha/ball_collide_wall_1_arp.wav");
+        getAssetLoader().loadSound("alpha/power_up.wav");
+        getAssetLoader().loadSound("alpha/ball_collide_player_hard.wav");
+        getAssetLoader().loadSound("alpha/ball_collide_wall_2_arp.wav");
     }
 
     @Override
@@ -116,10 +128,10 @@ public class Application extends GameApplication {
         vars.put("freeze", false);
         vars.put("level", 0);
         /*
-        -1 : lost
-        0 : pregame
-        1 : ingame
-        2 : game win
+            -1 : lost
+            0 : pregame
+            1 : ingame
+            2 : game win
          */
     }
 
@@ -143,6 +155,8 @@ public class Application extends GameApplication {
 
 
         setLevel(0);
+        //play("alpha/loop_1_arp.wav");
+        loopBGM("music.mp3");
 
         entityBuilder()
                 .type(EntityType.WALL)
@@ -301,6 +315,7 @@ public class Application extends GameApplication {
 
             //play("asset.wav");
 
+            play("alpha/ball_collide_brick.wav");
             brick.getComponent(BrickComponent.class).hitByBall();
 
             //ball.getComponent(BallComponent.class).collideBlock();
@@ -316,7 +331,39 @@ public class Application extends GameApplication {
                 System.out.println("RIGHT");
             }
 
+            if (FXGLMath.randomBoolean(0.5f)) {
+                spawn("powerupdrop", brick.getPosition());
+            }
+
             //System.out.println("Brick X: " + brick.getX() + " | Brick Y: " + brick.getY());
+        });
+
+        onCollisionCollectible(EntityType.PLAYER, EntityType.POWERUPDROP, powerupdrop -> {
+            String powerUpType = powerupdrop.getString("type");
+            PowerupType type;
+
+            if (powerUpType == "MULTIBALL") {
+                type = PowerupType.SPAWNMULTIBALL;
+                if (byType(type).isEmpty()) {
+                    System.out.println("MULTIBALL");
+                    spawn("powerupSpawnMultiBall", 100, 0);
+                }
+            }
+            else if (powerUpType == "PLAYERGUN") {
+                type = PowerupType.SPAWNPLAYERGUN;
+                if (byType(type).isEmpty()) {
+                    System.out.println("PLAYERGUN");
+                    spawn("powerupSpawnPlayerGun", 0, 0);
+                }
+            }
+            /*
+             * else if (randomNuber == 1) { type = PowerupType.SCOREBOMB; }
+             */
+        });
+
+        onCollisionBegin(EntityType.BRICK, PowerupType.PLAYERGUN, (brick, bullet) -> {
+            brick.removeFromWorld();
+            bullet.removeFromWorld();
         });
 
         onCollisionBegin(EntityType.BALL, EntityType.PLAYER, (ball, player) -> {
@@ -329,7 +376,7 @@ public class Application extends GameApplication {
 
             System.out.println("lengthOfPaddleCollision: " + lengthOfPaddleCollision + " | collidePoint: " +  collidePoint + " | angle: " + angle);
             */
-
+            play("alpha/ball_collide_wall_2_arp.wav");
             double collidePoint = ball.getX() - (player.getX() + player.getWidth() / 2);
 
             collidePoint = collidePoint / (player.getWidth() / 2);

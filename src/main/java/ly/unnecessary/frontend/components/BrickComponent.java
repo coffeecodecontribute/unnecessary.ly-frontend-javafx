@@ -12,8 +12,10 @@ public class BrickComponent extends Component {
         lives--;
 
         if(lives == 0) {
-            if(FXGLMath.randomBoolean(0.3f))
+            if(FXGLMath.randomBoolean(0.3f)) {
+                play("alpha/power_up.wav");
                 spawn("actionBrick", entity.getPosition());
+            }
             entity.removeFromWorld();
         } else
             System.out.println("Lives: " + lives);

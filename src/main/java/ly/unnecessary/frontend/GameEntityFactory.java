@@ -1,5 +1,6 @@
 package ly.unnecessary.frontend;
 
+import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.core.math.Vec2;
 import com.almasb.fxgl.dsl.components.ExpireCleanComponent;
 import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
@@ -15,6 +16,8 @@ import javafx.util.Duration;
 import ly.unnecessary.frontend.components.BallComponent;
 import ly.unnecessary.frontend.components.BrickComponent;
 import ly.unnecessary.frontend.components.PlayerComponent;
+import ly.unnecessary.frontend.components.powerups.MultiBallComponent;
+import ly.unnecessary.frontend.components.powerups.PlayerGunComponent;
 import org.w3c.dom.css.Rect;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
@@ -67,7 +70,6 @@ public class GameEntityFactory implements EntityFactory {
                 .build();
     }
 
-
     @Spawns("player")
     public Entity newPlayer(SpawnData data) {
         var e = new Rectangle(0,0, 300,30);
@@ -101,4 +103,89 @@ public class GameEntityFactory implements EntityFactory {
                 .with(new ExpireCleanComponent(Duration.seconds(0.5)))
                 .build();
     }
+
+    @Spawns("powerupdrop")
+    public Entity newPowerupdrop(SpawnData data) {
+        Rectangle rectangle = new Rectangle(0, 0, 10, 10);
+
+
+        Vec2 dir = Vec2.fromAngle(90);
+
+        String type = "";
+        Color c = Color.DARKGRAY;
+        if(FXGLMath.randomBoolean()) {
+            type = "MULTIBALL";
+            c = Color.RED;
+        } else {
+            type = "PLAYERGUN";
+            c = Color.YELLOW;
+        }
+
+        rectangle.setFill(c);
+        return entityBuilder()
+                .type(EntityType.POWERUPDROP)
+                .from(data)
+                .viewWithBBox(rectangle)
+                .with(new ProjectileComponent(dir.toPoint2D(), 500))
+                .with(new OffscreenCleanComponent())
+                .collidable()
+                .with("type", type)
+                .build();
+    }
+
+    @Spawns("powerup")
+    public Entity newPowerup(SpawnData data) {
+
+        return entityBuilder()
+                .from(data)
+                .type(PowerupType.PLAYERGUN)
+                //.with(new PowerupComponent())
+                .build();
+    }
+
+    @Spawns("powerupSpawnPlayerGun")
+    public Entity newPowerupSpawnPlayerGun(SpawnData data) {
+        var e = new Rectangle(0,0,100,100);
+        e.setFill(Color.DARKBLUE);
+
+        return entityBuilder()
+                .from(data)
+                .type(PowerupType.SPAWNPLAYERGUN)
+                .with(new ExpireCleanComponent(Duration.seconds(10)))
+                .with(new PlayerGunComponent())
+                .viewWithBBox(e)
+                .build();
+    }
+
+    @Spawns("playergun")
+    public Entity newPlayergun(SpawnData data) {
+        Vec2 dir = Vec2.fromAngle(-90);
+        Rectangle rectangle = new Rectangle(0, 0, 20, 20);
+        rectangle.setFill(Color.YELLOW);
+
+        return entityBuilder()
+                .from(data)
+                .type(PowerupType.PLAYERGUN)
+                .viewWithBBox(rectangle)
+                .with(new ProjectileComponent(dir.toPoint2D(), 500))
+                .with(new OffscreenCleanComponent())
+                .collidable()
+                .build();
+    }
+
+
+    @Spawns("powerupSpawnMultiBall")
+    public Entity newPowerupSpawnMutliBall(SpawnData data) {
+        var e = new Rectangle(0,0,100,100);
+        e.setFill(Color.DARKGREEN);
+        return entityBuilder()
+                .from(data)
+                .type(PowerupType.MULTIBALL)
+                .view(e)
+                .with(new ExpireCleanComponent(Duration.seconds(3)))
+                .with(new MultiBallComponent())
+                .build();
+    }
+
+
 }

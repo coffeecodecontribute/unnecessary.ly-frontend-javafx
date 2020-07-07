@@ -27,12 +27,16 @@ public class BallComponent extends Component {
 
         if (entity.getY() < 0) {
             entity.getComponent(BallComponent.class).collide(new Point2D(velocity.getX(), -velocity.getY())); //TOP
+            play("alpha/ball_collide_wall_1_arp.wav");
         } else if (entity.getY() + entity.getWidth() > getAppHeight()) {
             entity.getComponent(BallComponent.class).collide(new Point2D(velocity.getX(), -velocity.getY())); //BOTTOM
+            play("alpha/ball_collide_wall_1_arp.wav");
         } else if (entity.getX() < 0) {
             entity.getComponent(BallComponent.class).collide(new Point2D(-velocity.getX(), velocity.getY())); //LEFT
+            play("alpha/ball_collide_wall_1_arp.wav");
         } else if(entity.getX() + entity.getHeight() > getAppWidth()) {
             entity.getComponent(BallComponent.class).collide(new Point2D(-velocity.getX(), velocity.getY())); //RIGHT
+            play("alpha/ball_collide_wall_1_arp.wav");
         }
     }
 
