@@ -5,8 +5,6 @@ import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.app.scene.FXGLMenu;
 import com.almasb.fxgl.app.scene.SceneFactory;
-import com.almasb.fxgl.app.services.AssetLoaderService;
-import com.almasb.fxgl.audio.Music;
 import com.almasb.fxgl.audio.Sound;
 import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.entity.Entity;
@@ -21,6 +19,7 @@ import ly.unnecessary.frontend.components.BallComponent;
 import ly.unnecessary.frontend.components.BrickComponent;
 import ly.unnecessary.frontend.menu.MainMenu;
 
+import java.util.List;
 import java.util.Map;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
@@ -30,13 +29,16 @@ public class Application extends GameApplication {
 
     //brick
     static final int collisionLogicSecurityPadding = 10;
+
     //app
     static int appWidth = 1920;
     static int appHeight = 1080;
+
     //ball
     static int ballSpeed = 8;
     static int ballRadius = 24;
     static Point2D ballSpawnPoint = new Point2D(appWidth / 2d - ballRadius / 2d, appHeight - 150);
+
     //player
     static int playerWidth = 300;
     static int playerHeight = 30;
@@ -47,34 +49,17 @@ public class Application extends GameApplication {
     static int brickHeight = 36;
 
     //level
-
     static int levelMargin = 36;
     static int levelRows = 19;
+    List level; //List with level data
 
-    /*
-    static String level =
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000" +
-                    "000000000000";
-     */
+
+    //powerups
+    static double chanceForDrop = 0.5f;
+
 
     Entity ball, player;
+    Sound loop_2;
 
     public static void main(String[] args) {
         launch(args);
@@ -93,7 +78,7 @@ public class Application extends GameApplication {
         gameSettings.setWidth(appWidth);
         gameSettings.setHeight(appHeight);
         gameSettings.setTitle("Brick Breaker");
-        gameSettings.setVersion("0.2");
+        gameSettings.setVersion("0.3");
         gameSettings.setApplicationMode(ApplicationMode.DEVELOPER);
         gameSettings.setMainMenuEnabled(true);
         gameSettings.setSceneFactory(new SceneFactory() {
@@ -108,15 +93,32 @@ public class Application extends GameApplication {
 
     @Override
     protected void onPreInit() {
+        getSettings().setGlobalMusicVolume(0);
+        getSettings().setGlobalSoundVolume(0);
+
+        //Loading Levels
+        level = getAssetLoader().loadText("level.txt");
+        L("onPreInit: Level Data loaded!");
+
+        //Loading Audio
         getAssetLoader().loadSound("asset.wav");
         Sound loop_1 = getAssetLoader().loadSound("alpha/loop_1_arp.wav");
-        Sound loop_2 = getAssetLoader().loadSound("alpha/loop_1_plomg.wav");
+        loop_2 = getAssetLoader().loadSound("alpha/loop_1_plomg.wav");
+
         getAssetLoader().loadSound("alpha/ball_collide_brick.wav");
         getAssetLoader().loadSound("alpha/ball_collide_player_1.wav");
         getAssetLoader().loadSound("alpha/ball_collide_wall_1_arp.wav");
         getAssetLoader().loadSound("alpha/power_up.wav");
         getAssetLoader().loadSound("alpha/ball_collide_player_hard.wav");
         getAssetLoader().loadSound("alpha/ball_collide_wall_2_arp.wav");
+        L("onPreInit: Audio Files loaded!");
+
+        //Loading Graphics
+        L("onPreInit: Graphic Assets loaded!");
+
+
+
+        L("onPreInit: Done! Enjoy and have fun!");
     }
 
     @Override
@@ -124,30 +126,21 @@ public class Application extends GameApplication {
         vars.put("ballSpeed", ballSpeed);
         vars.put("playerSpeed", playerSpeed);
         vars.put("ballRadius", ballRadius);
-        vars.put("gameStatus", 0);
-        vars.put("freeze", false);
         vars.put("level", 0);
+
         /*
             -1 : lost
             0 : pregame
             1 : ingame
             2 : game win
          */
+        //level vars
+        vars.put("gameStatus", 0);
+        vars.put("freeze", false);
+        vars.put("playerLives", 3);
+        vars.put("playerStars", 0);
     }
 
-    @Override
-    protected void initUI() {
-
-        if (getSettings().getApplicationMode() != ApplicationMode.RELEASE) {
-            addText("ballSpeed:", getAppWidth() - 250, 50);
-            addText("playerSpeed:", getAppWidth() - 250, 70);
-            addText("gameStatus:", getAppWidth() - 250, 90);
-
-            addVarText("ballSpeed", getAppWidth() - 100, 50);
-            addVarText("playerSpeed", getAppWidth() - 100, 70);
-            addVarText("gameStatus", getAppWidth() - 100, 90);
-        }
-    }
 
     @Override
     protected void initGame() {
@@ -155,8 +148,10 @@ public class Application extends GameApplication {
 
 
         setLevel(0);
-        //play("alpha/loop_1_arp.wav");
-        loopBGM("music.mp3");
+        //loop_2.getAudio$fxgl_media().setVolume(0.1);
+        //loop_2.getAudio$fxgl_media().play();
+
+        //loopBGM("music.mp3");
 
         entityBuilder()
                 .type(EntityType.WALL)
@@ -172,135 +167,33 @@ public class Application extends GameApplication {
         if (geti("gameStatus") == 0)
             inPreGame();
 
-        if (getSettings().getApplicationMode() == ApplicationMode.RELEASE) {
-            //Checks if ball is under the player
-            byType(EntityType.BALL).forEach(entity -> {
-                if (entity.getY() > getAppHeight() - 50)
-                    entity.removeFromWorld();
-            });
-        }
+        //if (getSettings().getApplicationMode() == ApplicationMode.RELEASE) {
+        //Checks if ball is under the player
+        byType(EntityType.BALL).forEach(entity -> {
+            if (entity.getY() > getAppHeight() - 50) {
+                entity.removeFromWorld();
+            }
+        });
+        //}
 
 
         //Game is lost
         if (byType(EntityType.BALL).isEmpty()) {
-            set("gameStatus", -1);
-            set("gameStatusReadable", getGameStatus(geti("gameStatus")));
+            if (geti("gameStatus") != -1)
+                inc("playerLives", -1);
+
+            if (geti("playerLives") < 1) {
+                set("gameStatus", -1);
+                set("gameStatusReadable", getGameStatus(geti("gameStatus")));
+            } else {
+                respawnBall();
+            }
         }
 
         //Game is won
         if (byType(EntityType.BRICK).isEmpty()) {
             set("gameStatus", 2);
             set("gameStatusReadable", getGameStatus(geti("gameStatus")));
-        }
-    }
-
-    @Override
-    protected void initInput() {
-        getInput().addAction(new UserAction("Up") {
-            @Override
-            protected void onActionBegin() {
-                if (geti("gameStatus") == 0) {
-                    set("freeze", true);
-                }
-            }
-
-            @Override
-            protected void onActionEnd() {
-                if (geti("gameStatus") == 0) {
-                    ball.getComponent(BallComponent.class).release();
-                    set("gameStatus", 1);
-                    set("freeze", false);
-                }
-            }
-        }, MouseButton.PRIMARY);
-
-
-        //onKey(KeyCode.D, "Move Right", () -> { player.getComponent(PlayerComponent.class).moveRight(); });
-        //onKey(KeyCode.A, () -> player.getComponent(PlayerComponent.class).moveLeft());
-        onKey(KeyCode.K, () -> {
-            setLevel(1);
-            //getDialogService().showMessageBox("You have completed demo!", getGameController()::exit);
-        });
-
-        onKey(KeyCode.L, () -> {
-            if (byType(EntityType.BRICK).isEmpty())
-                spawn("brick", getAppWidth() / 2 - 250, 100);
-            spawn("point", byType(EntityType.BRICK).get(0).getX() - ball.getWidth() + collisionLogicSecurityPadding, 50);
-            spawn("point", byType(EntityType.BRICK).get(0).getX() + byType(EntityType.BRICK).get(0).getWidth() - collisionLogicSecurityPadding, 50);
-        });
-
-
-    }
-
-    private void setLevel(int levelId) {
-        getGameWorld().getEntitiesCopy().forEach(e -> e.removeFromWorld());
-
-        String level = "";
-        set("gameStatus", 0);
-        set("freeze", false);
-        set("level", levelId);
-
-        if(geti("level") == 0)
-            level =
-                        "000000000000000" +
-                        "000000000000000" +
-                        "000000000000000" +
-                        "000010000010000" +
-                        "000101000101000" +
-                        "001000111000100" +
-                        "001000000000100" +
-                        "010022000220010" +
-                        "010000000000010" +
-                        "010000030000010" +
-                        "001000030000100" +
-                        "001000030000100" +
-                        "000100000001000" +
-                        "000010000010000" +
-                        "000001000100000" +
-                        "000000101000000" +
-                        "000000010000000" +
-                        "000000000000000" +
-                        "000000000000000";
-        else if(geti("level") == 1) {
-            level =
-                            "000000000000000" +
-                            "000000000000000" +
-                            "002121212121200" +
-                            "002020202020200" +
-                            "002020202020200" +
-                            "002020202020200" +
-                            "002020202020200" +
-                            "001111111111100" +
-                            "000111111111000" +
-                            "000011111110000" +
-                            "000001111100000" +
-                            "000000111000000" +
-                            "000000010000000" +
-                            "000000020000000" +
-                            "000000020000000" +
-                            "001111121111100" +
-                            "000000000000000" +
-                            "000000000000000" +
-                            "000000000000000";
-        }
-
-        spawn("background", 0, 0);
-        player = spawn("player", playerSpawnPoint);
-        ball = spawn("ball", ballSpawnPoint);
-
-
-        int i = 0, x = 0, y = levelMargin;
-        for (int row = 0; row < levelRows; row++) {
-            for (int col = 0; col < 1920 / brickWidth; col++) {
-                if (level.charAt(i) == '1')
-                    spawn("brick", new SpawnData(x, y).put("color", Color.DARKGRAY));
-                else if (level.charAt(i) == '2')
-                    spawn("brick", new SpawnData(x, y).put("color", Color.RED));
-                i++;
-                x += brickWidth;
-            }
-            x = 0;
-            y += brickHeight;
         }
     }
 
@@ -331,8 +224,11 @@ public class Application extends GameApplication {
                 System.out.println("RIGHT");
             }
 
-            if (FXGLMath.randomBoolean(0.5f)) {
-                spawn("powerupdrop", brick.getPosition());
+            if (FXGLMath.randomBoolean(chanceForDrop)) {
+                PowerUp powerUp = PowerUp.pickPowerUp();
+                if(powerUp != null) {
+                    spawn("powerupdrop", new SpawnData(brick.getPosition()).put("type", powerUp.getType()).put("color", powerUp.getColor()));
+                }
             }
 
             //System.out.println("Brick X: " + brick.getX() + " | Brick Y: " + brick.getY());
@@ -348,8 +244,7 @@ public class Application extends GameApplication {
                     System.out.println("MULTIBALL");
                     spawn("powerupSpawnMultiBall", 100, 0);
                 }
-            }
-            else if (powerUpType == "PLAYERGUN") {
+            } else if (powerUpType == "PLAYERGUN") {
                 type = PowerupType.SPAWNPLAYERGUN;
                 if (byType(type).isEmpty()) {
                     System.out.println("PLAYERGUN");
@@ -399,6 +294,118 @@ public class Application extends GameApplication {
         });
     }
 
+    @Override
+    protected void initInput() {
+        getInput().addAction(new UserAction("Up") {
+            @Override
+            protected void onActionBegin() {
+                if (geti("gameStatus") == 0) {
+                    set("freeze", true);
+                }
+            }
+
+            @Override
+            protected void onActionEnd() {
+                if (geti("gameStatus") == 0) {
+                    ball.getComponent(BallComponent.class).release();
+                    set("gameStatus", 1);
+                    set("freeze", false);
+                }
+            }
+        }, MouseButton.PRIMARY);
+
+        onKey(KeyCode.H, () -> {
+            loop_2.getAudio$fxgl_media().setVolume(0);
+            System.out.println("changed");
+        });
+
+        onKey(KeyCode.J, () -> {
+            loop_2.getAudio$fxgl_media().pause();
+            System.out.println("stoped");
+        });
+
+        onKey(KeyCode.U, () -> {
+            loop_2.getAudio$fxgl_media().play();
+            System.out.println("play");
+        });
+
+
+        //onKey(KeyCode.D, "Move Right", () -> { player.getComponent(PlayerComponent.class).moveRight(); });
+        //onKey(KeyCode.A, () -> player.getComponent(PlayerComponent.class).moveLeft());
+        onKey(KeyCode.K, () -> {
+            setLevel(2);
+            //getDialogService().showMessageBox("You have completed demo!", getGameController()::exit);
+        });
+
+        onKey(KeyCode.L, () -> {
+            if (byType(EntityType.BRICK).isEmpty())
+                spawn("brick", getAppWidth() / 2 - 250, 100);
+            spawn("point", byType(EntityType.BRICK).get(0).getX() - ball.getWidth() + collisionLogicSecurityPadding, 50);
+            spawn("point", byType(EntityType.BRICK).get(0).getX() + byType(EntityType.BRICK).get(0).getWidth() - collisionLogicSecurityPadding, 50);
+        });
+
+
+    }
+
+    @Override
+    protected void initUI() {
+
+        if (getSettings().getApplicationMode() != ApplicationMode.RELEASE) {
+            addText("ballSpeed:", getAppWidth() - 250, 50);
+            addText("playerSpeed:", getAppWidth() - 250, 70);
+            addText("gameStatus:", getAppWidth() - 250, 90);
+            addText("playerLives:", getAppWidth() - 250, 110);
+
+            addVarText("ballSpeed", getAppWidth() - 100, 50);
+            addVarText("playerSpeed", getAppWidth() - 100, 70);
+            addVarText("gameStatus", getAppWidth() - 100, 90);
+            addVarText("playerLives", getAppWidth() - 100, 110);
+        }
+    }
+
+    /*
+        Own methods
+     */
+
+    private void setLevel(int levelId) {
+        getGameWorld().getEntitiesCopy().forEach(e -> e.removeFromWorld());
+
+        String currentLevel = "";
+        set("gameStatus", 0);
+        set("freeze", false);
+        set("level", levelId);
+
+        currentLevel = level.get(levelId).toString();
+
+        System.out.println(level);
+
+        spawn("background", 0, 0);
+        player = spawn("player", playerSpawnPoint);
+        ball = spawn("ball", ballSpawnPoint);
+
+        int i = 0, x = 0, y = levelMargin;
+        for (int row = 0; row < levelRows; row++) {
+            for (int col = 0; col < 1920 / brickWidth; col++) {
+                if (currentLevel.charAt(i) == '1')
+                    spawn("brick", new SpawnData(x, y).put("color", Color.DARKGRAY));
+                else if (currentLevel.charAt(i) == '2')
+                    spawn("brick", new SpawnData(x, y).put("color", Color.RED));
+                i++;
+                x += brickWidth;
+            }
+            x = 0;
+            y += brickHeight;
+        }
+    }
+
+
+    public void respawnBall() {
+        set("gameStatus", 0);
+        set("freeze", false);
+        ball = spawn("ball", player.getX() + player.getWidth() / 2 - ball.getWidth() / 2, ballSpawnPoint.getY());
+    }
+
+
     /**
      * sets player'x position to the mouse'x
      */
@@ -420,5 +427,13 @@ public class Application extends GameApplication {
 
     public void inPreGame() {
         ball.setX(player.getX() + player.getWidth() / 2 - ball.getWidth() / 2);
+    }
+
+    /**
+     * Used to print out updates to the console while the game is running.
+     * @param msg Message developer want to print
+     */
+    public static void L(String msg) {
+        System.out.println(msg);
     }
 }

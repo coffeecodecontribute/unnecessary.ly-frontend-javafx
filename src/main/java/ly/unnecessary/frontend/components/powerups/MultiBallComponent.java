@@ -21,6 +21,6 @@ public class MultiBallComponent extends Component {
 
     @Override
     public void onRemoved() {
-        multiBall.removeFromWorld();
+
     }
 }
