@@ -132,7 +132,7 @@ public class SignInComponent {
         header.setStyle("-fx-font-size: 42; -fx-font-weight: bold");
         header.setPadding(new Insets(0, 0, 24, 0));
 
-        var apiUrlField = new TextField("localhost:1999");
+        var apiUrlField = new TextField(Constants.DEFAULT_API_URL);
         apiUrlField.setPromptText("API URL");
         apiUrlField.setMaxWidth(FORM_WIDTH);
         apiUrlField.setStyle(Constants.DEFAULT_BACKGROUND_RADIUS);
@@ -144,13 +144,12 @@ public class SignInComponent {
         displayNameField.setVisible(false);
         displayNameField.setManaged(false);
 
-        var emailField = new TextField("felix@pojtinger.com");
+        var emailField = new TextField();
         emailField.setPromptText("Email");
         emailField.setMaxWidth(FORM_WIDTH);
         emailField.setStyle(Constants.DEFAULT_BACKGROUND_RADIUS);
 
         var passwordField = new PasswordField();
-        passwordField.setText("pass1234");
         passwordField.setPromptText("Password");
         passwordField.setMaxWidth(FORM_WIDTH);
         passwordField.setStyle(Constants.DEFAULT_BACKGROUND_RADIUS);
