@@ -96,7 +96,7 @@ public class Application extends javafx.application.Application {
 
             var stream = this.communityClient.subscribeToChannelChats(channelFilter);
 
-            new Thread(() -> {
+            this.createDaemonThread(() -> {
                 var listenerExists = false;
 
                 try {
@@ -262,11 +262,13 @@ public class Application extends javafx.application.Application {
         // Connect handlers
         // We start in seperate threads and return to the JavaFX thread with
         // Platform#runLater so that we don't block the UI
-        communityComponent.setOnSwitchCommunity((t) -> new Thread(() -> handleCommunitySwitch.accept(t)).start());
+        communityComponent
+                .setOnSwitchCommunity((t) -> this.createDaemonThread(() -> handleCommunitySwitch.accept(t)).start());
 
-        communityComponent.setOnSwitchChannel((t) -> new Thread(() -> handleChannelSwitch.accept(t)).start());
+        communityComponent
+                .setOnSwitchChannel((t) -> this.createDaemonThread(() -> handleChannelSwitch.accept(t)).start());
 
-        communityComponent.setOnCreateChat((t) -> new Thread(() -> handleCreateChat.accept(t)).start());
+        communityComponent.setOnCreateChat((t) -> this.createDaemonThread(() -> handleCreateChat.accept(t)).start());
 
         communityComponent.setOnCreateChannel(handleCreateChannel);
 
@@ -543,5 +545,18 @@ public class Application extends javafx.application.Application {
      */
     public void setCurrentCommunityId(long currentCommunityId) {
         this.currentCommunityId = currentCommunityId;
+    }
+
+    /**
+     * Create a daemon thread
+     * 
+     * @param handler
+     */
+    private Thread createDaemonThread(Runnable handler) {
+        var thread = new Thread(handler);
+
+        thread.setDaemon(true);
+
+        return thread;
     }
 }
