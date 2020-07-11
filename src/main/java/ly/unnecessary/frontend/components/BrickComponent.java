@@ -12,8 +12,16 @@ import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
 
 public class BrickComponent extends Component {
 
-    private int lives = 1;
+    private int lives;
     private boolean blockIsInfected = false;
+
+    public BrickComponent() {
+        this(1);
+    }
+
+    public BrickComponent(int lives) {
+        this.lives = lives;
+    }
 
     public void hitByBall() {
         lives--;
@@ -36,5 +44,9 @@ public class BrickComponent extends Component {
                 }
             }
         }
+    }
+
+    public int getLives() {
+        return lives;
     }
 }

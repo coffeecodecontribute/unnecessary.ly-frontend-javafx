@@ -1,17 +1,19 @@
 package ly.unnecessary.frontend;
 
 import com.almasb.fxgl.animation.Interpolators;
-import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.core.math.Vec2;
 import com.almasb.fxgl.dsl.components.ExpireCleanComponent;
 import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
 import com.almasb.fxgl.dsl.components.ProjectileComponent;
+import com.almasb.fxgl.dsl.components.RandomMoveComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.EntityFactory;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.Spawns;
 import com.almasb.fxgl.texture.Texture;
+import com.almasb.fxgl.ui.ProgressBar;
 import javafx.geometry.Point2D;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
@@ -19,11 +21,11 @@ import javafx.util.Duration;
 import ly.unnecessary.frontend.components.BallComponent;
 import ly.unnecessary.frontend.components.BrickComponent;
 import ly.unnecessary.frontend.components.PlayerComponent;
+import ly.unnecessary.frontend.components.boss.BossComponent;
 import ly.unnecessary.frontend.components.powerups.HeartComponent;
 import ly.unnecessary.frontend.components.powerups.MultiBallComponent;
 import ly.unnecessary.frontend.components.powerups.PlayerGunComponent;
 import ly.unnecessary.frontend.components.powerups.SuperBallComponent;
-import org.w3c.dom.css.Rect;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
 
@@ -32,7 +34,7 @@ public class GameEntityFactory implements EntityFactory {
     @Spawns("ball")
     public Entity newBall(SpawnData data) {
 
-        Rectangle rectangle = new Rectangle(0, 0, (int) geti("ballRadius"), (int) geti("ballRadius"));
+        Rectangle rectangle = new Rectangle(0, 0, geti("ballRadius"), geti("ballRadius"));
         //Circle rectangle = new Circle((int) data.get("ballRadius"), (int) data.get("ballRadius"), (int) data.get("ballRadius"));
         rectangle.setFill(Color.RED);
 
@@ -40,7 +42,7 @@ public class GameEntityFactory implements EntityFactory {
                 .type(EntityType.BALL)
                 .from(data)
                 .viewWithBBox(texture("game/ballGrey.png", geti("ballRadius"), geti("ballRadius")))
-                .with("velocity", new Point2D(0,0))
+                .with("velocity", new Point2D(0, 0))
                 .with(new BallComponent())
                 .collidable()
                 .build();
@@ -52,7 +54,7 @@ public class GameEntityFactory implements EntityFactory {
         //Rectangle brick = new Rectangle(0, 0, 128, 36);
         //brick.setFill(data.get("color"));
         Texture brick;
-        if(data.get("color") == Color.RED)
+        if (data.get("color") == Color.RED)
             brick = texture("game/brickRed.png", 128, 36);
         else
             brick = texture("game/brickGray.png", 128, 36);
@@ -82,7 +84,7 @@ public class GameEntityFactory implements EntityFactory {
 
     @Spawns("player")
     public Entity newPlayer(SpawnData data) {
-        var e = new Rectangle(0,0, 300,30);
+        var e = new Rectangle(0, 0, 300, 30);
         e.setFill(Color.RED);
         return entityBuilder()
                 .type(EntityType.PLAYER)
@@ -102,6 +104,33 @@ public class GameEntityFactory implements EntityFactory {
                 .view(background)
                 .build();
     }
+
+    @Spawns("boss")
+    public Entity newBoss(SpawnData data) {
+        Texture brick;
+        brick = texture("game/brickRed.png", 200, 300);
+
+        var hpView = new ProgressBar(true);
+        hpView.setFill(Color.LIGHTGREEN);
+        hpView.setMaxValue(2);
+        hpView.setWidth(85);
+        hpView.setTranslateY(90);
+
+        RandomMoveComponent bossMovement = new RandomMoveComponent(new Rectangle2D(0, 0, getAppWidth() / 2, getAppHeight()), 100);
+
+        Entity e = entityBuilder()
+                .type(EntityType.BRICK)
+                .from(data)
+                .viewWithBBox(brick)
+                .with(new BrickComponent(10))
+                .with(new BossComponent())
+                .with(bossMovement)
+                .collidable()
+                .build();
+
+        return e;
+    }
+
 
     //User Interface
     @Spawns("uiSpawnLevelInfo")
@@ -124,12 +153,12 @@ public class GameEntityFactory implements EntityFactory {
 
         return levelInfo;
     }
-    
+
     //Developer
 
     @Spawns("point")
     public Entity newPoint(SpawnData data) {
-        var pixel = new Rectangle(2,2);
+        var pixel = new Rectangle(2, 2);
         pixel.setFill(Color.CYAN);
         return entityBuilder()
                 .from(data)
@@ -168,6 +197,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawn Player Gun Power Up - Player get's a shooting gun with which he can shoot blocks
+     *
      * @param data
      * @return
      */
@@ -202,6 +232,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawn Power Up Multi Ball - Multi Ball adds a another ball to the game.
+     *
      * @param data
      * @return
      */
@@ -219,6 +250,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawn Heart Power Up - Adds one live to player lives.
+     *
      * @param data
      * @return
      */
@@ -236,6 +268,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Super Ball
+     *
      * @param data
      * @return
      */

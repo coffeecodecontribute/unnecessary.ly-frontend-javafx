@@ -426,16 +426,19 @@ public class Application extends GameApplication {
         } else
             currentLevel = level.get(levelId).toString();
 
-        System.out.println(level);
-
 
         spawn("background", 0, 0);
         player = spawn("player", playerSpawnPoint);
         ball = spawn("ball", ballSpawnPoint);
 
+
         //Ui
         spawn("uiSpawnLevelInfo");
 
+        if(currentLevel.equals("boss")) {
+            spawn("boss", 100, 100);
+            return;
+        }
 
         int i = 0, x = 0, y = levelMargin;
         for (int row = 0; row < levelRows; row++) {
