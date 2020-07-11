@@ -6,6 +6,8 @@ import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.component.Component;
 import javafx.geometry.Point2D;
 import javafx.util.Duration;
+import ly.unnecessary.frontend.PowerupType;
+import ly.unnecessary.frontend.components.powerups.SuperBallComponent;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
 
@@ -16,6 +18,8 @@ public class BallComponent extends Component {
     @Override
     public void onAdded() {
         //entity.getTransformComponent().setAnchoredPosition(entity.getCenter()); TODO: Required?
+        if(!byType(PowerupType.SUPERBALL).isEmpty())
+            byType(PowerupType.SUPERBALL).get(0).getComponent(SuperBallComponent.class).addSuperBallTexture(entity);
     }
 
     @Override

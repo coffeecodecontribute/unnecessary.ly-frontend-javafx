@@ -12,10 +12,6 @@ import javafx.util.Duration;
 import ly.unnecessary.frontend.EntityType;
 import ly.unnecessary.frontend.PowerupType;
 
-enum Type {
-    SINGLE, DOUBLE
-}
-
 public class PlayerGunComponent extends Component {
     
     private TimerAction playergun;
@@ -28,16 +24,16 @@ public class PlayerGunComponent extends Component {
      */
     @Override
     public void onAdded() {
-        Type type = FXGLMath.randomBoolean(0.1) ? Type.SINGLE : Type.DOUBLE;
+        PlayerGunType type = FXGLMath.randomBoolean(0.5) ? PlayerGunType.SINGLE : PlayerGunType.DOUBLE;
 
-        if(type == Type.DOUBLE)
+        if(type == PlayerGunType.DOUBLE)
             bulletSpawnPeriod *= 0.5;
 
         playergun = run(() -> {
             var player = byType(EntityType.PLAYER).get(0);
-            if(type == Type.SINGLE) {
+            if(type == PlayerGunType.SINGLE) {
                 spawn("playerGunBullet", player.getX() + player.getWidth() / 2, player.getY());
-            } else if(type == Type.DOUBLE) {
+            } else if(type == PlayerGunType.DOUBLE) {
                 if(switchSides)
                     spawn("playerGunBullet", player.getX() + marginOfPlayer, player.getY());
                  else

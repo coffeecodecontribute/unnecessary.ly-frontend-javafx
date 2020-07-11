@@ -11,16 +11,21 @@ import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.components.IrremovableComponent;
 import com.almasb.fxgl.input.UserAction;
+import com.almasb.fxgl.texture.Texture;
+import com.almasb.fxgl.ui.UI;
 import javafx.geometry.Point2D;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import ly.unnecessary.frontend.components.BallComponent;
 import ly.unnecessary.frontend.components.BrickComponent;
+import ly.unnecessary.frontend.controller.UserInterfaceController;
 import ly.unnecessary.frontend.menu.MainMenu;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
@@ -51,13 +56,14 @@ public class Application extends GameApplication {
     //level
     static int levelMargin = 36;
     static int levelRows = 19;
-    List level; //List with level data
-
 
     //powerups
-    static double chanceForDrop = 0.5f;
+    static double chanceForDrop = 1.0f; //TODO: moved into brick componenet
 
+    //User Interface
+    private UserInterfaceController uiController;
 
+    List level; //List with level data
     Entity ball, player;
     Sound loop_2;
 
@@ -71,6 +77,15 @@ public class Application extends GameApplication {
 
     public static String getGameStatus(int gameStatus) {
         return gameStatus == 1 ? "ingame" : gameStatus == 0 ? "Game over" : gameStatus == 2 ? "Victory" : "Unknown Status";
+    }
+
+    /**
+     * Used to print out updates to the console while the game is running.
+     *
+     * @param msg Message developer want to print
+     */
+    public static void L(String msg) {
+        System.out.println(msg);
     }
 
     @Override
@@ -115,8 +130,15 @@ public class Application extends GameApplication {
 
         //Loading Graphics
         L("onPreInit: Graphic Assets loaded!");
+        getAssetLoader().loadTexture("ui/heart.png", 16, 16);
+        getAssetLoader().loadTexture("game/ballBlue.png", ballRadius, ballRadius);
+        getAssetLoader().loadTexture("game/ballGrey.png", ballRadius, ballRadius);
+        getAssetLoader().loadTexture("game/paddleBlu.png", ballRadius, ballRadius);
 
-
+        getAssetLoader().loadText("game/powerups/extraball.png");
+        getAssetLoader().loadText("game/powerups/heart.png");
+        getAssetLoader().loadText("game/powerups/playergun.png");
+        getAssetLoader().loadText("game/powerups/superball.png");
 
         L("onPreInit: Done! Enjoy and have fun!");
     }
@@ -139,8 +161,8 @@ public class Application extends GameApplication {
         vars.put("freeze", false);
         vars.put("playerLives", 3);
         vars.put("playerStars", 0);
+        vars.put("score", 0);
     }
-
 
     @Override
     protected void initGame() {
@@ -179,8 +201,11 @@ public class Application extends GameApplication {
 
         //Game is lost
         if (byType(EntityType.BALL).isEmpty()) {
-            if (geti("gameStatus") != -1)
+            if (geti("gameStatus") != -1) {
                 inc("playerLives", -1);
+                uiController.removeLife();
+            }
+
 
             if (geti("playerLives") < 1) {
                 set("gameStatus", -1);
@@ -211,26 +236,19 @@ public class Application extends GameApplication {
             play("alpha/ball_collide_brick.wav");
             brick.getComponent(BrickComponent.class).hitByBall();
 
+            inc("score", 100);
+
             //ball.getComponent(BallComponent.class).collideBlock();
 
+            if (byType(PowerupType.SUPERBALL).isEmpty()) { // Only collide if SuperBall is not active
+                Point2D velocity = ball.getObject("velocity");
 
-            Point2D velocity = ball.getObject("velocity");
-
-            if (ball.getX() > brick.getX() - ball.getWidth() + collisionLogicSecurityPadding && ball.getX() < brick.getX() + brick.getWidth() - collisionLogicSecurityPadding) {
-                ball.getComponent(BallComponent.class).collide(new Point2D(velocity.getX(), -velocity.getY()));
-                System.out.println("TOP");
-            } else {
-                ball.getComponent(BallComponent.class).collide(new Point2D(-velocity.getX(), velocity.getY()));
-                System.out.println("RIGHT");
-            }
-
-            if (FXGLMath.randomBoolean(chanceForDrop)) {
-                PowerUp powerUp = PowerUp.pickPowerUp();
-                if(powerUp != null) {
-                    spawn("powerupdrop", new SpawnData(brick.getPosition()).put("type", powerUp.getType()).put("color", powerUp.getColor()));
+                if (ball.getX() > brick.getX() - ball.getWidth() + collisionLogicSecurityPadding && ball.getX() < brick.getX() + brick.getWidth() - collisionLogicSecurityPadding) {
+                    ball.getComponent(BallComponent.class).collide(new Point2D(velocity.getX(), -velocity.getY()));
+                } else {
+                    ball.getComponent(BallComponent.class).collide(new Point2D(-velocity.getX(), velocity.getY()));
                 }
             }
-
             //System.out.println("Brick X: " + brick.getX() + " | Brick Y: " + brick.getY());
         });
 
@@ -239,16 +257,29 @@ public class Application extends GameApplication {
             PowerupType type;
 
             if (powerUpType == "MULTIBALL") {
-                type = PowerupType.SPAWNMULTIBALL;
+                type = PowerupType.MULTIBALL;
                 if (byType(type).isEmpty()) {
-                    System.out.println("MULTIBALL");
-                    spawn("powerupSpawnMultiBall", 100, 0);
+                    System.out.println(type);
+                    spawn("powerupSpawnMultiBall", 30, 30);
                 }
             } else if (powerUpType == "PLAYERGUN") {
-                type = PowerupType.SPAWNPLAYERGUN;
+                type = PowerupType.PLAYERGUN;
                 if (byType(type).isEmpty()) {
-                    System.out.println("PLAYERGUN");
-                    spawn("powerupSpawnPlayerGun", 0, 0);
+                    System.out.println(type);
+                    spawn("powerupSpawnPlayerGun", 33 * 2, 30);
+                }
+            } else if (powerUpType == "HEART") {
+                type = PowerupType.HEART;
+                if (byType(type).isEmpty()) {
+                    System.out.println(type);
+                    spawn("powerupSpawnHeart", 33 * 3, 30);
+                    uiController.addLife(); // Require to update the UI from Application
+                }
+            } else if (powerUpType == "SUPERBALL") {
+                type = PowerupType.SUPERBALL;
+                if (byType(type).isEmpty()) {
+                    System.out.println(type);
+                    spawn("powerupSpawnSuperBall", 33 * 4, 30);
                 }
             }
             /*
@@ -256,7 +287,7 @@ public class Application extends GameApplication {
              */
         });
 
-        onCollisionBegin(EntityType.BRICK, PowerupType.PLAYERGUN, (brick, bullet) -> {
+        onCollisionBegin(EntityType.BRICK, PowerupType.PLAYERGUN_BULLET, (brick, bullet) -> {
             brick.removeFromWorld();
             bullet.removeFromWorld();
         });
@@ -332,12 +363,13 @@ public class Application extends GameApplication {
 
         //onKey(KeyCode.D, "Move Right", () -> { player.getComponent(PlayerComponent.class).moveRight(); });
         //onKey(KeyCode.A, () -> player.getComponent(PlayerComponent.class).moveLeft());
-        onKey(KeyCode.K, () -> {
-            setLevel(2);
-            //getDialogService().showMessageBox("You have completed demo!", getGameController()::exit);
+        onKey(KeyCode.L, () -> {
+            getDialogService().showInputBoxWithCancel("Jump to Level: ", levelId -> Integer.parseInt(levelId) > 0  , levelId -> {
+                setLevel(Integer.parseInt(levelId));
+            });
         });
 
-        onKey(KeyCode.L, () -> {
+        onKey(KeyCode.K, () -> {
             if (byType(EntityType.BRICK).isEmpty())
                 spawn("brick", getAppWidth() / 2 - 250, 100);
             spawn("point", byType(EntityType.BRICK).get(0).getX() - ball.getWidth() + collisionLogicSecurityPadding, 50);
@@ -349,6 +381,15 @@ public class Application extends GameApplication {
 
     @Override
     protected void initUI() {
+        uiController = new UserInterfaceController(getGameScene());
+
+        UI ui = getAssetLoader().loadUI("game.fxml", uiController);
+
+        uiController.getLabelScore().textProperty().bind(getip("score").asString("Score: %d"));
+
+
+        IntStream.range(0, geti("playerLives"))
+                .forEach(i -> uiController.addLife());
 
         if (getSettings().getApplicationMode() != ApplicationMode.RELEASE) {
             addText("ballSpeed:", getAppWidth() - 250, 50);
@@ -361,13 +402,15 @@ public class Application extends GameApplication {
             addVarText("gameStatus", getAppWidth() - 100, 90);
             addVarText("playerLives", getAppWidth() - 100, 110);
         }
+
+
+        getGameScene().addUI(ui);
     }
 
-    /*
-        Own methods
-     */
-
     private void setLevel(int levelId) {
+        if(levelId >= level.size() ||levelId < 0)
+            return;
+
         getGameWorld().getEntitiesCopy().forEach(e -> e.removeFromWorld());
 
         String currentLevel = "";
@@ -379,9 +422,14 @@ public class Application extends GameApplication {
 
         System.out.println(level);
 
+
         spawn("background", 0, 0);
         player = spawn("player", playerSpawnPoint);
         ball = spawn("ball", ballSpawnPoint);
+
+        //Ui
+        spawn("uiSpawnLevelInfo");
+
 
         int i = 0, x = 0, y = levelMargin;
         for (int row = 0; row < levelRows; row++) {
@@ -398,13 +446,11 @@ public class Application extends GameApplication {
         }
     }
 
-
     public void respawnBall() {
         set("gameStatus", 0);
         set("freeze", false);
         ball = spawn("ball", player.getX() + player.getWidth() / 2 - ball.getWidth() / 2, ballSpawnPoint.getY());
     }
-
 
     /**
      * sets player'x position to the mouse'x
@@ -427,13 +473,5 @@ public class Application extends GameApplication {
 
     public void inPreGame() {
         ball.setX(player.getX() + player.getWidth() / 2 - ball.getWidth() / 2);
-    }
-
-    /**
-     * Used to print out updates to the console while the game is running.
-     * @param msg Message developer want to print
-     */
-    public static void L(String msg) {
-        System.out.println(msg);
     }
 }
