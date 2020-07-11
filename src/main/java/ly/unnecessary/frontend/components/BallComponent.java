@@ -18,8 +18,6 @@ public class BallComponent extends Component {
     @Override
     public void onAdded() {
         //entity.getTransformComponent().setAnchoredPosition(entity.getCenter()); TODO: Required?
-        if(!byType(PowerupType.SUPERBALL).isEmpty())
-            byType(PowerupType.SUPERBALL).get(0).getComponent(SuperBallComponent.class).addSuperBallTexture(entity);
     }
 
     @Override
