@@ -408,8 +408,11 @@ public class Application extends GameApplication {
     }
 
     private void setLevel(int levelId) {
-        if(levelId >= level.size() ||levelId < 0)
-            return;
+        if(levelId != 10) {
+            if(levelId >= level.size() || levelId < 0)
+                return;
+        }
+
 
         getGameWorld().getEntitiesCopy().forEach(e -> e.removeFromWorld());
 
@@ -418,7 +421,10 @@ public class Application extends GameApplication {
         set("freeze", false);
         set("level", levelId);
 
-        currentLevel = level.get(levelId).toString();
+        if(levelId == 10) {
+            currentLevel = generateRandomLevel();
+        } else
+            currentLevel = level.get(levelId).toString();
 
         System.out.println(level);
 
@@ -444,6 +450,14 @@ public class Application extends GameApplication {
             x = 0;
             y += brickHeight;
         }
+    }
+
+    public String generateRandomLevel() {
+        String result = "";
+        for(int i = 0; i < 285; i++) {
+            result += FXGLMath.randomBoolean() ? "1" : "0";
+        }
+        return result;
     }
 
     public void respawnBall() {
