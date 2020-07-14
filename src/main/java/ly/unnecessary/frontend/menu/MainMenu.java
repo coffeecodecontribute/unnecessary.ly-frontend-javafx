@@ -16,7 +16,7 @@ public class MainMenu extends FXGLMenu {
     public MainMenu() {
         super(MenuType.MAIN_MENU);
 
-        var start = new MainButton("New Game", this::fireNewGame);
+        var start = new MainButton("Select Level", this::fireNewGame);
         start.setTranslateX(getAppWidth() / 2 - 250 / 2);
         start.setTranslateY(getAppHeight() / 2 - 60 / 2);
 

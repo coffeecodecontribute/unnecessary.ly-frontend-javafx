@@ -1,6 +1,7 @@
 package ly.unnecessary.frontend.components;
 
 import com.almasb.fxgl.core.math.FXGLMath;
+import com.almasb.fxgl.dsl.components.HealthIntComponent;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.component.Component;
 import ly.unnecessary.frontend.Application;
@@ -16,17 +17,18 @@ public class BrickComponent extends Component {
     private boolean blockIsInfected = false;
 
     public BrickComponent() {
-        this(1);
+
     }
 
     public BrickComponent(int lives) {
-        this.lives = lives;
+
     }
 
     public void hitByBall() {
-        lives--;
+        var hp = entity.getComponent(HealthIntComponent.class);
+        hp.damage(1);
 
-        if(lives == 0) {
+        if(hp.getValue() == 0) {
             if(FXGLMath.randomBoolean(0.1f)) {
                 play("alpha/power_up.wav");
                 spawn("actionBrick", entity.getPosition());
@@ -34,7 +36,7 @@ public class BrickComponent extends Component {
             }
             entity.removeFromWorld();
         } else
-            System.out.println("Lives: " + lives);
+            System.out.println("Lives: " + hp.getValue());
 
         if (FXGLMath.randomBoolean(1f) && !blockIsInfected) {
             if (byType(EntityType.POWERUPDROP).isEmpty()) {
@@ -47,6 +49,6 @@ public class BrickComponent extends Component {
     }
 
     public int getLives() {
-        return lives;
+        return 0;
     }
 }

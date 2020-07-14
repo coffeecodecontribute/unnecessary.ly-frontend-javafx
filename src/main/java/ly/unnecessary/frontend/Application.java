@@ -203,6 +203,7 @@ public class Application extends GameApplication {
         if (byType(EntityType.BALL).isEmpty()) {
             if (geti("gameStatus") != -1) {
                 inc("playerLives", -1);
+                getGameScene().getViewport().shakeTranslational(1.5);
                 uiController.removeLife();
             }
 
@@ -288,7 +289,7 @@ public class Application extends GameApplication {
         });
 
         onCollisionBegin(EntityType.BRICK, PowerupType.PLAYERGUN_BULLET, (brick, bullet) -> {
-            brick.removeFromWorld();
+            brick.getComponent(BrickComponent.class).hitByBall();
             bullet.removeFromWorld();
         });
 

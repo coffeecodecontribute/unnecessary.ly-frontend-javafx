@@ -2,10 +2,7 @@ package ly.unnecessary.frontend;
 
 import com.almasb.fxgl.animation.Interpolators;
 import com.almasb.fxgl.core.math.Vec2;
-import com.almasb.fxgl.dsl.components.ExpireCleanComponent;
-import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
-import com.almasb.fxgl.dsl.components.ProjectileComponent;
-import com.almasb.fxgl.dsl.components.RandomMoveComponent;
+import com.almasb.fxgl.dsl.components.*;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.EntityFactory;
 import com.almasb.fxgl.entity.SpawnData;
@@ -53,6 +50,8 @@ public class GameEntityFactory implements EntityFactory {
     public Entity newBrick(SpawnData data) {
         //Rectangle brick = new Rectangle(0, 0, 128, 36);
         //brick.setFill(data.get("color"));
+
+
         Texture brick;
         if (data.get("color") == Color.RED)
             brick = texture("game/brickRed.png", 128, 36);
@@ -63,6 +62,7 @@ public class GameEntityFactory implements EntityFactory {
                 .type(EntityType.BRICK)
                 .from(data)
                 .viewWithBBox(brick)
+                .with(new HealthIntComponent(2))
                 .with(new BrickComponent())
                 .collidable()
                 .build();
@@ -110,25 +110,44 @@ public class GameEntityFactory implements EntityFactory {
         Texture brick;
         brick = texture("game/brickRed.png", 200, 300);
 
-        var hpView = new ProgressBar(true);
-        hpView.setFill(Color.LIGHTGREEN);
-        hpView.setMaxValue(2);
-        hpView.setWidth(85);
-        hpView.setTranslateY(90);
+        HealthIntComponent hp = new HealthIntComponent(10);
 
-        RandomMoveComponent bossMovement = new RandomMoveComponent(new Rectangle2D(0, 0, getAppWidth() / 2, getAppHeight()), 100);
+        var hpView = new ProgressBar(true);
+        hpView.setFill(Color.RED);
+        hpView.setMaxValue(10);
+        hpView.setWidth(200);
+        hpView.setHeight(10);
+        hpView.setTranslateY(-30);
+        hpView.setTranslateX(0);
+        hpView.setBackgroundFill(Color.BLACK);
+        hpView.currentValueProperty().bind(hp.valueProperty());
 
         Entity e = entityBuilder()
                 .type(EntityType.BRICK)
                 .from(data)
                 .viewWithBBox(brick)
-                .with(new BrickComponent(10))
+                .view(hpView)
+                .with(hp)
+                .with(new BrickComponent())
                 .with(new BossComponent())
-                .with(bossMovement)
                 .collidable()
                 .build();
 
         return e;
+    }
+
+    @Spawns("bossShotBullet")
+    public Entity newBossShotBullet(SpawnData data) {
+        Rectangle brick = new Rectangle(0, 0, 10, 40);
+        brick.setFill(Color.YELLOW);
+        Vec2 dir = Vec2.fromAngle(90);
+        return entityBuilder()
+                .from(data)
+                .viewWithBBox(brick)
+                .with(new ProjectileComponent(dir.toPoint2D(), 800).allowRotation(false))
+                .with(new OffscreenCleanComponent())
+                .collidable()
+                .build();
     }
 
 
