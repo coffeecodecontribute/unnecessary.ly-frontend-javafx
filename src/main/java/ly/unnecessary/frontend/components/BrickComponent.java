@@ -1,19 +1,18 @@
 package ly.unnecessary.frontend.components;
 
+import static com.almasb.fxgl.dsl.FXGL.byType;
+import static com.almasb.fxgl.dsl.FXGL.play;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
+
 import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.dsl.components.HealthIntComponent;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.component.Component;
-import ly.unnecessary.frontend.Application;
+
 import ly.unnecessary.frontend.EntityType;
 import ly.unnecessary.frontend.PowerupType;
 
-import static com.almasb.fxgl.dsl.FXGL.*;
-import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
-
 public class BrickComponent extends Component {
-
-    private int lives;
     private boolean blockIsInfected = false;
 
     public BrickComponent() {
@@ -28,8 +27,8 @@ public class BrickComponent extends Component {
         var hp = entity.getComponent(HealthIntComponent.class);
         hp.damage(1);
 
-        if(hp.getValue() == 0) {
-            if(FXGLMath.randomBoolean(0.1f)) {
+        if (hp.getValue() == 0) {
+            if (FXGLMath.randomBoolean(0.1f)) {
                 play("alpha/power_up.wav");
                 spawn("actionBrick", entity.getPosition());
                 blockIsInfected = true;
@@ -42,7 +41,8 @@ public class BrickComponent extends Component {
             if (byType(EntityType.POWERUPDROP).isEmpty()) {
                 PowerupType powerUp = PowerupType.pickPowerUp();
                 if (powerUp != null) {
-                    spawn("powerupdrop", new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY()).put("type", powerUp.getType()).put("texture", powerUp.getTextureString()));
+                    spawn("powerupdrop", new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY())
+                            .put("type", powerUp.getType()).put("texture", powerUp.getTextureString()));
                 }
             }
         }

@@ -1,12 +1,13 @@
 package ly.unnecessary.frontend.components.powerups;
 
-import com.almasb.fxgl.entity.Entity;
+import static com.almasb.fxgl.dsl.FXGL.byType;
+import static com.almasb.fxgl.dsl.FXGL.geti;
+import static com.almasb.fxgl.dsl.FXGL.texture;
+
 import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.texture.Texture;
-import javafx.scene.Node;
-import ly.unnecessary.frontend.EntityType;
 
-import static com.almasb.fxgl.dsl.FXGL.*;
+import ly.unnecessary.frontend.EntityType;
 
 public class SuperBallComponent extends Component {
     Texture t;

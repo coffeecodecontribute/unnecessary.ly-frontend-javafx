@@ -1,8 +1,8 @@
 package ly.unnecessary.frontend.components.powerups;
 
-import static com.almasb.fxgl.dsl.FXGL.*;
+import static com.almasb.fxgl.dsl.FXGL.inc;
+
 import com.almasb.fxgl.entity.component.Component;
-import ly.unnecessary.frontend.Application;
 
 public class HeartComponent extends Component {
     @Override

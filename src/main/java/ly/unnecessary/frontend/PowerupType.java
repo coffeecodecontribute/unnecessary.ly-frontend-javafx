@@ -1,24 +1,20 @@
 package ly.unnecessary.frontend;
 
-import com.almasb.fxgl.core.math.FXGLMath;
-import com.almasb.fxgl.dsl.FXGL;
-import com.almasb.fxgl.texture.Texture;
-import javafx.scene.paint.Color;
-
-import static com.almasb.fxgl.dsl.FXGL.*;
 import static com.almasb.fxgl.dsl.FXGL.byType;
+import static com.almasb.fxgl.dsl.FXGL.texture;
+
+import com.almasb.fxgl.core.math.FXGLMath;
+import com.almasb.fxgl.texture.Texture;
 
 public enum PowerupType {
-    //MULTIBALL, SCOREBOMB, PLAYERGUN, SPAWNMULTIBALL, SPAWNSCOREBOMB, SPAWNPLAYERGUN
+    // MULTIBALL, SCOREBOMB, PLAYERGUN, SPAWNMULTIBALL, SPAWNSCOREBOMB,
+    // SPAWNPLAYERGUN
 
+    // PowerUps it self
+    MULTIBALL("MULTIBALL", "game/powerups/extraball.png"), PLAYERGUN("PLAYERGUN", "game/powerups/playergun.png"),
+    HEART("HEART", "game/powerups/heart.png"), SUPERBALL("SUPERBALL", "game/powerups/superball.png"),
 
-    //PowerUps it self
-    MULTIBALL("MULTIBALL", "game/powerups/extraball.png"),
-    PLAYERGUN("PLAYERGUN", "game/powerups/playergun.png"),
-    HEART("HEART", "game/powerups/heart.png"),
-    SUPERBALL("SUPERBALL", "game/powerups/superball.png"),
-
-    //PowerUps Helper
+    // PowerUps Helper
     PLAYERGUN_BULLET("PLAYERGUN_BULLET", "game/powerups/playergun.png");
 
     private final String type;
@@ -28,8 +24,10 @@ public enum PowerupType {
     /**
      * Creates power up with type and color
      *
-     * @param type  type of power up - ensure the type is used in collision logic
-     * @param textureString color of the power up drop - player can identify the power up
+     * @param type          type of power up - ensure the type is used in collision
+     *                      logic
+     * @param textureString color of the power up drop - player can identify the
+     *                      power up
      */
     PowerupType(String type, String textureString) {
         this.type = type;
@@ -38,30 +36,33 @@ public enum PowerupType {
     }
 
     /**
-     * Picks a random power up which is not active. If all power ups are active it will return null.
+     * Picks a random power up which is not active. If all power ups are active it
+     * will return null.
+     * 
      * @return A power up reference with necessary information
      */
     public static PowerupType pickPowerUp() {
-        PowerupType[] powerUpTypes = {PowerupType.MULTIBALL, PowerupType.PLAYERGUN, PowerupType.HEART, PowerupType.SUPERBALL}; //Pool of PowerUps
+        PowerupType[] powerUpTypes = { PowerupType.MULTIBALL, PowerupType.PLAYERGUN, PowerupType.HEART,
+                PowerupType.SUPERBALL }; // Pool of PowerUps
 
         int selectedPowerUp;
         boolean notFound = true;
         int checkCount = 0;
 
         selectedPowerUp = FXGLMath.random(0, powerUpTypes.length - 1);
-        while(notFound) {
-            //Ends search after all checked
-            if(checkCount > powerUpTypes.length) {
+        while (notFound) {
+            // Ends search after all checked
+            if (checkCount > powerUpTypes.length) {
                 selectedPowerUp = -1;
                 return null;
             }
 
-            //Check if power up is already spawned
-            if(byType(powerUpTypes[selectedPowerUp]).isEmpty()) {
+            // Check if power up is already spawned
+            if (byType(powerUpTypes[selectedPowerUp]).isEmpty()) {
                 notFound = false;
-            }
-            else {
-                selectedPowerUp = (selectedPowerUp + 1) % powerUpTypes.length; //Moves counter if the first picked already is active
+            } else {
+                selectedPowerUp = (selectedPowerUp + 1) % powerUpTypes.length; // Moves counter if the first picked
+                                                                               // already is active
                 checkCount++;
             }
         }
@@ -71,6 +72,7 @@ public enum PowerupType {
 
     /**
      * Getter of Type
+     * 
      * @return type of current power up
      */
     public String getType() {
@@ -79,6 +81,7 @@ public enum PowerupType {
 
     /**
      * Getter of Color
+     * 
      * @return color of current power up
      */
     public Texture getTexture() {

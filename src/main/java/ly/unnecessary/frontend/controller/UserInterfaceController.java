@@ -13,7 +13,6 @@ import static com.almasb.fxgl.dsl.FXGL.getAssetLoader;
 import static com.almasb.fxgl.dsl.FXGL.getUIFactoryService;
 
 public class UserInterfaceController implements UIController {
-
     @FXML
     private Label labelScore;
 
@@ -30,6 +29,7 @@ public class UserInterfaceController implements UIController {
     public UserInterfaceController(GameScene gameScene) {
         this.gameScene = gameScene;
     }
+
     @Override
     public void init() {
         labelScore.setFont(getUIFactoryService().newFont(18));
@@ -56,6 +56,4 @@ public class UserInterfaceController implements UIController {
     public Label getLabelScore() {
         return labelScore;
     }
-
-
 }

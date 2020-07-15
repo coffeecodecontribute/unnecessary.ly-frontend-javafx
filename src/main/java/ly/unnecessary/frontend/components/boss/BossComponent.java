@@ -32,42 +32,55 @@ public class BossComponent extends Component {
     @Override
     public void onUpdate(double tpf) {
         var hp = entity.getComponent(HealthIntComponent.class);
-        if(hp.getValue() < 4) {
+        if (hp.getValue() < 4) {
             isFreezed = false;
             velocity = 8;
-            if(frameCount % 30 == 0) {
+            if (frameCount % 30 == 0) {
                 Vec2 dir = Vec2.fromAngle(45);
-                spawn("bossShotBullet", new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight()).put("dir", dir));
+                spawn("bossShotBullet",
+                        new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight())
+                                .put("dir", dir));
                 dir = Vec2.fromAngle(90);
-                spawn("bossShotBullet", new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight()).put("dir", dir));
+                spawn("bossShotBullet",
+                        new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight())
+                                .put("dir", dir));
                 dir = Vec2.fromAngle(135);
-                spawn("bossShotBullet", new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight()).put("dir", dir));
+                spawn("bossShotBullet",
+                        new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight())
+                                .put("dir", dir));
             }
-        }
-        else {
-            if(frameCount % 280 == 0) {
+        } else {
+            if (frameCount % 280 == 0) {
                 isFreezed = true;
             }
-            if(frameCount % 300 == 0) {
+            if (frameCount % 300 == 0) {
                 Vec2 dir = Vec2.fromAngle(45);
-                spawn("bossShotBullet", new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight()).put("dir", dir));
+                spawn("bossShotBullet",
+                        new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight())
+                                .put("dir", dir));
                 dir = Vec2.fromAngle(90);
-                spawn("bossShotBullet", new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight()).put("dir", dir));
+                spawn("bossShotBullet",
+                        new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight())
+                                .put("dir", dir));
                 dir = Vec2.fromAngle(135);
-                spawn("bossShotBullet", new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight()).put("dir", dir));
-            } else if(frameCount % 60 == 0) {
+                spawn("bossShotBullet",
+                        new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight())
+                                .put("dir", dir));
+            } else if (frameCount % 60 == 0) {
                 Vec2 dir = Vec2.fromAngle(90);
-                spawn("bossShotBullet", new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight()).put("dir", dir));
+                spawn("bossShotBullet",
+                        new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight())
+                                .put("dir", dir));
             }
 
-            if(frameCount % 320 == 0) {
+            if (frameCount % 320 == 0) {
                 isFreezed = false;
             }
         }
-        if(isFreezed == false) {
-            if(entity.getX() > byType(EntityType.PLAYER).get(0).getX())
+        if (isFreezed == false) {
+            if (entity.getX() > byType(EntityType.PLAYER).get(0).getX())
                 speed = -velocity;
-            else if(entity.getX() < byType(EntityType.PLAYER).get(0).getX())
+            else if (entity.getX() < byType(EntityType.PLAYER).get(0).getX())
                 speed = velocity;
             entity.translateX(speed);
         }

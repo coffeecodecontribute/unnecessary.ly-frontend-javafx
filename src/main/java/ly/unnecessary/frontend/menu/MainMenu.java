@@ -12,7 +12,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 
 public class MainMenu extends FXGLMenu {
-
     public MainMenu() {
         super(MenuType.MAIN_MENU);
 
