@@ -104,6 +104,7 @@ public class Application extends GameApplication {
         });
         gameSettings.setFullScreenAllowed(true);
         gameSettings.setFullScreenFromStart(false);
+        //gameSettings.setFontUI("VT323-Regular.ttf");
     }
 
     @Override

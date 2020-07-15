@@ -108,7 +108,7 @@ public class GameEntityFactory implements EntityFactory {
     @Spawns("boss")
     public Entity newBoss(SpawnData data) {
         Texture brick;
-        brick = texture("game/brickRed.png", 200, 300);
+        brick = texture("game/boss.png", 200, 300);
 
         HealthIntComponent hp = new HealthIntComponent(10);
 
@@ -140,7 +140,7 @@ public class GameEntityFactory implements EntityFactory {
     public Entity newBossShotBullet(SpawnData data) {
         Rectangle brick = new Rectangle(0, 0, 10, 40);
         brick.setFill(Color.YELLOW);
-        Vec2 dir = Vec2.fromAngle(90);
+        Vec2 dir = data.get("dir");
         return entityBuilder()
                 .from(data)
                 .viewWithBBox(brick)
