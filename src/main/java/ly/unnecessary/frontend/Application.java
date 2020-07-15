@@ -499,6 +499,10 @@ public class Application extends javafx.application.Application {
 
         handleStart.run();
 
+        // Start game
+        var gameStage = new Stage();
+        com.almasb.fxgl.app.GameApplication.customLaunch(new GameApplication(), gameStage);
+
         primaryStage.show();
     }
 

@@ -5,7 +5,6 @@ package ly.unnecessary.frontend;
  * https://stackoverflow.com/questions/52144931/how-to-add-javafx-runtime-to-eclipse-in-java-11)
  */
 public class Launcher {
-
     /**
      * Start the main app
      * 
