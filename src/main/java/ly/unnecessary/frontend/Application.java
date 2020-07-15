@@ -326,7 +326,6 @@ public class Application extends GameApplication {
             System.out.println("End Collision");
         });
     }
-
     @Override
     protected void initInput() {
         getInput().addAction(new UserAction("Up") {
@@ -414,7 +413,6 @@ public class Application extends GameApplication {
             if(levelId >= level.size() || levelId < 0)
                 return;
         }
-
 
         getGameWorld().getEntitiesCopy().forEach(e -> e.removeFromWorld());
 
