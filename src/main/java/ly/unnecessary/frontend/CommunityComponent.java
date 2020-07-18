@@ -9,6 +9,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.github.plushaze.traynotification.animations.Animations;
+import com.github.plushaze.traynotification.notification.Notifications;
+import com.github.plushaze.traynotification.notification.TrayNotification;
+
 import org.controlsfx.control.PopOver;
 import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
@@ -23,16 +27,16 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
-import javafx.scene.control.Alert.AlertType;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -177,9 +181,17 @@ public class CommunityComponent {
      * @param chat
      */
     public void addChat(Chat chat) {
-        this.chatList.getChildren()
-                .add(this.createChatComponent(channel.widthProperty(), this.getInitialsForId(chat.getUserId()),
-                        chat.getMessage(), chat.getUserId() == this.currentUser.getId()));
+        var isFromCurrentUser = chat.getUserId() == this.currentUser.getId();
+
+        this.chatList.getChildren().add(this.createChatComponent(channel.widthProperty(),
+                this.getInitialsForId(chat.getUserId()), chat.getMessage(), isFromCurrentUser));
+
+        if (!isFromCurrentUser) {
+            var tray = new TrayNotification(this.getUserDisplayName(chat.getUserId()), chat.getMessage(),
+                    Notifications.SUCCESS);
+            tray.setAnimation(Animations.POPUP);
+            tray.showAndDismiss(Duration.seconds(1));
+        }
     }
 
     /**
@@ -552,18 +564,30 @@ public class CommunityComponent {
      * @return String
      */
     private String getInitialsForId(long id) {
+        var username = this.getUserDisplayName(id);
+
+        return username.equals("-") ? username : this.getInitials(username);
+    }
+
+    /**
+     * Get display name for user by their id
+     * 
+     * @param id
+     * @return String
+     */
+    private String getUserDisplayName(long id) {
         if (this.currentUser.getId() == id) {
-            return this.getInitials(this.currentUser.getDisplayName());
+            return this.currentUser.getDisplayName();
         }
 
         if (this.owner.getId() == id) {
-            return this.getInitials(this.owner.getDisplayName());
+            return this.owner.getDisplayName();
         }
 
         var member = this.members.stream().filter(m -> m.getId() == id).findFirst();
 
         if (member.isPresent()) {
-            return this.getInitials(member.get().getDisplayName());
+            return member.get().getDisplayName();
         }
 
         return "-";
