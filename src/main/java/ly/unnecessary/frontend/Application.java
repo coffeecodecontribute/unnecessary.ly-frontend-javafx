@@ -1,240 +1,566 @@
 package ly.unnecessary.frontend;
 
-import com.almasb.fxgl.app.ApplicationMode;
-import com.almasb.fxgl.app.GameApplication;
-import com.almasb.fxgl.app.GameSettings;
-import com.almasb.fxgl.core.math.FXGLMath;
-import com.almasb.fxgl.entity.Entity;
-import com.almasb.fxgl.entity.SpawnData;
-import com.almasb.fxgl.entity.components.IrremovableComponent;
-import com.almasb.fxgl.input.Input;
-import com.almasb.fxgl.physics.CollisionHandler;
-import com.almasb.fxgl.physics.HitBox;
-import javafx.geometry.Point2D;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.input.KeyCode;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
-import javafx.stage.Stage;
+import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
-import java.awt.*;
-import java.net.Socket;
-import java.util.Arrays;
+import java.util.Base64;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static com.almasb.fxgl.dsl.FXGL.*;
-import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
+import com.google.protobuf.Empty;
+import com.google.protobuf.InvalidProtocolBufferException;
 
-public class Application extends GameApplication {
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
+import io.grpc.stub.MetadataUtils;
+import javafx.application.Platform;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import ly.unnecessary.backend.api.CommunityOuterClass.Channel;
+import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
+import ly.unnecessary.backend.api.CommunityOuterClass.Community;
+import ly.unnecessary.backend.api.CommunityOuterClass.CommunityFilter;
+import ly.unnecessary.backend.api.CommunityOuterClass.Invitation;
+import ly.unnecessary.backend.api.CommunityOuterClass.InvitationCreateRequest;
+import ly.unnecessary.backend.api.CommunityOuterClass.NewChannel;
+import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
+import ly.unnecessary.backend.api.CommunityOuterClass.NewCommunity;
+import ly.unnecessary.backend.api.CommunityServiceGrpc;
+import ly.unnecessary.backend.api.CommunityServiceGrpc.CommunityServiceBlockingStub;
+import ly.unnecessary.backend.api.UserOuterClass.User;
+import ly.unnecessary.backend.api.UserOuterClass.UserPasswordResetConfirmation;
+import ly.unnecessary.backend.api.UserOuterClass.UserPasswordResetRequest;
+import ly.unnecessary.backend.api.UserOuterClass.UserSignInRequest;
+import ly.unnecessary.backend.api.UserOuterClass.UserSignUpConfirmation;
+import ly.unnecessary.backend.api.UserOuterClass.UserSignUpRequest;
+import ly.unnecessary.backend.api.UserServiceGrpc;
+import ly.unnecessary.frontend.SignInComponent.SignInInfo;
 
-    Entity ball, player, powerup;
+/**
+ * Main app
+ */
+public class Application extends javafx.application.Application {
+    public static Metadata.Key<String> USER_EMAIL_KEY = Metadata.Key.of("x-uly-email", ASCII_STRING_MARSHALLER);
+    public static Metadata.Key<String> USER_PASSWORD_KEY = Metadata.Key.of("x-uly-password", ASCII_STRING_MARSHALLER);
 
-    static int ballSpeed = 18;
-    static int ballRadius = 24;
+    private long currentChannelId = -1;
+    private long currentCommunityId = -1;
+    private Map<Long, Boolean> chatListeners = new ConcurrentHashMap<>();
+    private CommunityServiceBlockingStub communityClient;
 
-    static int playerSpeed = 20;
-
-    Entity[] bricks = new Entity[42];
-
+    /**
+     * Show main app
+     * 
+     * @param primaryStage
+     * @throws Exception
+     */
     @Override
-    protected void initSettings(GameSettings gameSettings) {
-        gameSettings.setWidth(1920);
-        gameSettings.setHeight(1080);
-        gameSettings.setTitle("Brick Breaker");
-        gameSettings.setVersion("0.2");
-        gameSettings.setApplicationMode(ApplicationMode.DEVELOPER);
-    }
+    public void start(Stage primaryStage) throws Exception {
+        // Create components
+        var communityComponent = new CommunityComponent();
 
-    @Override
-    protected void initGameVars(Map<String, Object> vars) {
-        vars.put("ballSpeed", ballSpeed);
-        vars.put("playerSpeed", playerSpeed);
-        vars.put("gameStatus", 1);
-    }
+        // Create handlers
+        Consumer<Channel> handleChannelSwitch = (newChannel) -> {
+            if (newChannel == null) {
+                this.setCurrentChannelId(-1);
 
-    @Override
-    protected void initUI() {
+                Platform.runLater(() -> {
+                    communityComponent.setChannelTitle("");
+                    communityComponent.setChats(List.of());
+                });
 
-        if (getSettings().getApplicationMode() != ApplicationMode.RELEASE) {
-            addText("ballSpeed:", getAppWidth() - 250, 50);
-            addText("playerSpeed:", getAppWidth() - 250, 70);
-            addText("gameStatus:", getAppWidth() - 250, 90);
-
-            addVarText("ballSpeed", getAppWidth() - 100, 50);
-            addVarText("playerSpeed", getAppWidth() - 100, 70);
-            addVarText("gameStatus", getAppWidth() - 100, 90);
-        }
-    }
-
-    @Override
-    protected void initGame() {
-        getGameWorld().addEntityFactory(new GameEntityFactory());
-
-        int ballSpawnPointX = 0;
-        int ballSpawnPointY = getAppHeight() - 300;
-
-        spawn("background", 0, 0);
-        player = spawn("player", ballSpawnPointX, ballSpawnPointY + 75);
-        ball = spawn("ball", new SpawnData(ballSpawnPointX + 100, ballSpawnPointY).put("ballSpeed", ballSpeed)
-                .put("ballRadius", ballRadius));
-
-        int m = 0;
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 7; j++) {
-                bricks[m++] = spawn("brick", 80 + i * 150, 60 + j * 50);
-            }
-        }
-
-        entityBuilder().type(EntityType.WALL).collidable().with(new IrremovableComponent())
-                .buildScreenBoundsAndAttach(40);
-    }
-
-    @Override
-    protected void initInput() {
-        // onKey(KeyCode.D, "Move Right", () -> {
-        // player.getComponent(PlayerComponent.class).moveRight(); });
-        // onKey(KeyCode.A, () ->
-        // player.getComponent(PlayerComponent.class).moveLeft());
-    }
-
-    @Override
-    protected void initPhysics() {
-        onCollisionBegin(PowerupType.PLAYERGUN, EntityType.BRICK, (playergun, brick) -> {
-            brick.removeFromWorld();
-            playergun.removeFromWorld();
-        });
-        onCollisionBegin(EntityType.BALL, EntityType.BRICK, (ball, brick) -> {
-
-            if (getSettings().getApplicationMode() != ApplicationMode.RELEASE) {
-                spawn("point", brick.getPosition());
-                spawn("point", ball.getPosition());
+                return;
             }
 
-            brick.removeFromWorld();
-            ball.getComponent(BallComponent.class).collideBlock();
-            Point2D velocity = ball.getObject("velocity");
-            ball.setProperty("velocity", new Point2D(velocity.getX(), -velocity.getY()));
-            // System.out.println("Brick X: " + brick.getX() + " | Brick Y: " +
-            // brick.getY());
-            // System.out.println(Arrays.toString(bricks));
+            this.setCurrentChannelId(newChannel.getId());
 
-            if (FXGLMath.randomBoolean(0.3f)) {
-                spawn("powerupdrop", brick.getPosition());
-            }
-        });
+            Platform.runLater(() -> {
+                communityComponent.setChannelTitle(newChannel.getDisplayName());
+                communityComponent.setSelectedChannel(newChannel);
+            });
 
-        onCollisionCollectible(EntityType.PLAYER, EntityType.POWERUPDROP, powerupdrop -> {
-            String powerUpType = powerupdrop.getString("type");
-            PowerupType type;
+            var channelFilter = ChannelFilter.newBuilder().setChannelId(newChannel.getId()).build();
 
-            if (powerUpType == "MULTIBALL") {
-                type = PowerupType.SPAWNMULTIBALL;
-                if (byType(type).isEmpty()) {
-                    System.out.println("MULTIBALL");
-                    spawn("powerupSpawnMultiBall", 100, 0);
+            var newChats = this.communityClient.listChatsForChannel(channelFilter).getChatsList();
+
+            Platform.runLater(() -> {
+                communityComponent.setChats(newChats);
+                communityComponent.scrollChatsToBottom();
+            });
+
+            var stream = this.communityClient.subscribeToChannelChats(channelFilter);
+
+            this.createDaemonThread(() -> {
+                var listenerExists = false;
+
+                try {
+                    listenerExists = this.chatListeners.get(newChannel.getId());
+                } catch (NullPointerException e) {
+
                 }
-            } 
-            else if (powerUpType == "PLAYERGUN") {
-                type = PowerupType.SPAWNPLAYERGUN;
-                if (byType(type).isEmpty()) {
-                    System.out.println("PLAYERGUN");
-                    spawn("powerupSpawnPlayerGun", 0, 0);
+
+                if (!listenerExists) {
+                    this.chatListeners.put(newChannel.getId(), true);
+
+                    stream.forEachRemaining(newChat -> {
+                        if (newChat.getChannelId() == this.getCurrentChannelId()) {
+                            Platform.runLater(() -> {
+                                communityComponent.addChat(newChat);
+                                communityComponent.scrollChatsToBottom();
+                            });
+                        }
+                    });
                 }
-            }
-            /*
-             * else if (randomNuber == 1) { type = PowerupType.SCOREBOMB; }
-             */
-        });
+            }).start();
+        };
 
-        onCollisionBegin(EntityType.BALL, EntityType.PLAYER, (ball, player) -> {
-            /*
-             * double lengthOfPaddleCollision = ball.getWidth() + player.getWidth(); double
-             * collidePoint = ball.getX() - player.getX() + ball.getWidth();
-             * 
-             * collidePoint = collidePoint / (lengthOfPaddleCollision / 2);
-             * 
-             * double angle = collidePoint * Math.PI/3;
-             * 
-             * System.out.println("lengthOfPaddleCollision: " + lengthOfPaddleCollision +
-             * " | collidePoint: " + collidePoint + " | angle: " + angle);
-             */
+        Consumer<Community> handleCommunitySwitch = (communityToFetch) -> {
+            if (communityToFetch == null) {
+                Platform.runLater(() -> {
+                    communityComponent.setCommunityTitle("");
+                    communityComponent.setOwner(User.newBuilder().setDisplayName("-").build());
+                    communityComponent.setMembers(List.of(User.newBuilder().setDisplayName("-").build()));
+                    communityComponent.setChannels(List.of());
 
-            double collidePoint = ball.getX() - (player.getX() + player.getWidth() / 2);
+                    handleChannelSwitch.accept(null);
+                });
 
-            collidePoint = collidePoint / (player.getWidth() / 2);
-
-            double angle = collidePoint * Math.PI / 3;
-
-            // Developer
-            if (getSettings().getApplicationMode() != ApplicationMode.RELEASE) {
-                spawn("point", ball.getPosition());
-                spawn("point", player.getPosition());
+                return;
             }
 
-            // Ball collide logic
-            Point2D velocity = ball.getObject("velocity");
-            ball.setProperty("velocity", new Point2D(ballSpeed * Math.sin(angle), -ballSpeed * Math.cos(angle)));
+            this.setCurrentCommunityId(communityToFetch.getId());
+
+            var communityFilter = CommunityFilter.newBuilder().setCommunityId(communityToFetch.getId()).build();
+
+            var newCommunity = this.communityClient.getCommunity(communityFilter);
+
+            Platform.runLater(() -> {
+                communityComponent.setCommunityTitle(newCommunity.getDisplayName());
+                communityComponent.setOwner(newCommunity.getOwner());
+                communityComponent.setMembers(newCommunity.getMembersList());
+                communityComponent.setSelectedCommunity(newCommunity);
+            });
+
+            var newChannels = this.communityClient.listChannelsForCommunity(communityFilter).getChannelsList();
+
+            if (newChannels.size() == 0) {
+                Platform.runLater(() -> communityComponent.setChannels(List.of()));
+
+                handleChannelSwitch.accept(null);
+            } else {
+                Platform.runLater(() -> communityComponent.setChannels(newChannels));
+
+                handleChannelSwitch.accept(newChannels.get(0));
+            }
+        };
+
+        Consumer<String> handleCreateChat = (c) -> {
+            if (!c.isEmpty()) {
+                Platform.runLater(() -> communityComponent.clearAndFocusNewChatFieldText());
+
+                var chat = NewChat.newBuilder().setChannelId(this.getCurrentChannelId()).setMessage(c).build();
+
+                this.communityClient.createChat(chat);
+            }
+        };
+
+        Consumer<List<Community>> handleCommunitiesChange = (newCommunities) -> {
+            Platform.runLater(() -> communityComponent.setCommunities(newCommunities));
+        };
+
+        Consumer<List<Community>> handleInit = (newCommunities) -> {
+            handleCommunitiesChange.accept(newCommunities);
+
+            if (newCommunities.size() == 0) {
+                handleCommunitySwitch.accept(null);
+            } else {
+                handleCommunitySwitch.accept(newCommunities.get(0));
+            }
+        };
+
+        Consumer<User> handleUserChange = (newUser) -> {
+            Platform.runLater(() -> communityComponent.setCurrentUser(newUser));
+        };
+
+        Function<String, Boolean> handleCreateChannel = (newChannelName) -> {
+            if (newChannelName.isEmpty()) {
+                return false;
+            }
+
+            var newChannel = NewChannel.newBuilder().setCommunityId(this.getCurrentCommunityId())
+                    .setDisplayName(newChannelName).build();
+
+            this.communityClient.createChannel(newChannel);
+
+            handleCommunitySwitch.accept(Community.newBuilder().setId(this.getCurrentCommunityId()).build());
+
+            return true;
+        };
+
+        Supplier<List<Community>> handleCommunitiesRefresh = () -> {
+            var ownedCommunities = this.communityClient.listCommunitiesForOwner(Empty.newBuilder().build());
+            var memberCommunities = this.communityClient.listCommunitiesForMember(Empty.newBuilder().build());
+
+            var allCommunities = Stream.concat(ownedCommunities.getCommunitiesList().stream(),
+                    memberCommunities.getCommunitiesList().stream()).distinct().collect(Collectors.toList());
+
+            return allCommunities;
+        };
+
+        Function<String, Boolean> handleCreateCommunity = (newCommunityName) -> {
+            if (newCommunityName.isEmpty()) {
+                return false;
+            }
+
+            var newCommunity = NewCommunity.newBuilder().setDisplayName(newCommunityName).build();
+
+            var updatedCommunity = this.communityClient.createCommunity(newCommunity);
+
+            var updatedCommunities = handleCommunitiesRefresh.get();
+            handleCommunitiesChange.accept(updatedCommunities);
+
+            handleCommunitySwitch.accept(updatedCommunity);
+
+            return true;
+        };
+
+        Function<String, Boolean> handleJoinCommunity = (joinToken) -> {
+            if (joinToken.isEmpty()) {
+                return false;
+            }
+
+            var inviteAsBytes = Base64.getDecoder().decode(joinToken);
+
+            final Invitation invite;
+            try {
+                invite = Invitation.parseFrom(inviteAsBytes);
+            } catch (InvalidProtocolBufferException e) {
+                return false;
+            }
+
+            final Community updatedCommunity;
+            try {
+                updatedCommunity = this.communityClient.acceptInvitation(invite);
+            } catch (Exception e) {
+                return false;
+            }
+
+            var updatedCommunities = handleCommunitiesRefresh.get();
+            handleCommunitiesChange.accept(updatedCommunities);
+
+            handleCommunitySwitch.accept(updatedCommunity);
+
+            return true;
+        };
+
+        // Connect handlers
+        // We start in seperate threads and return to the JavaFX thread with
+        // Platform#runLater so that we don't block the UI
+        communityComponent
+                .setOnSwitchCommunity((t) -> this.createDaemonThread(() -> handleCommunitySwitch.accept(t)).start());
+
+        communityComponent
+                .setOnSwitchChannel((t) -> this.createDaemonThread(() -> handleChannelSwitch.accept(t)).start());
+
+        communityComponent.setOnCreateChat((t) -> this.createDaemonThread(() -> handleCreateChat.accept(t)).start());
+
+        communityComponent.setOnCreateChannel(handleCreateChannel);
+
+        communityComponent.setOnCreateCommunity(handleCreateCommunity);
+
+        communityComponent.setOnRequestInvite(() -> {
+            var invitationCreateRequest = InvitationCreateRequest.newBuilder()
+                    .setCommunityId(this.getCurrentCommunityId()).build();
+
+            var invite = this.communityClient.createInvitation(invitationCreateRequest);
+
+            return Base64.getEncoder().encodeToString(invite.toByteArray());
         });
-        onCollisionEnd(EntityType.BALL, EntityType.PLAYER, (ball, player) -> {
-            System.out.println("End Collision");
-        });
+
+        communityComponent.setOnJoinCommunity(handleJoinCommunity);
+
+        Function<SignInInfo, Integer> handleSignIn = (signInInfo) -> {
+            // Validate connection details
+            if (signInInfo.getApiUrl().isEmpty() || signInInfo.getEmail().isEmpty()
+                    || signInInfo.getPassword().isEmpty()) {
+                return 1;
+            }
+
+            // Setup connection
+            var ch = ManagedChannelBuilder.forTarget(signInInfo.getApiUrl()).usePlaintext().build();
+
+            // Sign in
+            final User user;
+            try {
+                var signInClient = UserServiceGrpc.newBlockingStub(ch);
+                user = signInClient.signIn(UserSignInRequest.newBuilder().setEmail(signInInfo.getEmail())
+                        .setPassword(signInInfo.getPassword()).build());
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                return 2;
+            }
+
+            handleUserChange.accept(user);
+
+            // Setup authentication
+            var metadata = new Metadata();
+            metadata.put(USER_EMAIL_KEY, signInInfo.getEmail());
+            metadata.put(USER_PASSWORD_KEY, signInInfo.getPassword());
+
+            // Create clients
+            this.communityClient = MetadataUtils.attachHeaders(CommunityServiceGrpc.newBlockingStub(ch), metadata);
+
+            // Fetch owned communities
+            var allCommunities = handleCommunitiesRefresh.get();
+
+            handleInit.accept(allCommunities);
+
+            // Render main component
+            var scene = new Scene((Parent) communityComponent.render(), 1080, 720);
+
+            primaryStage.setScene(scene);
+            primaryStage.setTitle(Constants.APP_NAME);
+
+            return 0;
+        };
+
+        Function<SignInInfo, Integer> handleSignUp = (signInInfo) -> {
+            // Validate connection details
+            if (signInInfo.getApiUrl().isEmpty() || signInInfo.getDisplayName().isEmpty()
+                    || signInInfo.getEmail().isEmpty() || signInInfo.getPassword().isEmpty()) {
+                return 1;
+            }
+
+            // Setup connection
+            var ch = ManagedChannelBuilder.forTarget(signInInfo.getApiUrl()).usePlaintext().build();
+
+            // Sign in
+            try {
+                var signUpClient = UserServiceGrpc.newBlockingStub(ch);
+
+                var signUpRequest = UserSignUpRequest.newBuilder().setDisplayName(signInInfo.getDisplayName())
+                        .setEmail(signInInfo.getEmail()).setPassword(signInInfo.getPassword()).build();
+
+                signUpClient.requestSignUp(signUpRequest);
+
+                var confirmWithToken = new ConfirmWithTokenComponent();
+
+                confirmWithToken.setInvalidHeader("Invalid confirmation token");
+                confirmWithToken
+                        .setInvalidDescription("The provided confirmation token can't be used to confirm the sign up.");
+                confirmWithToken
+                        .setTokenDescription(String.format("We've send a token to %s.", signUpRequest.getEmail()));
+                confirmWithToken.setTokenFieldDescription("Confirmation token");
+                confirmWithToken.setTokenSubmitDescription("Confirm token");
+                confirmWithToken.setOnSubmit((newToken) -> {
+                    if (newToken.isEmpty()) {
+                        return 1;
+                    }
+
+                    var signUpConfirmation = UserSignUpConfirmation.newBuilder().setEmail(signInInfo.getEmail())
+                            .setToken(newToken).build();
+                    try {
+                        signUpClient.confirmSignUp(signUpConfirmation);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                        return 2;
+                    }
+
+                    return handleSignIn.apply(signInInfo);
+                });
+
+                // Render confirmation component
+                var scene = new Scene((Parent) confirmWithToken.render(), 480, 320);
+
+                primaryStage.setScene(scene);
+                primaryStage.setTitle("Confirm sign up to unnecessary.ly");
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                return 2;
+            }
+
+            return 0;
+        };
+
+        Function<SignInInfo, Integer> handlePasswordReset = (signInInfo) -> {
+            // Validate connection details
+            if (signInInfo.getApiUrl().isEmpty() || signInInfo.getEmail().isEmpty()) {
+                return 1;
+            }
+
+            // Setup connection
+            var ch = ManagedChannelBuilder.forTarget(signInInfo.getApiUrl()).usePlaintext().build();
+
+            // Sign in
+            try {
+                var passwordResetClient = UserServiceGrpc.newBlockingStub(ch);
+
+                var passwordResetRequest = UserPasswordResetRequest.newBuilder().setEmail(signInInfo.getEmail())
+                        .build();
+
+                passwordResetClient.requestPasswordReset(passwordResetRequest);
+
+                var confirmWithToken = new ConfirmWithTokenComponent();
+
+                confirmWithToken.setInvalidHeader("Invalid confirmation token");
+                confirmWithToken
+                        .setInvalidDescription("The provided confirmation token can't be used to confirm the sign up.");
+                confirmWithToken.setTokenDescription(String.format("We've send a token to %s.", signInInfo.getEmail()));
+                confirmWithToken.setTokenFieldDescription("Confirmation token");
+                confirmWithToken.setTokenSubmitDescription("Confirm token");
+                confirmWithToken.setOnSubmit((newToken) -> {
+                    if (newToken.isEmpty()) {
+                        return 1;
+                    }
+
+                    try {
+                        var confirmWithNewPassword = new ConfirmWithTokenComponent();
+
+                        confirmWithNewPassword.setIsPassword(true);
+                        confirmWithNewPassword.setInvalidHeader("Invalid password");
+                        confirmWithNewPassword.setInvalidDescription(
+                                "The provided password can't be used to confirm the password reset.");
+                        confirmWithNewPassword.setTokenDescription("All set! Now, please enter your new password.");
+                        confirmWithNewPassword.setTokenFieldDescription("New password");
+                        confirmWithNewPassword.setTokenSubmitDescription("Reset password");
+                        confirmWithNewPassword.setOnSubmit((newPassword) -> {
+                            if (newPassword.isEmpty()) {
+                                return 1;
+                            }
+
+                            var passwordResetConfirmation = UserPasswordResetConfirmation.newBuilder()
+                                    .setEmail(signInInfo.getEmail()).setNewPassword(newPassword).setToken(newToken)
+                                    .build();
+                            try {
+                                passwordResetClient.confirmPasswordReset(passwordResetConfirmation);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
+                                return 2;
+                            }
+
+                            signInInfo.setPassword(newPassword);
+
+                            return handleSignIn.apply(signInInfo);
+                        });
+
+                        // Render confirmation component
+                        var scene = new Scene((Parent) confirmWithNewPassword.render(), 480, 320);
+
+                        primaryStage.setScene(scene);
+                        primaryStage.setTitle("Set new password on unnecessary.ly");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                        return 2;
+                    }
+
+                    return 0;
+                });
+
+                // Render confirmation component
+                var scene = new Scene((Parent) confirmWithToken.render(), 480, 320);
+
+                primaryStage.setScene(scene);
+                primaryStage.setTitle("Confirm password reset on unnecessary.ly");
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                return 2;
+            }
+
+            return 0;
+        };
+
+        Runnable handleStart = () -> {
+            // Sign in
+            var signInComponent = new SignInComponent();
+            signInComponent.setOnSignIn(handleSignIn);
+            signInComponent.setOnSignUp(handleSignUp);
+            signInComponent.setOnPasswordReset(handlePasswordReset);
+
+            // Render sign up/in component
+            var scene = new Scene((Parent) signInComponent.render(), 480, 320);
+
+            primaryStage.setScene(scene);
+            primaryStage.setTitle("Sign in to unnecessary.ly");
+        };
+
+        communityComponent.setOnSignOut(handleStart);
+
+        handleStart.run();
+
+        // Start game
+        var gameStage = new Stage();
+        com.almasb.fxgl.app.GameApplication.customLaunch(new GameApplication(), gameStage);
+
+        primaryStage.show();
     }
 
-    @Override
-    protected void onUpdate(double tpf) {
-        mouseMovement();
-        Point2D velocity = ball.getObject("velocity");
-        ball.translate(velocity);
-
-        if (ball.getY() < 0 || ball.getY() + ball.getWidth() > getAppHeight()) {
-            ball.setProperty("velocity", new Point2D(velocity.getX(), -velocity.getY()));
-        }
-
-        if (ball.getX() < 0 || ball.getX() + ball.getHeight() > getAppWidth()) {
-            ball.setProperty("velocity", new Point2D(-velocity.getX(), velocity.getY()));
-        }
-
-        // Game is lost
-        if (ball.getY() > getAppHeight() - 50) {
-            set("gameStatus", 0);
-            set("gameStatusReadable", getGameStatus(geti("gameStatus")));
-        }
-
-        // Game is won
-        if (byType(EntityType.BRICK).isEmpty()) {
-            set("gameStatus", 2);
-            set("gameStatusReadable", getGameStatus(geti("gameStatus")));
-        }
-    }
-
+    /**
+     * Run main app
+     * 
+     * @param args
+     */
     public static void main(String[] args) {
         launch(args);
     }
 
     /**
-     * sets player'x position to the mouse'x
+     * Get the current channel's id
+     * 
+     * @return long
      */
-    public void mouseMovement() {
-        // gets the cursor and sets it to the middle of the player
-        double mouseX = getInput().getMouseXWorld() - player.getWidth() / 2;
-
-        // fixes issue where player is stucked before the max
-        if (mouseX < 0)
-            player.setX(0);
-        else if (mouseX > getAppWidth() - player.getWidth())
-            player.setX(getAppWidth() - player.getWidth());
-        else
-            player.setX(mouseX); // sets the player mouseX if it's in the allowed area
+    public long getCurrentChannelId() {
+        return currentChannelId;
     }
 
-    public static int getPlayerSpeed() {
-        return playerSpeed;
+    /**
+     * Set the current channel's id
+     * 
+     * @param currentChannelId
+     */
+    public void setCurrentChannelId(long currentChannelId) {
+        this.currentChannelId = currentChannelId;
     }
 
-    public static String getGameStatus(int gameStatus) {
-        return gameStatus == 1 ? "ingame"
-                : gameStatus == 0 ? "Game over" : gameStatus == 2 ? "Victory" : "Unknown Status";
+    /**
+     * Get the current community's id
+     * 
+     * @return long
+     */
+    public long getCurrentCommunityId() {
+        return currentCommunityId;
+    }
+
+    /**
+     * Set the current communitiy's id
+     * 
+     * @param currentCommunityId
+     */
+    public void setCurrentCommunityId(long currentCommunityId) {
+        this.currentCommunityId = currentCommunityId;
+    }
+
+    /**
+     * Create a daemon thread
+     * 
+     * @param handler
+     */
+    private Thread createDaemonThread(Runnable handler) {
+        var thread = new Thread(handler);
+
+        thread.setDaemon(true);
+
+        return thread;
     }
 }

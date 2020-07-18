@@ -1,6 +1,6 @@
 # unnecessary.ly
 
-JavaFX frontend for an unnecessary break breaker clone.
+JavaFX frontend for an unnecessary brick breaker clone.
 
 ![Maven CI](https://github.com/coffeecodecontribute/unnecessary.ly-frontend-javafx/workflows/Maven%20CI/badge.svg)
 
