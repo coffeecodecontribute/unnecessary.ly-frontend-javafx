@@ -6,7 +6,7 @@ JavaFX frontend for an unnecessary brick breaker clone.
 
 ## Overview
 
-This project is a JavaFX frontend that connects to the [unnecessary.ly-Server](https://coffeecodecontribute.github.io/unnecessary.ly-backend-java/).
+This project is a JavaFX frontend that connects to the [unnecessary.ly-Server](https://pojntfx.github.io/unnecessary.ly-backend-java/).
 
 ## Installation
 
