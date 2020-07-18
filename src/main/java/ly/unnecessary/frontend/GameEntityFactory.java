@@ -1,13 +1,5 @@
 package ly.unnecessary.frontend;
 
-import static com.almasb.fxgl.dsl.FXGL.animationBuilder;
-import static com.almasb.fxgl.dsl.FXGL.entityBuilder;
-import static com.almasb.fxgl.dsl.FXGL.getAppHeight;
-import static com.almasb.fxgl.dsl.FXGL.getAppWidth;
-import static com.almasb.fxgl.dsl.FXGL.getUIFactoryService;
-import static com.almasb.fxgl.dsl.FXGL.geti;
-import static com.almasb.fxgl.dsl.FXGL.texture;
-
 import com.almasb.fxgl.animation.Interpolators;
 import com.almasb.fxgl.core.math.Vec2;
 import com.almasb.fxgl.dsl.components.ExpireCleanComponent;
@@ -20,7 +12,6 @@ import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.Spawns;
 import com.almasb.fxgl.texture.Texture;
 import com.almasb.fxgl.ui.ProgressBar;
-
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -35,6 +26,8 @@ import ly.unnecessary.frontend.components.powerups.MultiBallComponent;
 import ly.unnecessary.frontend.components.powerups.PlayerGunComponent;
 import ly.unnecessary.frontend.components.powerups.SuperBallComponent;
 
+import static com.almasb.fxgl.dsl.FXGL.*;
+
 public class GameEntityFactory implements EntityFactory {
 
     @Spawns("ball")
@@ -46,7 +39,7 @@ public class GameEntityFactory implements EntityFactory {
         rectangle.setFill(Color.RED);
 
         return entityBuilder().type(EntityType.BALL).from(data)
-                .viewWithBBox(texture("game/ballGrey.png", geti("ballRadius"), geti("ballRadius")))
+                .viewWithBBox(texture("game/ball_small.png", geti("ballRadius"), geti("ballRadius")))
                 .with("velocity", new Point2D(0, 0)).with(new BallComponent()).collidable().build();
     }
 
@@ -79,22 +72,21 @@ public class GameEntityFactory implements EntityFactory {
     public Entity newPlayer(SpawnData data) {
         var e = new Rectangle(0, 0, 300, 30);
         e.setFill(Color.RED);
-        return entityBuilder().type(EntityType.PLAYER).from(data).viewWithBBox(texture("game/player.png", 300, 30))
+        return entityBuilder().type(EntityType.PLAYER).from(data).viewWithBBox(texture("game/playerPX.png", 320, 64))
                 .with(new PlayerComponent()).collidable().build();
     }
 
     @Spawns("background")
     public Entity newBackground(SpawnData data) {
         Rectangle background = new Rectangle(getAppWidth(), getAppHeight());
-        background.setFill(Color.web("#475b8d"));
-        return entityBuilder().from(data).view(background).build();
+        background.setFill(Color.web("#000000"));
+        return entityBuilder().from(data).view(texture("game/bg_example.jpg")).build();
     }
 
     @Spawns("boss")
     public Entity newBoss(SpawnData data) {
         Texture brick;
-        brick = texture("game/boss.png", 200, 300);
-
+        brick = texture("game/boss/boss.png", 1728, 300).toAnimatedTexture(8, Duration.seconds(0.5)).loop();
         HealthIntComponent hp = new HealthIntComponent(10);
 
         var hpView = new ProgressBar(true);
@@ -116,10 +108,13 @@ public class GameEntityFactory implements EntityFactory {
     @Spawns("bossShotBullet")
     public Entity newBossShotBullet(SpawnData data) {
         Rectangle brick = new Rectangle(0, 0, 10, 40);
+        Texture bossBullet = texture("game/boss/boss_bullet.png", 40, 60).toAnimatedTexture(5, Duration.seconds(0.5)).loop();
+        bossBullet.setRotate(-90);
+
         brick.setFill(Color.YELLOW);
         Vec2 dir = data.get("dir");
-        return entityBuilder().from(data).viewWithBBox(brick)
-                .with(new ProjectileComponent(dir.toPoint2D(), 800).allowRotation(false))
+        return entityBuilder().from(data).viewWithBBox(bossBullet)
+                .with(new ProjectileComponent(dir.toPoint2D(), 800))
                 .with(new OffscreenCleanComponent()).collidable().build();
     }
 
@@ -161,7 +156,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /*
      * @Spawns("powerup") public Entity newPowerup(SpawnData data) {
-     * 
+     *
      * return entityBuilder() .from(data) .type(PowerupType.PLAYERGUN) //.with(new
      * PowerupComponent()) .build(); }
      */

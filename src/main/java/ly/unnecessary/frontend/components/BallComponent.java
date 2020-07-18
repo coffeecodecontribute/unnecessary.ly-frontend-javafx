@@ -14,6 +14,7 @@ import javafx.util.Duration;
 
 public class BallComponent extends Component {
     private boolean allowedToChangeCollideDirection = true;
+    private int lastWallCollide = 0;
 
     @Override
     public void onAdded() {
@@ -26,25 +27,49 @@ public class BallComponent extends Component {
         Point2D velocity = entity.getObject("velocity");
         entity.translate(velocity);
 
-        // System.out.println(Math.abs(velocity.getX()) + Math.abs(velocity.getY())); //
-        // TODO: Gets Ball Speed; Ball speed is to slow after first collide.
-
         if (entity.getY() < 0) {
-            entity.getComponent(BallComponent.class).collide(new Point2D(velocity.getX(), -velocity.getY())); // TOP
-            play("alpha/ball_collide_wall_1_arp.wav");
+            entity.getComponent(BallComponent.class).collideWall(new Point2D(velocity.getX(), -velocity.getY()), 1); // TOP
         } else if (entity.getY() + entity.getWidth() > getAppHeight()) {
-            entity.getComponent(BallComponent.class).collide(new Point2D(velocity.getX(), -velocity.getY())); // BOTTOM
-            play("alpha/ball_collide_wall_1_arp.wav");
+            entity.getComponent(BallComponent.class).collideWall(new Point2D(velocity.getX(), -velocity.getY()), 3); // BOTTOM
         } else if (entity.getX() < 0) {
-            entity.getComponent(BallComponent.class).collide(new Point2D(-velocity.getX(), velocity.getY())); // LEFT
-            play("alpha/ball_collide_wall_1_arp.wav");
+            entity.getComponent(BallComponent.class).collideWall(new Point2D(-velocity.getX(), velocity.getY()), 4); // LEFT
         } else if (entity.getX() + entity.getHeight() > getAppWidth()) {
-            entity.getComponent(BallComponent.class).collide(new Point2D(-velocity.getX(), velocity.getY())); // RIGHT
-            play("alpha/ball_collide_wall_1_arp.wav");
+            entity.getComponent(BallComponent.class).collideWall(new Point2D(-velocity.getX(), velocity.getY()), 2); // RIGHT
         }
     }
 
+    /**
+     * With last wall collide we want to fix issues causing the ball to stuck in the wall.
+     * We handle that by only allowing a collision once with a the same wall.
+     * We do that by tracking the last collided wall and only accepting other walls, bricks and the player as next collision object.
+     * <ul>
+     *     <li>0 = collided with any brick or player</li>
+     *     <li>1 = top wall</li>
+     *     <li>2 = top right</li>
+     *     <li>3 = top bottom</li>
+     *     <li>4 = top left</li>
+     * </ul>
+     *
+     * |-------1--------|
+     * |                |
+     * 4                2
+     * |                |
+     * |-------3--------|
+     *
+     * @param point2D the new direction after collide
+     * @param currentWallCollide the current wall with which you collided in form of an integer
+     */
+    public void collideWall(Point2D point2D, int currentWallCollide) {
+        if(currentWallCollide != lastWallCollide) {
+            lastWallCollide = currentWallCollide;
+            entity.setProperty("velocity", point2D);
+        }
+
+    }
+
     public void collide(Point2D point2d) {
+        lastWallCollide = 0;
+
         if (allowedToChangeCollideDirection) {
             entity.setProperty("velocity", point2d);
             allowedToChangeCollideDirection = false;

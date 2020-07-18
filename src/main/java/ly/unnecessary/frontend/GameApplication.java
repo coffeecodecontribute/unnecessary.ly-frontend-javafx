@@ -26,6 +26,7 @@ import java.util.stream.IntStream;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
+import static ly.unnecessary.frontend.GameLogic.calculateAngle;
 
 public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
@@ -38,12 +39,12 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
     // ball
     static int ballSpeed = 8;
-    static int ballRadius = 24;
+    static int ballRadius = 32;
     static Point2D ballSpawnPoint = new Point2D(appWidth / 2d - ballRadius / 2d, appHeight - 150);
 
     // player
-    static int playerWidth = 300;
-    static int playerHeight = 30;
+    static int playerWidth = 320;
+    static int playerHeight = 64;
     static int playerSpeed = 20;
     static double playerSpeedMultiplier = 1.5f;
     static Point2D playerSpawnPoint = new Point2D(appWidth / 2d - playerWidth / 2d, appHeight - 100);
@@ -170,7 +171,10 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
         // loopBGM("music.mp3");
 
-        entityBuilder().type(EntityType.WALL).collidable().with(new IrremovableComponent())
+        entityBuilder()
+                .type(EntityType.WALL)
+                .collidable()
+                .with(new IrremovableComponent())
                 .buildScreenBoundsAndAttach(40);
     }
 
@@ -181,14 +185,12 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         if (geti("gameStatus") == 0)
             inPreGame();
 
-        // if (getSettings().getApplicationMode() == ApplicationMode.RELEASE) {
         // Checks if ball is under the player
         byType(EntityType.BALL).forEach(entity -> {
             if (entity.getY() > getAppHeight() - 50) {
                 entity.removeFromWorld();
             }
         });
-        // }
 
         // Game is lost
         if (byType(EntityType.BALL).isEmpty()) {
@@ -286,40 +288,20 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         });
 
         onCollisionBegin(EntityType.BALL, EntityType.PLAYER, (ball, player) -> {
-            /*
-             * double lengthOfPaddleCollision = ball.getWidth() + player.getWidth(); double
-             * collidePoint = ball.getX() - player.getX() + ball.getWidth();
-             * 
-             * collidePoint = collidePoint / (lengthOfPaddleCollision / 2);
-             * 
-             * double angle = collidePoint * Math.PI/3;
-             * 
-             * System.out.println("lengthOfPaddleCollision: " + lengthOfPaddleCollision +
-             * " | collidePoint: " + collidePoint + " | angle: " + angle);
-             */
-            play("alpha/ball_collide_wall_2_arp.wav");
-            double collidePoint = ball.getX() - (player.getX() + player.getWidth() / 2);
 
-            collidePoint = collidePoint / (player.getWidth() / 2);
-
-            double angle = collidePoint * Math.PI / 3;
-
-            // Developer
+            // Display the collide points for testing
             if (getSettings().getApplicationMode() != ApplicationMode.RELEASE) {
                 spawn("point", ball.getPosition());
                 spawn("point", player.getPosition());
             }
 
-            // Ball collide logic
-            Point2D velocity = ball.getObject("velocity");
-            ball.getComponent(BallComponent.class)
-                    .collide(new Point2D(ballSpeed * playerSpeedMultiplier * Math.sin(angle),
-                            -ballSpeed * playerSpeedMultiplier * Math.cos(angle)));
-        });
-        onCollisionEnd(EntityType.BALL, EntityType.PLAYER, (ball, player) -> {
-            System.out.println("End Collision");
+            double ballCorrectX = ball.getX() + ball.getWidth() / 2; // Takes the middle of the ball as ball x
+            double angle = calculateAngle(ballCorrectX, player.getX(), player.getWidth());
+
+            ball.getComponent(BallComponent.class).collide(new Point2D(ballSpeed * playerSpeedMultiplier * Math.sin(angle), -ballSpeed * playerSpeedMultiplier * Math.cos(angle)));
         });
     }
+
 
     @Override
     protected void initInput() {
@@ -340,21 +322,6 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
                 }
             }
         }, MouseButton.PRIMARY);
-
-        onKey(KeyCode.H, () -> {
-            loop_2.getAudio$fxgl_media().setVolume(0);
-            System.out.println("changed");
-        });
-
-        onKey(KeyCode.J, () -> {
-            loop_2.getAudio$fxgl_media().pause();
-            System.out.println("stoped");
-        });
-
-        onKey(KeyCode.U, () -> {
-            loop_2.getAudio$fxgl_media().play();
-            System.out.println("play");
-        });
 
         // onKey(KeyCode.D, "Move Right", () -> {
         // player.getComponent(PlayerComponent.class).moveRight(); });
