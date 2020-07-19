@@ -2,10 +2,10 @@ package ly.unnecessary.frontend;
 
 import org.junit.jupiter.api.Test;
 
-import static ly.unnecessary.frontend.GameLogic.*;
+import static ly.unnecessary.frontend.GamePlayerPhysic.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-class GameLogicTest {
+class GamePlayerPhysicTest {
 
     /**
      * Positive Tests for the collision with the player and ball. Also converts to degrees to make is easier to read.

@@ -26,7 +26,7 @@ import java.util.stream.IntStream;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
-import static ly.unnecessary.frontend.GameLogic.calculateAngle;
+import static ly.unnecessary.frontend.GamePlayerPhysic.calculateAngle;
 
 public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
@@ -223,15 +223,10 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
                 spawn("point", brick.getPosition());
                 spawn("point", ball.getPosition());
             }
-
-            // play("asset.wav");
-
-            play("alpha/ball_collide_brick.wav");
             brick.getComponent(BrickComponent.class).hitByBall();
 
             inc("score", 100);
 
-            // ball.getComponent(BallComponent.class).collideBlock();
 
             if (byType(PowerupType.SUPERBALL).isEmpty()) { // Only collide if SuperBall is not active
                 Point2D velocity = ball.getObject("velocity");
@@ -243,43 +238,49 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
                     ball.getComponent(BallComponent.class).collide(new Point2D(-velocity.getX(), velocity.getY()));
                 }
             }
-            // System.out.println("Brick X: " + brick.getX() + " | Brick Y: " +
-            // brick.getY());
+        });
+
+        onCollisionBegin(EntityType.BALL, EntityType.LEVELBRICK, (ball, levelBrick) -> {
+                Point2D velocity = ball.getObject("velocity");
+
+                if (ball.getX() > levelBrick.getX() - ball.getWidth() + collisionLogicSecurityPadding
+                        && ball.getX() < levelBrick.getX() + levelBrick.getWidth() - collisionLogicSecurityPadding) {
+                    ball.getComponent(BallComponent.class).collide(new Point2D(velocity.getX(), -velocity.getY()));
+                } else {
+                    ball.getComponent(BallComponent.class).collide(new Point2D(-velocity.getX(), velocity.getY()));
+                }
         });
 
         onCollisionCollectible(EntityType.PLAYER, EntityType.POWERUPDROP, powerupdrop -> {
             String powerUpType = powerupdrop.getString("type");
             PowerupType type;
 
-            if (powerUpType == "MULTIBALL") {
+            if (powerUpType.equals("MULTIBALL")) {
                 type = PowerupType.MULTIBALL;
                 if (byType(type).isEmpty()) {
                     System.out.println(type);
                     spawn("powerupSpawnMultiBall", 30, 30);
                 }
-            } else if (powerUpType == "PLAYERGUN") {
+            } else if (powerUpType.equals("PLAYERGUN")) {
                 type = PowerupType.PLAYERGUN;
                 if (byType(type).isEmpty()) {
                     System.out.println(type);
                     spawn("powerupSpawnPlayerGun", 33 * 2, 30);
                 }
-            } else if (powerUpType == "HEART") {
+            } else if (powerUpType.equals("HEART")) {
                 type = PowerupType.HEART;
                 if (byType(type).isEmpty()) {
                     System.out.println(type);
                     spawn("powerupSpawnHeart", 33 * 3, 30);
                     uiController.addLife(); // Require to update the UI from Application
                 }
-            } else if (powerUpType == "SUPERBALL") {
+            } else if (powerUpType.equals("SUPERBALL")) {
                 type = PowerupType.SUPERBALL;
                 if (byType(type).isEmpty()) {
                     System.out.println(type);
                     spawn("powerupSpawnSuperBall", 33 * 4, 30);
                 }
             }
-            /*
-             * else if (randomNuber == 1) { type = PowerupType.SCOREBOMB; }
-             */
         });
 
         onCollisionBegin(EntityType.BRICK, PowerupType.PLAYERGUN_BULLET, (brick, bullet) -> {
@@ -403,10 +404,14 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         int i = 0, x = 0, y = levelMargin;
         for (int row = 0; row < levelRows; row++) {
             for (int col = 0; col < 1920 / brickWidth; col++) {
-                if (currentLevel.charAt(i) == '1')
-                    spawn("brick", new SpawnData(x, y).put("color", Color.DARKGRAY));
-                else if (currentLevel.charAt(i) == '2')
-                    spawn("brick", new SpawnData(x, y).put("color", Color.RED));
+                if (currentLevel.charAt(i) == '1') // 1 life
+                    spawn("brick", new SpawnData(x, y).put("type", 1));
+                else if (currentLevel.charAt(i) == '2') // 2 life
+                    spawn("brick", new SpawnData(x, y).put("type", 2));
+                else if(currentLevel.charAt(i) == '3') // 3 life
+                    spawn("brick", new SpawnData(x, y).put("type", 3));
+                else if(currentLevel.charAt(i) == 'X') // not destroyable
+                    spawn("levelBrick", x, y);
                 i++;
                 x += brickWidth;
             }

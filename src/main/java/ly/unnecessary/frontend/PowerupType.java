@@ -42,8 +42,7 @@ public enum PowerupType {
      * @return A power up reference with necessary information
      */
     public static PowerupType pickPowerUp() {
-        PowerupType[] powerUpTypes = { PowerupType.MULTIBALL, PowerupType.PLAYERGUN, PowerupType.HEART,
-                PowerupType.SUPERBALL }; // Pool of PowerUps
+        PowerupType[] powerUpTypes = { PowerupType.MULTIBALL, PowerupType.PLAYERGUN, PowerupType.HEART, PowerupType.SUPERBALL }; // Pool of PowerUps
 
         int selectedPowerUp;
         boolean notFound = true;
@@ -61,8 +60,7 @@ public enum PowerupType {
             if (byType(powerUpTypes[selectedPowerUp]).isEmpty()) {
                 notFound = false;
             } else {
-                selectedPowerUp = (selectedPowerUp + 1) % powerUpTypes.length; // Moves counter if the first picked
-                                                                               // already is active
+                selectedPowerUp = (selectedPowerUp + 1) % powerUpTypes.length; // Moves counter if the first picked already is active
                 checkCount++;
             }
         }
@@ -88,6 +86,11 @@ public enum PowerupType {
         return texture;
     }
 
+    /**
+     * Getter of Texture Name
+     *
+     * @return texture name
+     */
     public String getTextureString() {
         return textureString;
     }

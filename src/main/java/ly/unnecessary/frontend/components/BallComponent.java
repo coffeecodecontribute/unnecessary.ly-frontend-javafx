@@ -67,6 +67,10 @@ public class BallComponent extends Component {
 
     }
 
+    /**
+     * Collide with brick or player
+     * @param point2d
+     */
     public void collide(Point2D point2d) {
         lastWallCollide = 0;
 
@@ -80,6 +84,9 @@ public class BallComponent extends Component {
         }, Duration.millis(1));
     }
 
+    /**
+     * Ball release in direction of Mouse
+     */
     public void release() {
         Vec2 vel = new Vec2(getInput().getMouseXWorld(), getInput().getMouseYWorld());
         vel.subLocal(new Vec2(entity.getPosition()));

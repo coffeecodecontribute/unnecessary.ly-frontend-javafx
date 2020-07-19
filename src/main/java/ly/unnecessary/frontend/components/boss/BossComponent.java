@@ -78,10 +78,15 @@ public class BossComponent extends Component {
             }
         }
         if (isFreezed == false) {
-            if (entity.getX() > byType(EntityType.PLAYER).get(0).getX())
+            if (entity.getX() > byType(EntityType.PLAYER).get(0).getX()) {
                 speed = -velocity;
-            else if (entity.getX() < byType(EntityType.PLAYER).get(0).getX())
+                entity.getViewComponent().getChildren().get(0).setScaleX(1);
+            }
+
+            else if (entity.getX() < byType(EntityType.PLAYER).get(0).getX()) {
                 speed = velocity;
+                entity.getViewComponent().getChildren().get(0).setScaleX(-1);
+            }
             entity.translateX(speed);
         }
         frameCount++;

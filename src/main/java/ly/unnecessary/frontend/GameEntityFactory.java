@@ -43,19 +43,52 @@ public class GameEntityFactory implements EntityFactory {
                 .with("velocity", new Point2D(0, 0)).with(new BallComponent()).collidable().build();
     }
 
+    @Spawns("levelBrick")
+    public Entity newLevelBrick(SpawnData data) {
+        Rectangle brick = new Rectangle(0, 0, 128, 36);
+        brick.setFill(Color.BLACK);
+
+        return entityBuilder()
+                .type(EntityType.LEVELBRICK)
+                .from(data)
+                .viewWithBBox(brick)
+                .collidable()
+                .build();
+    }
+
     @Spawns("brick")
     public Entity newBrick(SpawnData data) {
-        // Rectangle brick = new Rectangle(0, 0, 128, 36);
-        // brick.setFill(data.get("color"));
+        Rectangle brick = new Rectangle(0, 0, 128, 36);
+        int life = data.get("type");
+        switch(life) {
+            case 1:
+                brick.setFill(Color.WHITE);
+                break;
+            case 2:
+                brick.setFill(Color.DARKGRAY);
+                break;
+            case 3:
+                brick.setFill(Color.GRAY);
+                break;
+            default:
+                brick.setFill(Color.WHITE);
+        }
 
+        /*
         Texture brick;
         if (data.get("color") == Color.RED)
             brick = texture("game/brickRed.png", 128, 36);
         else
             brick = texture("game/brickGray.png", 128, 36);
+         */
 
-        return entityBuilder().type(EntityType.BRICK).from(data).viewWithBBox(brick).with(new HealthIntComponent(2))
-                .with(new BrickComponent()).collidable().build();
+        return entityBuilder()
+                .type(EntityType.BRICK)
+                .from(data).viewWithBBox(brick)
+                .with(new HealthIntComponent(life))
+                .with(new BrickComponent())
+                .collidable()
+                .build();
     }
 
     @Spawns("actionBrick")
