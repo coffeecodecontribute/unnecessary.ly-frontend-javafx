@@ -1,6 +1,7 @@
 package ly.unnecessary.frontend;
 
 import com.almasb.fxgl.animation.Interpolators;
+import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.core.math.Vec2;
 import com.almasb.fxgl.dsl.components.ExpireCleanComponent;
 import com.almasb.fxgl.dsl.components.HealthIntComponent;
@@ -143,6 +144,8 @@ public class GameEntityFactory implements EntityFactory {
         Rectangle brick = new Rectangle(0, 0, 10, 40);
         Texture bossBullet = texture("game/boss/boss_bullet.png", 40, 60).toAnimatedTexture(5, Duration.seconds(0.5)).loop();
         bossBullet.setRotate(-90);
+
+        play("beta/shot_" + FXGLMath.random(1, 3) + ".wav"); //TODO: MUSIC
 
         brick.setFill(Color.YELLOW);
         Vec2 dir = data.get("dir");

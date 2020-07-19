@@ -52,10 +52,13 @@ public class BrickComponent extends Component {
         } else
             System.out.println("Lives: " + hp.getValue());
 
-        if (FXGLMath.randomBoolean(1f) && !blockIsInfected) {
+        if (FXGLMath.randomBoolean(0.1f) && !blockIsInfected) {
             if (byType(EntityType.POWERUPDROP).isEmpty()) {
                 PowerupType powerUp = PowerupType.pickPowerUp();
                 if (powerUp != null) {
+
+                    play("beta/power_up.wav"); //TODO: MUSIC
+
                     spawn("powerupdrop", new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY())
                             .put("type", powerUp.getType()).put("texture", powerUp.getTextureString()));
                 }

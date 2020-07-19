@@ -6,6 +6,7 @@ import static com.almasb.fxgl.dsl.FXGL.getInput;
 import static com.almasb.fxgl.dsl.FXGL.play;
 import static com.almasb.fxgl.dsl.FXGL.run;
 
+import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.core.math.Vec2;
 import com.almasb.fxgl.entity.component.Component;
 
@@ -61,10 +62,12 @@ public class BallComponent extends Component {
      */
     public void collideWall(Point2D point2D, int currentWallCollide) {
         if(currentWallCollide != lastWallCollide) {
+
+            play("beta/wall_collide_" + FXGLMath.random(1, 6) + ".wav"); //TODO: MUSIC
+
             lastWallCollide = currentWallCollide;
             entity.setProperty("velocity", point2D);
         }
-
     }
 
     /**

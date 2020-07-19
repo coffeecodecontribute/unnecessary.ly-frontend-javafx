@@ -1,15 +1,13 @@
 package ly.unnecessary.frontend.components.powerups;
 
-import static com.almasb.fxgl.dsl.FXGL.byType;
-import static com.almasb.fxgl.dsl.FXGL.run;
-import static com.almasb.fxgl.dsl.FXGL.spawn;
-
 import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.time.TimerAction;
 
 import javafx.util.Duration;
 import ly.unnecessary.frontend.EntityType;
+
+import static com.almasb.fxgl.dsl.FXGL.*;
 
 public class PlayerGunComponent extends Component {
     private TimerAction playergun;
@@ -31,8 +29,14 @@ public class PlayerGunComponent extends Component {
         playergun = run(() -> {
             var player = byType(EntityType.PLAYER).get(0);
             if (type == PlayerGunType.SINGLE) {
+
+                play("beta/shot_" + FXGLMath.random(1, 3) + ".wav"); //TODO: MUSIC
+
                 spawn("playerGunBullet", player.getX() + player.getWidth() / 2, player.getY());
             } else if (type == PlayerGunType.DOUBLE) {
+
+                play("beta/shot_" + FXGLMath.random(1, 3) + ".wav"); //TODO: MUSIC
+
                 if (switchSides)
                     spawn("playerGunBullet", player.getX() + marginOfPlayer, player.getY());
                 else
