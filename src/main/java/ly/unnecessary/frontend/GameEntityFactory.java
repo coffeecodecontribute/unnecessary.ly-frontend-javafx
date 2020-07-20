@@ -11,6 +11,8 @@ import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.EntityFactory;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.Spawns;
+import com.almasb.fxgl.particle.ParticleComponent;
+import com.almasb.fxgl.particle.ParticleEmitters;
 import com.almasb.fxgl.texture.Texture;
 import com.almasb.fxgl.ui.ProgressBar;
 import javafx.geometry.Point2D;
@@ -46,8 +48,7 @@ public class GameEntityFactory implements EntityFactory {
 
     @Spawns("levelBrick")
     public Entity newLevelBrick(SpawnData data) {
-        Rectangle brick = new Rectangle(0, 0, 128, 36);
-        brick.setFill(Color.BLACK);
+        Texture brick = texture("game/bricks/undestroyable_brick.png", 128, 36);
 
         return entityBuilder()
                 .type(EntityType.LEVELBRICK)
@@ -59,29 +60,22 @@ public class GameEntityFactory implements EntityFactory {
 
     @Spawns("brick")
     public Entity newBrick(SpawnData data) {
-        Rectangle brick = new Rectangle(0, 0, 128, 36);
         int life = data.get("type");
+        Texture brick;
+
         switch(life) {
             case 1:
-                brick.setFill(Color.WHITE);
+                brick = texture("game/bricks/white_brick.png", 128, 36);
                 break;
             case 2:
-                brick.setFill(Color.DARKGRAY);
+                brick = texture("game/bricks/blue_brick.png", 128, 36);
                 break;
             case 3:
-                brick.setFill(Color.GRAY);
+                brick = texture("game/bricks/red_brick.png", 128, 36);
                 break;
             default:
-                brick.setFill(Color.WHITE);
+                brick = texture("game/bricks/white_brick.png", 128, 36);
         }
-
-        /*
-        Texture brick;
-        if (data.get("color") == Color.RED)
-            brick = texture("game/brickRed.png", 128, 36);
-        else
-            brick = texture("game/brickGray.png", 128, 36);
-         */
 
         return entityBuilder()
                 .type(EntityType.BRICK)
@@ -94,12 +88,23 @@ public class GameEntityFactory implements EntityFactory {
 
     @Spawns("actionBrick")
     public Entity newActionBrick(SpawnData data) {
-        Rectangle brick = new Rectangle(0, 0, 128, 36);
-        brick.setFill(Color.DARKGRAY);
+        Texture actionBrick = texture("game/bricks/green_brick.png", 128, 36);
+
         Vec2 dir = Vec2.fromAngle(90);
-        return entityBuilder().from(data).viewWithBBox(texture("game/brickGreen.png", 128, 36))
+        return entityBuilder().from(data).viewWithBBox(actionBrick)
                 .with(new ProjectileComponent(dir.toPoint2D(), 500).allowRotation(false))
                 .with(new OffscreenCleanComponent()).collidable().build();
+    }
+
+    @Spawns("brickBroken")
+    public Entity newExplosion(SpawnData data) {
+        //play("explosion.wav");
+
+        return entityBuilder()
+                .from(data)
+                .view(texture("game/fx/brick_break_animation.png", 864, 72).toAnimatedTexture(6, Duration.seconds(0.3)).play())
+                .with(new ExpireCleanComponent(Duration.seconds(0.3)))
+                .build();
     }
 
     @Spawns("player")
@@ -113,8 +118,8 @@ public class GameEntityFactory implements EntityFactory {
     @Spawns("background")
     public Entity newBackground(SpawnData data) {
         Rectangle background = new Rectangle(getAppWidth(), getAppHeight());
-        background.setFill(Color.web("#000000"));
-        return entityBuilder().from(data).view(texture("game/bg_example.jpg")).build();
+        background.setFill(Color.web("#222222"));
+        return entityBuilder().from(data).view(background).build();
     }
 
     @Spawns("boss")
@@ -216,11 +221,10 @@ public class GameEntityFactory implements EntityFactory {
         Vec2 dir = Vec2.fromAngle(-90);
 
         // TODO: Bullet graphic
-        Rectangle rectangle = new Rectangle(0, 0, 20, 20);
-        rectangle.setFill(Color.YELLOW);
+        Texture bullet = texture("game/fx/bullet_border.png");
 
-        return entityBuilder().from(data).type(PowerupType.PLAYERGUN_BULLET).viewWithBBox(rectangle)
-                .with(new ProjectileComponent(dir.toPoint2D(), 500)).with(new OffscreenCleanComponent()).collidable()
+        return entityBuilder().from(data).type(PowerupType.PLAYERGUN_BULLET).viewWithBBox(bullet)
+                .with(new ProjectileComponent(dir.toPoint2D(), 500).allowRotation(false)).with(new OffscreenCleanComponent()).collidable()
                 .build();
     }
 

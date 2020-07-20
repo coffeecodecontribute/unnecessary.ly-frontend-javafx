@@ -192,6 +192,8 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
             }
         });
 
+
+
         // Game is lost
         if (byType(EntityType.BALL).isEmpty()) {
             if (geti("gameStatus") != -1) {
