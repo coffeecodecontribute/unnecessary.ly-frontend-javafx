@@ -26,7 +26,6 @@ public class BossComponent extends Component {
         t = run(() -> {
 
         }, Duration.seconds(1));
-
     }
 
     @Override
@@ -78,11 +77,12 @@ public class BossComponent extends Component {
             }
         }
         if (isFreezed == false) {
-            if (entity.getX() > byType(EntityType.PLAYER).get(0).getX()) {
+            if(Math.abs(entity.getX() - byType(EntityType.PLAYER).get(0).getX()) < 100)
+                speed = 0;
+            else if (entity.getX() > byType(EntityType.PLAYER).get(0).getX()) {
                 speed = -velocity;
                 entity.getViewComponent().getChildren().get(0).setScaleX(1);
             }
-
             else if (entity.getX() < byType(EntityType.PLAYER).get(0).getX()) {
                 speed = velocity;
                 entity.getViewComponent().getChildren().get(0).setScaleX(-1);

@@ -8,9 +8,11 @@ import javafx.scene.control.Label;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static com.almasb.fxgl.dsl.FXGL.getAssetLoader;
 import static com.almasb.fxgl.dsl.FXGL.getUIFactoryService;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.geti;
 
 public class UserInterfaceController implements UIController {
     @FXML

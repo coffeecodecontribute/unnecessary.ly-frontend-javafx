@@ -78,15 +78,6 @@ public enum PowerupType {
     }
 
     /**
-     * Getter of Color
-     * 
-     * @return color of current power up
-     */
-    public Texture getTexture() {
-        return texture;
-    }
-
-    /**
      * Getter of Texture Name
      *
      * @return texture name
@@ -94,5 +85,4 @@ public enum PowerupType {
     public String getTextureString() {
         return textureString;
     }
-
 }
