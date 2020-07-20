@@ -18,13 +18,19 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.getAssetLoader;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.getUIFactoryService;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.geti;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.inc;
+import static ly.unnecessary.frontend.GameApplication.uiController;
+import static ly.unnecessary.frontend.controller.LevelController.setLevel;
 
 public class MainMenu extends FXGLMenu {
     public MainMenu() {
         super(MenuType.MAIN_MENU);
 
         var buttonPlay = new MainButton("PLAY", this::fireNewGame);
-        var buttonCredits = new MainButton("CREDITS", this::createContentCredits);
+        var buttonCredits = new MainButton("CREDITS", this::fireExit);
         var buttonExit = new MainButton("EXIT", this::fireExit);
 
         var box = new VBox(5, buttonPlay, buttonCredits, buttonExit);
@@ -75,6 +81,20 @@ public class MainMenu extends FXGLMenu {
             setAlignment(Pos.CENTER_LEFT);
 
             getChildren().addAll(text);
+        }
+
+        public void displayCredits() {
+            VBox content = new VBox(
+                    getUIFactoryService().newText("Your score: " + geti("score"), 56),
+                    getAssetLoader().loadTexture("game/ball_small.png", 150, 150)
+            );
+
+
+            Button btnRestartLevel = getUIFactoryService().newButton("Restart Level");
+            btnRestartLevel.setPrefWidth(300);
+            btnRestartLevel.setOnAction(e -> setLevel(geti("level")));
+
+            getDialogService().showBox("Game Over", content, btnRestartLevel);
         }
     }
 }
