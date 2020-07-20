@@ -81,7 +81,7 @@ public class GameEntityFactory implements EntityFactory {
                 .type(EntityType.BRICK)
                 .from(data).viewWithBBox(brick)
                 .with(new HealthIntComponent(life))
-                .with(new BrickComponent())
+                .with(new BrickComponent(life))
                 .collidable()
                 .build();
     }
@@ -92,6 +92,7 @@ public class GameEntityFactory implements EntityFactory {
 
         Vec2 dir = Vec2.fromAngle(90);
         return entityBuilder().from(data).viewWithBBox(actionBrick)
+                .type(EntityType.ACTIONBRICK)
                 .with(new ProjectileComponent(dir.toPoint2D(), 500).allowRotation(false))
                 .with(new OffscreenCleanComponent()).collidable().build();
     }
@@ -102,7 +103,7 @@ public class GameEntityFactory implements EntityFactory {
 
         return entityBuilder()
                 .from(data)
-                .view(texture("game/fx/brick_break_animation.png", 864, 72).toAnimatedTexture(6, Duration.seconds(0.3)).play())
+                .view(texture("game/fx/brick_" + data.get("type") + "_fx.png", 864, 72).toAnimatedTexture(6, Duration.seconds(0.3)).play())
                 .with(new ExpireCleanComponent(Duration.seconds(0.3)))
                 .build();
     }
@@ -119,7 +120,7 @@ public class GameEntityFactory implements EntityFactory {
     public Entity newBackground(SpawnData data) {
         Rectangle background = new Rectangle(getAppWidth(), getAppHeight());
         background.setFill(Color.web("#222222"));
-        return entityBuilder().from(data).view(background).build();
+        return entityBuilder().from(data).view(texture("ui/backgrounds/background_menu_animated.png").toAnimatedTexture(2, Duration.seconds(0.3)).loop()).build();
     }
 
     @Spawns("boss")
@@ -190,6 +191,9 @@ public class GameEntityFactory implements EntityFactory {
         String dropIcon = data.get("texture");
         System.out.println(dropIcon);
         Vec2 dir = Vec2.fromAngle(90);
+
+        play("beta/power_up.wav"); //TODO: MUSIC
+
         return entityBuilder().type(EntityType.POWERUPDROP).from(data).viewWithBBox(texture(dropIcon, 33, 33))
                 .with(new ProjectileComponent(dir.toPoint2D(), 500).allowRotation(false))
                 .with(new OffscreenCleanComponent()).collidable().with("type", data.get("type")).build();

@@ -1,6 +1,6 @@
-package ly.unnecessary.frontend;
+package ly.unnecessary.frontend.controller;
 
-public class GamePlayerPhysic {
+public class GamePlayerPhysicController {
 
     /**
      * Calculates the angle of the ball in collision with the player

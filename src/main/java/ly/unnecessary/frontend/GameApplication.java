@@ -6,6 +6,7 @@ import com.almasb.fxgl.app.scene.FXGLMenu;
 import com.almasb.fxgl.app.scene.SceneFactory;
 import com.almasb.fxgl.audio.Sound;
 import com.almasb.fxgl.core.math.FXGLMath;
+import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.components.IrremovableComponent;
@@ -14,53 +15,61 @@ import com.almasb.fxgl.ui.UI;
 import javafx.geometry.Point2D;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.VBox;
 import ly.unnecessary.frontend.components.BallComponent;
 import ly.unnecessary.frontend.components.BrickComponent;
+import ly.unnecessary.frontend.controller.MouseMovementController;
 import ly.unnecessary.frontend.controller.UserInterfaceController;
 import ly.unnecessary.frontend.menu.MainMenu;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
-import static ly.unnecessary.frontend.GamePlayerPhysic.calculateAngle;
+import static ly.unnecessary.frontend.controller.GamePlayerPhysicController.calculateAngle;
+import static ly.unnecessary.frontend.controller.LevelController.*;
+import static ly.unnecessary.frontend.controller.MouseMovementController.mouseMovement;
 
 public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
     // brick
-    static final int collisionLogicSecurityPadding = 10;
+    public static final int collisionLogicSecurityPadding = 10;
 
     // app
-    static int appWidth = 1920;
-    static int appHeight = 1080;
+    public static int appWidth = 1920;
+    public static int appHeight = 1080;
 
     // ball
-    static int ballSpeed = 8;
-    static int ballRadius = 32;
-    static Point2D ballSpawnPoint = new Point2D(appWidth / 2d - ballRadius / 2d, appHeight - 150);
+    public static int ballSpeed = 8;
+    public static int ballRadius = 32;
+    public static Point2D ballSpawnPoint = new Point2D(appWidth / 2d - ballRadius / 2d, appHeight - 150);
 
     // player
-    static int playerWidth = 320;
-    static int playerHeight = 64;
-    static int playerSpeed = 20;
-    static double playerSpeedMultiplier = 1.5f;
-    static Point2D playerSpawnPoint = new Point2D(appWidth / 2d - playerWidth / 2d, appHeight - 100);
-    static int brickWidth = 128;
-    static int brickHeight = 36;
+    public static int playerWidth = 320;
+    public static int playerHeight = 64;
+    public static int playerSpeed = 20;
+    public static double playerSpeedMultiplier = 1.5f;
+    public static Point2D playerSpawnPoint = new Point2D(appWidth / 2d - playerWidth / 2d, appHeight - 100);
+    public static int brickWidth = 128;
+    public static int brickHeight = 36;
+    public static int playerLivesCount = 3;
 
     // level
-    static int levelMargin = 36;
-    static int levelRows = 19;
+    public static int levelMargin = 36;
+    public static int levelRows = 19;
 
     // powerups
     static double chanceForDrop = 1.0f; // TODO: moved into brick componenet
-    List level; // List with level data
-    Entity ball, player;
+    public static List level; // List with level data
+    public static Entity ball, player;
+
+
     Sound loop_2;
     // User Interface
-    private UserInterfaceController uiController;
+    public static UserInterfaceController uiController;
 
     public static void main(String[] args) {
         launch(args);
@@ -99,8 +108,13 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
             }
         });
         gameSettings.setFullScreenAllowed(true);
+        gameSettings.setIntroEnabled(false);
         gameSettings.setFullScreenFromStart(false);
-        // gameSettings.setFontUI("VT323-Regular.ttf");
+        gameSettings.getCredits().addAll(Arrays.asList(
+                "Music by Marcel Cabanis",
+                "Copyright 2020"
+        ));
+        gameSettings.setFontUI("basic.ttf");
     }
 
     @Override
@@ -110,7 +124,6 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
         // Loading Levels
         level = getAssetLoader().loadText("level.txt");
-        L("onPreInit: Level Data loaded!");
 
         // Loading Audio
         getAssetLoader().loadSound("asset.wav");
@@ -123,10 +136,8 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         getAssetLoader().loadSound("alpha/power_up.wav");
         getAssetLoader().loadSound("alpha/ball_collide_player_hard.wav");
         getAssetLoader().loadSound("alpha/ball_collide_wall_2_arp.wav");
-        L("onPreInit: Audio Files loaded!");
 
         // Loading Graphics
-        L("onPreInit: Graphic Assets loaded!");
         getAssetLoader().loadTexture("ui/heart.png", 16, 16);
         getAssetLoader().loadTexture("game/ballBlue.png", ballRadius, ballRadius);
         getAssetLoader().loadTexture("game/ballGrey.png", ballRadius, ballRadius);
@@ -136,26 +147,22 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         getAssetLoader().loadText("game/powerups/heart.png");
         getAssetLoader().loadText("game/powerups/playergun.png");
         getAssetLoader().loadText("game/powerups/superball.png");
-
-        L("onPreInit: Done! Enjoy and have fun!");
     }
 
     @Override
     protected void initGameVars(Map<String, Object> vars) {
-        vars.put("ballSpeed", ballSpeed);
-        vars.put("playerSpeed", playerSpeed);
-        vars.put("ballRadius", ballRadius);
-        vars.put("level", 0);
+        vars.put("ballSpeed", ballSpeed); //ballSpeed
+        vars.put("playerSpeed", playerSpeed); //playerSpeed (if player uses only keyboard
 
-        /*
-         * -1 : lost 0 : pregame 1 : ingame 2 : game win
-         */
-        // level vars
-        vars.put("gameStatus", 0);
-        vars.put("freeze", false);
-        vars.put("playerLives", 3);
-        vars.put("playerStars", 0);
-        vars.put("score", 0);
+        vars.put("ballRadius", ballRadius); //ball radius
+
+        vars.put("level", 0); //current Level
+
+        vars.put("gameStatus", 0); //gameStatus -1 : lost 0 : pregame 1 : ingame 2 : game win
+        vars.put("freeze", false); //game Freeze?
+        vars.put("playerLives", playerLivesCount); //player lives
+        vars.put("playerStars", 0); //player stars
+        vars.put("score", 0); //current score (resets with level change)
     }
 
     @Override
@@ -166,10 +173,6 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         loopBGM("beta/game_loop_all_01.mp3"); //TODO: MUSIC
 
         setLevel(0);
-        // loop_2.getAudio$fxgl_media().setVolume(0.1);
-        // loop_2.getAudio$fxgl_media().play();
-
-        // loopBGM("music.mp3");
 
         entityBuilder()
                 .type(EntityType.WALL)
@@ -192,8 +195,6 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
             }
         });
 
-
-
         // Game is lost
         if (byType(EntityType.BALL).isEmpty()) {
             if (geti("gameStatus") != -1) {
@@ -203,15 +204,20 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
                 getGameScene().getViewport().shakeTranslational(1.5);
                 uiController.removeLife();
+
+                removeAllPowerUps();
+
+                inc("score", -500);
             }
 
-            if (geti("playerLives") < 1) {
+            if (geti("playerLives") < 1 && geti("gameStatus") != -1) {
                 set("gameStatus", -1);
+                System.out.println("lost");
 
                 play("beta/game_over.wav"); //TODO: MUSIC
 
                 set("gameStatusReadable", getGameStatus(geti("gameStatus")));
-            } else {
+            } else if (geti("gameStatus") != -1) {
                 respawnBall();
             }
         }
@@ -302,8 +308,24 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
             }
         });
 
-        onCollisionBegin(EntityType.BRICK, PowerupType.PLAYERGUN_BULLET, (brick, bullet) -> {
+        onCollisionBegin(EntityType.ACTIONBRICK, EntityType.PLAYER, (actionBrick, player) -> {
+            actionBrick.removeFromWorld();
+            byType(EntityType.BALL).get(FXGLMath.random(0, byType(EntityType.BALL).size() - 1)).removeFromWorld(); //Removes one random ball as negative impact
 
+            play("beta/player_live_loss.wav"); //TODO: MUSIC
+
+            getGameScene().getViewport().shakeTranslational(1.5);
+        });
+
+
+        onCollisionBegin(EntityType.ACTIONBRICK, PowerupType.PLAYERGUN_BULLET, (actionBrick, bullet) -> {
+            play("beta/brick_collide_" + FXGLMath.random(1, 4) + ".wav"); //TODO: MUSIC
+
+            actionBrick.removeFromWorld();
+            bullet.removeFromWorld();
+        });
+
+        onCollisionBegin(EntityType.BRICK, PowerupType.PLAYERGUN_BULLET, (brick, bullet) -> {
             play("beta/brick_collide_" + FXGLMath.random(1, 4) + ".wav"); //TODO: MUSIC
 
             brick.getComponent(BrickComponent.class).hitByBall();
@@ -353,19 +375,63 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         // onKey(KeyCode.A, () ->
         // player.getComponent(PlayerComponent.class).moveLeft());
         onKey(KeyCode.L, () -> {
-            getDialogService().showInputBoxWithCancel("Jump to Level: ", levelId -> Integer.parseInt(levelId) > 0,
+            getDialogService().showInputBox("Jump to Level: ",
                     levelId -> {
                         setLevel(Integer.parseInt(levelId));
+                        getNotificationService().pushNotification("Level set to " + levelId);
                     });
         });
 
-        onKey(KeyCode.K, () -> {
-            if (byType(EntityType.BRICK).isEmpty())
-                spawn("brick", getAppWidth() / 2 - 250, 100);
-            spawn("point", byType(EntityType.BRICK).get(0).getX() - ball.getWidth() + collisionLogicSecurityPadding,
-                    50);
-            spawn("point", byType(EntityType.BRICK).get(0).getX() + byType(EntityType.BRICK).get(0).getWidth()
-                    - collisionLogicSecurityPadding, 50);
+        onKey(KeyCode.S, () -> {
+            getDialogService().showInputBox("Spawn Something\n0 - Remove all Power Ups (inc. drops)\n1 - Heart\n2 - Multi Ball\n3 - Player Gun\n4 - Super Ball\n5 - Infected Brick\n6 - Spawn Balls", type -> {
+                int selection = Integer.parseInt(type);
+                PowerupType powerUp = null;
+                String notification = "";
+                switch (selection) {
+                    case 0:
+                        removeAllPowerUps();
+                        notification = "All Power-Ups removed";
+                        break;
+                    case 1:
+                        powerUp = PowerupType.HEART;
+                        notification = "Heart spawned";
+                        break;
+                    case 2:
+                        powerUp = PowerupType.MULTIBALL;
+                        notification = "Multi Ball spawned";
+                        break;
+                    case 3:
+                        powerUp = PowerupType.PLAYERGUN;
+                        notification = "Player Gun spawned";
+                        break;
+                    case 4:
+                        powerUp = PowerupType.SUPERBALL;
+                        notification = "Super Ball spawned";
+                        break;
+                    case 5:
+                        spawn("actionBrick", getAppWidth() / 2, 50);
+                        notification = "Infected Brick spawned.";
+                        break;
+                    case 6:
+                        powerUp = PowerupType.MULTIBALL;
+                        getDialogService().showInputBox("Number of balls: ", number -> {
+                            int numberInt = Integer.parseInt(number);
+                            for (int i = 0; i < numberInt; i++) {
+                                Entity multiBall = FXGL.spawn("ball", byType(EntityType.BALL).get(0).getPosition());
+                                multiBall.setProperty("velocity", new Point2D(geti("ballSpeed") * i, geti("ballSpeed")));
+                            }
+                        });
+                        notification = "Balls spawned.";
+                        break;
+                    default:
+                        notification = "Upps. This command is unknown.";
+                }
+                if (powerUp != null)
+                    spawn("powerupdrop", new SpawnData(getAppWidth() / 2, getAppHeight() / 2)
+                            .put("type", powerUp.getType()).put("texture", powerUp.getTextureString()));
+
+                getNotificationService().pushNotification(notification);
+            });
         });
 
     }
@@ -395,89 +461,18 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         getGameScene().addUI(ui);
     }
 
-    private void setLevel(int levelId) {
-        if (levelId != 10) {
-            if (levelId >= level.size() || levelId < 0)
-                return;
+    public void removeAllPowerUps() {
+        //Removes all powerup drops
+        if (!byType(EntityType.POWERUPDROP).isEmpty()) {
+            byType(EntityType.POWERUPDROP).forEach(Entity::removeFromWorld);
         }
 
-        getGameWorld().getEntitiesCopy().forEach(e -> e.removeFromWorld());
-
-        String currentLevel = "";
-        set("gameStatus", 0);
-        set("freeze", false);
-        set("level", levelId);
-
-        if (levelId == 10) {
-            currentLevel = generateRandomLevel();
-        } else
-            currentLevel = level.get(levelId).toString();
-
-        spawn("background", 0, 0);
-        player = spawn("player", playerSpawnPoint);
-        ball = spawn("ball", ballSpawnPoint);
-
-        // Ui
-        spawn("uiSpawnLevelInfo");
-
-        if (currentLevel.equals("boss")) {
-            spawn("boss", 100, 100);
-            return;
-        }
-
-        int i = 0, x = 0, y = levelMargin;
-        for (int row = 0; row < levelRows; row++) {
-            for (int col = 0; col < 1920 / brickWidth; col++) {
-                if (currentLevel.charAt(i) == '1') // 1 life
-                    spawn("brick", new SpawnData(x, y).put("type", 1));
-                else if (currentLevel.charAt(i) == '2') // 2 life
-                    spawn("brick", new SpawnData(x, y).put("type", 2));
-                else if (currentLevel.charAt(i) == '3') // 3 life
-                    spawn("brick", new SpawnData(x, y).put("type", 3));
-                else if (currentLevel.charAt(i) == 'X') // not destroyable
-                    spawn("levelBrick", x, y);
-                i++;
-                x += brickWidth;
+        //Removes all active powerups
+        PowerupType[] powerUps = PowerupType.values();
+        for (int i = 0; i < powerUps.length; i++) {
+            if (!byType(powerUps[i]).isEmpty()) {
+                byType(powerUps[i]).forEach(Entity::removeFromWorld);
             }
-            x = 0;
-            y += brickHeight;
         }
-    }
-
-    public String generateRandomLevel() {
-        String result = "";
-        for (int i = 0; i < 285; i++) {
-            result += FXGLMath.randomBoolean() ? "1" : "0";
-        }
-        return result;
-    }
-
-    public void respawnBall() {
-        set("gameStatus", 0);
-        set("freeze", false);
-        ball = spawn("ball", player.getX() + player.getWidth() / 2 - ball.getWidth() / 2, ballSpawnPoint.getY());
-    }
-
-    /**
-     * sets player'x position to the mouse'x
-     */
-    public void mouseMovement() {
-        if (getb("freeze"))
-            return;
-
-        // gets the cursor and sets it to the middle of the player
-        double mouseX = getInput().getMouseXWorld() - player.getWidth() / 2;
-
-        // fixes issue where player is stucked before the max
-        if (mouseX < 0)
-            player.setX(0);
-        else if (mouseX > getAppWidth() - player.getWidth())
-            player.setX(getAppWidth() - player.getWidth());
-        else
-            player.setX(mouseX); // sets the player mouseX if it's in the allowed area
-    }
-
-    public void inPreGame() {
-        ball.setX(player.getX() + player.getWidth() / 2 - ball.getWidth() / 2);
     }
 }

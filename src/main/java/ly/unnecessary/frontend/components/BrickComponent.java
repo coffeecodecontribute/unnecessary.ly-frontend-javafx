@@ -16,13 +16,14 @@ import ly.unnecessary.frontend.PowerupType;
 
 public class BrickComponent extends Component {
     private boolean blockIsInfected = false;
+    private int type;
 
     public BrickComponent() {
-
+        this(1);
     }
 
-    public BrickComponent(int lives) {
-
+    public BrickComponent(int type) {
+        this.type = type;
     }
 
     public void hitByBall() {
@@ -49,9 +50,10 @@ public class BrickComponent extends Component {
                 play("alpha/power_up.wav");
                 spawn("actionBrick", entity.getPosition());
                 blockIsInfected = true;
+            } else {
+                spawn("brickBroken", new SpawnData(entity.getX() + entity.getWidth() / 2 - 72, entity.getY()).put("type", this.type));
             }
             entity.removeFromWorld();
-            spawn("brickBroken", entity.getX() + entity.getWidth() / 2 - 72, entity.getY());
         } else
             System.out.println("Lives: " + hp.getValue());
 
@@ -59,9 +61,6 @@ public class BrickComponent extends Component {
             if (byType(EntityType.POWERUPDROP).isEmpty()) {
                 PowerupType powerUp = PowerupType.pickPowerUp();
                 if (powerUp != null) {
-
-                    play("beta/power_up.wav"); //TODO: MUSIC
-
                     spawn("powerupdrop", new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY())
                             .put("type", powerUp.getType()).put("texture", powerUp.getTextureString()));
                 }

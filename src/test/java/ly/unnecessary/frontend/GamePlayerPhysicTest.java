@@ -2,7 +2,7 @@ package ly.unnecessary.frontend;
 
 import org.junit.jupiter.api.Test;
 
-import static ly.unnecessary.frontend.GamePlayerPhysic.*;
+import static ly.unnecessary.frontend.controller.GamePlayerPhysicController.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GamePlayerPhysicTest {
