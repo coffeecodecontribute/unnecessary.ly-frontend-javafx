@@ -6,6 +6,7 @@ import static com.almasb.fxgl.dsl.FXGL.getInput;
 import static com.almasb.fxgl.dsl.FXGL.play;
 import static com.almasb.fxgl.dsl.FXGL.run;
 
+import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.core.math.Vec2;
 import com.almasb.fxgl.entity.component.Component;
 
@@ -61,12 +62,18 @@ public class BallComponent extends Component {
      */
     public void collideWall(Point2D point2D, int currentWallCollide) {
         if(currentWallCollide != lastWallCollide) {
+
+            play("beta/wall_collide_" + FXGLMath.random(1, 6) + ".wav"); //TODO: MUSIC
+
             lastWallCollide = currentWallCollide;
             entity.setProperty("velocity", point2D);
         }
-
     }
 
+    /**
+     * Collide with brick or player
+     * @param point2d
+     */
     public void collide(Point2D point2d) {
         lastWallCollide = 0;
 
@@ -80,6 +87,9 @@ public class BallComponent extends Component {
         }, Duration.millis(1));
     }
 
+    /**
+     * Ball release in direction of Mouse
+     */
     public void release() {
         Vec2 vel = new Vec2(getInput().getMouseXWorld(), getInput().getMouseYWorld());
         vel.subLocal(new Vec2(entity.getPosition()));
