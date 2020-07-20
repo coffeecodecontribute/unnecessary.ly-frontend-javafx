@@ -70,15 +70,4 @@ public class LevelController {
         }
         return result;
     }
-
-    public static void respawnBall() {
-        set("gameStatus", 0);
-        set("freeze", false);
-        ball = spawn("ball", player.getX() + player.getWidth() / 2 - ball.getWidth() / 2, ballSpawnPoint.getY());
-    }
-
-    public static void inPreGame() {
-        ball.setX(player.getX() + player.getWidth() / 2 - ball.getWidth() / 2);
-    }
-
 }

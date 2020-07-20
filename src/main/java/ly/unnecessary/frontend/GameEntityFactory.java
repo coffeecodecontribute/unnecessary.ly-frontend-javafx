@@ -156,6 +156,7 @@ public class GameEntityFactory implements EntityFactory {
         brick.setFill(Color.YELLOW);
         Vec2 dir = data.get("dir");
         return entityBuilder().from(data).viewWithBBox(bossBullet)
+                .type(EntityType.ACTIONBRICK)
                 .with(new ProjectileComponent(dir.toPoint2D(), 800))
                 .with(new OffscreenCleanComponent()).collidable().build();
     }

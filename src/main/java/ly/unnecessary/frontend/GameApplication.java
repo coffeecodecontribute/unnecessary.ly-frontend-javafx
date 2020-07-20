@@ -29,6 +29,7 @@ import java.util.stream.IntStream;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
+import static ly.unnecessary.frontend.controller.GameController.*;
 import static ly.unnecessary.frontend.controller.GamePlayerPhysicController.calculateAngle;
 import static ly.unnecessary.frontend.controller.LevelController.*;
 import static ly.unnecessary.frontend.controller.MouseMovementController.mouseMovement;
@@ -212,11 +213,12 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
             if (geti("playerLives") < 1 && geti("gameStatus") != -1) {
                 set("gameStatus", -1);
-                System.out.println("lost");
 
                 play("beta/game_over.wav"); //TODO: MUSIC
 
                 set("gameStatusReadable", getGameStatus(geti("gameStatus")));
+
+                gameLost();
             } else if (geti("gameStatus") != -1) {
                 respawnBall();
             }
@@ -229,6 +231,8 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
             set("gameStatus", 2);
             set("gameStatusReadable", getGameStatus(geti("gameStatus")));
+
+            gameWon();
         }
     }
 

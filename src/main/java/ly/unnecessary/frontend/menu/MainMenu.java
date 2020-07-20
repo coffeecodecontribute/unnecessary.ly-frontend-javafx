@@ -27,7 +27,7 @@ public class MainMenu extends FXGLMenu {
         var buttonCredits = new MainButton("CREDITS", this::createContentCredits);
         var buttonExit = new MainButton("EXIT", this::fireExit);
 
-        var box = new VBox(15, buttonPlay, buttonCredits, buttonExit);
+        var box = new VBox(5, buttonPlay, buttonCredits, buttonExit);
         box.setTranslateX(100);
         box.setTranslateY(getAppHeight() / 2);
 
@@ -66,7 +66,7 @@ public class MainMenu extends FXGLMenu {
 
     public static class MainButton extends StackPane {
         public MainButton(String name, Runnable action) {
-            var text = getUIFactoryService().newText(name, Color.WHITE, 40);
+            var text = getUIFactoryService().newText(name, Color.WHITE, 72);
 
             setOnMouseClicked(e -> {
                 action.run();
