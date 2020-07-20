@@ -30,7 +30,9 @@ public class MainMenu extends FXGLMenu {
         super(MenuType.MAIN_MENU);
 
         var buttonPlay = new MainButton("PLAY", this::fireNewGame);
-        var buttonCredits = new MainButton("CREDITS", this::fireExit);
+        var buttonCredits = new MainButton("CREDITS", () -> {
+            displayCredits();
+        });
         var buttonExit = new MainButton("EXIT", this::fireExit);
 
         var box = new VBox(5, buttonPlay, buttonCredits, buttonExit);
@@ -70,6 +72,21 @@ public class MainMenu extends FXGLMenu {
         return new Text();
     }
 
+    public void displayCredits() {
+        VBox content = new VBox(
+                getUIFactoryService().newText("Game Made by these People", 56),
+                getAssetLoader().loadTexture("game/bricks/white_brick.png", 128, 36),
+                getAssetLoader().loadTexture("game/bricks/red_brick.png", 128, 36),
+                getAssetLoader().loadTexture("game/bricks/blue_brick.png", 128, 36)
+        );
+
+
+        Button btnClose = getUIFactoryService().newButton("Close Credits");
+        btnClose.setPrefWidth(300);
+
+        getDialogService().showBox("Game Over", content, btnClose);
+    }
+
     public static class MainButton extends StackPane {
         public MainButton(String name, Runnable action) {
             var text = getUIFactoryService().newText(name, Color.WHITE, 72);
@@ -81,20 +98,6 @@ public class MainMenu extends FXGLMenu {
             setAlignment(Pos.CENTER_LEFT);
 
             getChildren().addAll(text);
-        }
-
-        public void displayCredits() {
-            VBox content = new VBox(
-                    getUIFactoryService().newText("Your score: " + geti("score"), 56),
-                    getAssetLoader().loadTexture("game/ball_small.png", 150, 150)
-            );
-
-
-            Button btnRestartLevel = getUIFactoryService().newButton("Restart Level");
-            btnRestartLevel.setPrefWidth(300);
-            btnRestartLevel.setOnAction(e -> setLevel(geti("level")));
-
-            getDialogService().showBox("Game Over", content, btnRestartLevel);
         }
     }
 }
