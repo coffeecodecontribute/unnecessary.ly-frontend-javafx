@@ -2,6 +2,7 @@ package ly.unnecessary.frontend.components;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
+import static ly.unnecessary.frontend.GameApplication.*;
 
 import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.dsl.components.HealthIntComponent;
@@ -49,17 +50,17 @@ public class BrickComponent extends Component {
 
         //add cracked textures
         if(getHealthPoints() == 2) {
-            Texture rc = texture("game/bricks/cracked_1.png", 128, 36);
+            Texture rc = texture("game/bricks/cracked_1.png", brickWidth, brickHeight);
             entity.getViewComponent().addChild(rc);
         }
         if(getHealthPoints() == 1) {
-            Texture rc = texture("game/bricks/cracked_2.png", 128, 36);
+            Texture rc = texture("game/bricks/cracked_2.png", brickWidth, brickHeight);
             entity.getViewComponent().addChild(rc);
         }
 
         //Spawns infected brick
         if (getHealthPoints() == 0) {
-            if (FXGLMath.randomBoolean(0.1f)) {
+            if (FXGLMath.randomBoolean(chanceForInfected)) {
                 spawn("actionBrick", entity.getPosition());
                 blockIsInfected = true;
             } else {
@@ -69,7 +70,7 @@ public class BrickComponent extends Component {
         }
 
         //Spawns power up
-        if (FXGLMath.randomBoolean(0.1f) && !blockIsInfected) {
+        if (FXGLMath.randomBoolean(chanceForDrop) && !blockIsInfected) {
             if (byType(EntityType.POWERUPDROP).isEmpty()) {
                 PowerupType powerUp = PowerupType.pickPowerUp();
                 if (powerUp != null) {

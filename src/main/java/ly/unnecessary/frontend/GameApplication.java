@@ -32,12 +32,16 @@ import static ly.unnecessary.frontend.controller.GameController.*;
 import static ly.unnecessary.frontend.controller.GamePlayerPhysicController.calculateAngle;
 import static ly.unnecessary.frontend.controller.LevelController.*;
 
+/**
+ * Game Application. Brick Breaker made with ♥ and 👬 (teamwork)
+ */
 public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
-    // brick
-    public static final int collisionLogicSecurityPadding = 10;
 
     // app
+    public static String appName = "Brick Breaker";
+    public static String appVersion = "1.0";
+    public static String appFont = "basic.ttf"; //is inside ui/fonts/
     public static int appWidth = 1920;
     public static int appHeight = 1080;
 
@@ -56,12 +60,17 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
     public static int brickHeight = 36;
     public static int playerLivesCount = 3;
 
+    // brick
+    public static final int collisionLogicSecurityPadding = 10;
+
+
     // level
     public static int levelMargin = 36;
     public static int levelRows = 19;
 
     // powerups
-    static double chanceForDrop = 1.0f; // TODO: moved into brick componenet
+    public static double chanceForDrop = 0.1f;
+    public static double chanceForInfected = 0.1f;
     public static List level; // List with level data
     public static Entity ball, player;
 
@@ -74,35 +83,26 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
     public static boolean godMode = false;
 
 
-
+    /**
+     * Launches the game
+     *
+     * @param args arguments passed
+     */
     public static void main(String[] args) {
         launch(args);
     }
 
-    public static int getPlayerSpeed() {
-        return playerSpeed;
-    }
-
-    public static String getGameStatus(int gameStatus) {
-        return gameStatus == 1 ? "ingame"
-                : gameStatus == 0 ? "Game over" : gameStatus == 2 ? "Victory" : "Unknown Status";
-    }
-
     /**
-     * Used to print out updates to the console while the game is running.
+     * Sets Game Settings
      *
-     * @param msg Message developer want to print
+     * @param gameSettings reference to gameSettings
      */
-    public static void L(String msg) {
-        System.out.println(msg);
-    }
-
     @Override
     protected void initSettings(GameSettings gameSettings) {
         gameSettings.setWidth(appWidth);
         gameSettings.setHeight(appHeight);
-        gameSettings.setTitle("Brick Breaker");
-        gameSettings.setVersion("0.3");
+        gameSettings.setTitle(appName);
+        gameSettings.setVersion(appVersion);
         gameSettings.setApplicationMode(ApplicationMode.DEVELOPER);
         gameSettings.setMainMenuEnabled(true);
         gameSettings.setSceneFactory(new SceneFactory() {
@@ -114,13 +114,12 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         gameSettings.setFullScreenAllowed(true);
         gameSettings.setIntroEnabled(false);
         gameSettings.setFullScreenFromStart(false);
-        gameSettings.getCredits().addAll(Arrays.asList(
-                "Music by Marcel Cabanis",
-                "Copyright 2020"
-        ));
-        gameSettings.setFontUI("basic.ttf");
+        gameSettings.setFontUI(appFont);
     }
 
+    /**
+     * Load assets and apply final settings
+     */
     @Override
     protected void onPreInit() {
         getSettings().setGlobalMusicVolume(0.5);
@@ -152,6 +151,11 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         getAssetLoader().loadText("game/powerups/superball.png");
     }
 
+    /**
+     * init the game vars
+     *
+     * @param vars reference to vars
+     */
     @Override
     protected void initGameVars(Map<String, Object> vars) {
         vars.put("ballSpeed", ballSpeed); //ballSpeed
@@ -168,15 +172,19 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         vars.put("score", 0); //current score (resets with level change)
     }
 
+    /**
+     * init Game logic
+     */
     @Override
     protected void initGame() {
         getGameWorld().addEntityFactory(new GameEntityFactory());
 
 
-        loopBGM("beta/game_loop_all_01.mp3"); //TODO: MUSIC
+        loopBGM("beta/game_loop_all_01.mp3"); //plays background music
 
-        setLevel(0);
+        setLevel(0); //sets level to 0
 
+        //creates wall with IrremovableComponent
         entityBuilder()
                 .type(EntityType.WALL)
                 .collidable()
@@ -184,6 +192,11 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
                 .buildScreenBoundsAndAttach(40);
     }
 
+    /**
+     * Main on update method. Handles gameStatus checks.
+     *
+     * @param tpf time per frame
+     */
     @Override
     protected void onUpdate(double tpf) {
         player.getComponent(PlayerComponent.class).mouseMovement();
@@ -202,24 +215,17 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         if (byType(EntityType.BALL).isEmpty()) {
             if (geti("gameStatus") != -1) {
                 inc("playerLives", -1);
-
-                play("beta/player_live_loss.wav"); //TODO: MUSIC
-
-                getGameScene().getViewport().shakeTranslational(1.5);
-                uiController.removeLife();
+                inc("score", -500);
 
                 removeAllPowerUps();
 
-                inc("score", -500);
+                play("beta/player_live_loss.wav"); //Plays loss life sound
+                getGameScene().getViewport().shakeTranslational(1.5);
+                uiController.removeLife();
             }
 
             if (geti("playerLives") < 1 && geti("gameStatus") != -1) {
                 set("gameStatus", -1);
-
-                play("beta/game_over.wav"); //TODO: MUSIC
-
-                set("gameStatusReadable", getGameStatus(geti("gameStatus")));
-
                 gameLost();
             } else if (geti("gameStatus") != -1) {
                 respawnBall();
@@ -227,31 +233,27 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         }
 
         // Game is won
-        if (byType(EntityType.BRICK).isEmpty() && geti("gameStatus") != 2) {
-
-            play("beta/game_win.wav"); //TODO: MUSIC
-
+        if (byType(EntityType.BRICK).isEmpty() && geti("gameStatus") != 2 && geti("level") != 99) {
             set("gameStatus", 2);
-            set("gameStatusReadable", getGameStatus(geti("gameStatus")));
-
             gameWon();
         }
     }
 
+    /**
+     * Handles all collisions of the game
+     */
     @Override
     protected void initPhysics() {
         onCollisionBegin(EntityType.BALL, EntityType.BRICK, (ball, brick) -> {
+            inc("score", 100);
 
-            play("beta/brick_collide_" + FXGLMath.random(1, 4) + ".wav"); //TODO: MUSIC
+            play("beta/brick_collide_" + FXGLMath.random(1, 4) + ".wav"); //Plays a random brick collide sound
 
             if (getSettings().getApplicationMode() != ApplicationMode.RELEASE) {
                 spawn("point", brick.getPosition());
                 spawn("point", ball.getPosition());
             }
             brick.getComponent(BrickComponent.class).hitByBall();
-
-            inc("score", 100);
-
 
             if (byType(PowerupType.SUPERBALL).isEmpty()) { // Only collide if SuperBall is not active
                 Point2D velocity = ball.getObject("velocity");
@@ -266,8 +268,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         });
 
         onCollisionBegin(EntityType.BALL, EntityType.LEVELBRICK, (ball, levelBrick) -> {
-
-            play("beta/wall_collide_" + FXGLMath.random(1, 6) + ".wav"); //TODO: MUSIC
+            play("beta/wall_collide_" + FXGLMath.random(1, 6) + ".wav");  //Plays a random wall collide sound
 
             Point2D velocity = ball.getObject("velocity");
 
@@ -280,60 +281,58 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         });
 
         onCollisionCollectible(EntityType.PLAYER, EntityType.POWERUPDROP, powerupdrop -> {
-
-            play("beta/power_up_collect.wav"); //TODO: MUSIC
+            play("beta/power_up_collect.wav");
 
             String powerUpType = powerupdrop.getString("type");
             PowerupType type;
 
-            if (powerUpType.equals("MULTIBALL")) {
-                type = PowerupType.MULTIBALL;
-                if (byType(type).isEmpty()) {
-                    System.out.println(type);
-                    spawn("powerupSpawnMultiBall", 30, 30);
-                }
-            } else if (powerUpType.equals("PLAYERGUN")) {
-                type = PowerupType.PLAYERGUN;
-                if (byType(type).isEmpty()) {
-                    System.out.println(type);
-                    spawn("powerupSpawnPlayerGun", 33 * 2, 30);
-                }
-            } else if (powerUpType.equals("HEART")) {
-                type = PowerupType.HEART;
-                if (byType(type).isEmpty()) {
-                    System.out.println(type);
-                    spawn("powerupSpawnHeart", 33 * 3, 30);
-                    uiController.addLife(); // Require to update the UI from Application
-                }
-            } else if (powerUpType.equals("SUPERBALL")) {
-                type = PowerupType.SUPERBALL;
-                if (byType(type).isEmpty()) {
-                    System.out.println(type);
-                    spawn("powerupSpawnSuperBall", 33 * 4, 30);
-                }
+            switch (powerUpType) {
+                case "MULTIBALL":
+                    type = PowerupType.MULTIBALL;
+                    if (byType(type).isEmpty()) {
+                        spawn("powerupSpawnMultiBall", 30, 60);
+                    }
+                    break;
+                case "PLAYERGUN":
+                    type = PowerupType.PLAYERGUN;
+                    if (byType(type).isEmpty()) {
+                        spawn("powerupSpawnPlayerGun", 33 * 2, 60);
+                    }
+                    break;
+                case "SUPERBALL":
+                    type = PowerupType.SUPERBALL;
+                    if (byType(type).isEmpty()) {
+                        spawn("powerupSpawnSuperBall", 33 * 4, 60);
+                    }
+                    break;
+                default:
+                    type = PowerupType.HEART;
+                    if (byType(type).isEmpty()) {
+                        spawn("powerupSpawnHeart", 33 * 3, 60);
+                    }
             }
         });
 
         onCollisionBegin(EntityType.ACTIONBRICK, EntityType.PLAYER, (actionBrick, player) -> {
             actionBrick.removeFromWorld();
-            if(!godMode)
+            if (!godMode)
                 byType(EntityType.BALL).get(FXGLMath.random(0, byType(EntityType.BALL).size() - 1)).removeFromWorld(); //Removes one random ball as negative impact
 
-            play("beta/player_live_loss.wav"); //TODO: MUSIC
+            play("beta/player_live_loss.wav");
 
             getGameScene().getViewport().shakeTranslational(1.5);
         });
 
 
         onCollisionBegin(EntityType.ACTIONBRICK, PowerupType.PLAYERGUN_BULLET, (actionBrick, bullet) -> {
-            play("beta/brick_collide_" + FXGLMath.random(1, 4) + ".wav"); //TODO: MUSIC
+            play("beta/brick_collide_" + FXGLMath.random(1, 4) + ".wav"); //Plays random brick collide sound
 
             actionBrick.removeFromWorld();
             bullet.removeFromWorld();
         });
 
         onCollisionBegin(EntityType.BRICK, PowerupType.PLAYERGUN_BULLET, (brick, bullet) -> {
-            play("beta/brick_collide_" + FXGLMath.random(1, 4) + ".wav"); //TODO: MUSIC
+            play("beta/brick_collide_" + FXGLMath.random(1, 4) + ".wav"); //Plays random brick collide sound
 
             brick.getComponent(BrickComponent.class).hitByBall();
             bullet.removeFromWorld();
@@ -356,10 +355,12 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         });
     }
 
-
+    /**
+     * Sets all Inputs
+     */
     @Override
     protected void initInput() {
-        getInput().addAction(new UserAction("Up") {
+        getInput().addAction(new UserAction("Release Ball") {
             @Override
             protected void onActionBegin() {
                 if (geti("gameStatus") == 0) {
@@ -377,11 +378,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
             }
         }, MouseButton.PRIMARY);
 
-        // onKey(KeyCode.D, "Move Right", () -> {
-        // player.getComponent(PlayerComponent.class).moveRight(); });
-        // onKey(KeyCode.A, () ->
-        // player.getComponent(PlayerComponent.class).moveLeft());
-        onKey(KeyCode.L, () -> {
+        onKey(KeyCode.L, "Select Level", () -> {
             getDialogService().showInputBox("Jump to Level: ",
                     levelId -> {
                         setLevel(Integer.parseInt(levelId));
@@ -389,7 +386,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
                     });
         });
 
-        onKey(KeyCode.S, () -> {
+        onKey(KeyCode.S,"Open Cheat Menu", () -> {
             getDialogService().showInputBox("Cheat Menu\n0 - Remove all Power Ups (inc. drops)\n1 - Heart\n2 - Multi Ball\n3 - Player Gun\n4 - Super Ball\n5 - Infected Brick\n6 - Spawn Balls\n7 - God Mode", type -> {
                 int selection = Integer.parseInt(type);
                 PowerupType powerUp = null;
@@ -416,7 +413,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
                         notification = "Super Ball spawned";
                         break;
                     case 5:
-                        spawn("actionBrick", getAppWidth() / 2, 50);
+                        spawn("actionBrick", getAppWidth() / 2d, 50);
                         notification = "Infected Brick spawned.";
                         break;
                     case 6:
@@ -438,7 +435,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
                         notification = "Upps. This command is unknown.";
                 }
                 if (powerUp != null)
-                    spawn("powerupdrop", new SpawnData(getAppWidth() / 2, getAppHeight() / 2)
+                    spawn("powerupdrop", new SpawnData(getAppWidth() / 2d, getAppHeight() / 2d)
                             .put("type", powerUp.getType()).put("texture", powerUp.getTextureString()));
 
                 getNotificationService().pushNotification(notification);
@@ -447,11 +444,14 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
     }
 
+    /**
+     * Init User Interface
+     */
     @Override
     protected void initUI() {
         uiController = new UserInterfaceController(getGameScene());
 
-        UI ui = getAssetLoader().loadUI("game.fxml", uiController);
+        UI ui = getAssetLoader().loadUI("game.fxml", uiController); //loads fxml
 
         uiController.getLabelScore().textProperty().bind(getip("score").asString("Score: %d"));
 
@@ -469,9 +469,12 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
             addVarText("playerLives", getAppWidth() - 100, 110);
         }
 
-        getGameScene().addUI(ui);
+        getGameScene().addUI(ui); //adds fxml to game scene
     }
 
+    /**
+     * Removes all power ups including drops from game world.
+     */
     public void removeAllPowerUps() {
         //Removes all powerup drops
         if (!byType(EntityType.POWERUPDROP).isEmpty()) {

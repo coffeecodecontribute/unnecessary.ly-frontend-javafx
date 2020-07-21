@@ -8,6 +8,7 @@ import ly.unnecessary.frontend.GameApplication;
 import static com.almasb.fxgl.dsl.FXGL.*;
 import static com.almasb.fxgl.dsl.FXGL.getAppWidth;
 import static ly.unnecessary.frontend.GameApplication.player;
+import static ly.unnecessary.frontend.GameApplication.playerSpeed;
 
 /**
  * Handles player movement
@@ -46,7 +47,7 @@ public class PlayerComponent extends Component {
      */
     public void moveRight() {
         if (entity.getX() + entity.getWidth() < FXGL.getAppWidth()) //ensures that the player is not leaving the game world
-            entity.setX(entity.getX() + GameApplication.getPlayerSpeed());
+            entity.setX(entity.getX() + playerSpeed);
     }
 
     /**
@@ -55,6 +56,6 @@ public class PlayerComponent extends Component {
      */
     public void moveLeft() {
         if (entity.getX() > 0) //ensures that the player is not leaving the game world
-            entity.setX(entity.getX() - GameApplication.getPlayerSpeed());
+            entity.setX(entity.getX() - playerSpeed);
     }
 }

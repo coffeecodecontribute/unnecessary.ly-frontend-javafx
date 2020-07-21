@@ -23,9 +23,12 @@ import static com.almasb.fxgl.dsl.FXGLForKtKt.getAssetLoader;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.getUIFactoryService;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.geti;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.inc;
-import static ly.unnecessary.frontend.GameApplication.uiController;
+import static ly.unnecessary.frontend.GameApplication.*;
 import static ly.unnecessary.frontend.controller.LevelController.setLevel;
 
+/**
+ * Main Menu Logic
+ */
 public class MainMenu extends FXGLMenu {
     AnimatedTexture background;
 
@@ -72,10 +75,10 @@ public class MainMenu extends FXGLMenu {
     public void displayCredits() {
         VBox content = new VBox(20,
                 getUIFactoryService().newText("Credits", 56),
-                getAssetLoader().loadTexture("game/bricks/white_brick.png", 128, 36),
-                getAssetLoader().loadTexture("game/bricks/red_brick.png", 128, 36),
-                getAssetLoader().loadTexture("game/bricks/blue_brick.png", 128, 36),
-                getAssetLoader().loadTexture("game/bricks/green_brick.png", 128, 36)
+                getAssetLoader().loadTexture("game/bricks/white_brick.png", brickWidth, brickHeight),
+                getAssetLoader().loadTexture("game/bricks/red_brick.png", brickWidth, brickHeight),
+                getAssetLoader().loadTexture("game/bricks/blue_brick.png", brickWidth, brickHeight),
+                getAssetLoader().loadTexture("game/bricks/green_brick.png", brickWidth, brickHeight)
         );
 
         content.setAlignment(Pos.TOP_CENTER);

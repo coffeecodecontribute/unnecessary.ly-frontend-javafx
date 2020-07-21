@@ -1,10 +1,16 @@
 package ly.unnecessary.frontend.controller;
 
+import com.almasb.fxgl.audio.Audio;
+import com.almasb.fxgl.audio.AudioPlayer;
+import com.almasb.fxgl.audio.Sound;
+import com.almasb.fxgl.dsl.FXGL;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 import static com.almasb.fxgl.dsl.FXGL.getDialogService;
+import static com.almasb.fxgl.dsl.FXGL.play;
 import static com.almasb.fxgl.dsl.FXGL.set;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
 import static ly.unnecessary.frontend.GameApplication.*;
@@ -34,6 +40,7 @@ public class GameController {
      * Displays the game over screen when the game status is lost (gameStatus = -1)
      */
     public static void gameLost() {
+        play("beta/game_over.wav"); //Plays game over sound
 
         //creates content for popup
         VBox content = new VBox(
@@ -60,6 +67,11 @@ public class GameController {
      * Displays the win screen (with next level button)  when the game status is won (gameStatus = 2)
      */
     public static void gameWon() {
+        play("beta/game_win.wav"); //Plays win sound
+
+        Sound winSound = getAssetLoader().loadSound("beta/game_win.wav");
+        getAudioPlayer().playSound(winSound);
+
 
         //creates content for popup
         VBox content = new VBox(
@@ -72,13 +84,18 @@ public class GameController {
 
         Button btnNextLevel = getUIFactoryService().newButton("Next Level"); //Next Level Button
         btnNextLevel.setPrefWidth(300);
-        btnNextLevel.setOnAction(e -> setLevel(geti("level") + 1)); //current level + 1 -> "Next Level"
+        btnNextLevel.setOnAction(e -> {
+            setLevel(geti("level") + 1);
+            getAudioPlayer().stopSound(winSound);
+        }); //current level + 1 -> "Next Level"
 
         Button btnRestartLevel = getUIFactoryService().newButton("Restart Level"); // Restart level button
         btnRestartLevel.setPrefWidth(300);
         btnRestartLevel.setOnAction(e -> setLevel(geti("level"))); // setLevel to current Level -> "Restart"
 
         getDialogService().showBox("Congratulations!", content, btnRestartLevel, btnNextLevel); //creates pop up
+
+
     }
 
     /**
@@ -89,4 +106,14 @@ public class GameController {
         set("freeze", false);
         ball = spawn("ball", player.getX() + player.getWidth() / 2 - ball.getWidth() / 2, ballSpawnPoint.getY());
     }
+
+    /**
+     * Used to print out updates to the console while the game is running.
+     *
+     * @param msg Message developer want to print
+     */
+    public static void L(String msg) {
+        System.out.println(msg);
+    }
+
 }
