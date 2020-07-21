@@ -141,7 +141,7 @@ public class GameEntityFactory implements EntityFactory {
      */
     @Spawns("player")
     public Entity newPlayer(SpawnData data) {
-        return entityBuilder().from(data).type(EntityType.PLAYER).viewWithBBox(texture("game/playerPX.png", playerWidth, playerHeight))
+        return entityBuilder().from(data).type(EntityType.PLAYER).viewWithBBox(texture("game/player.png", playerWidth, playerHeight))
                 .with(new PlayerComponent()).collidable().build();
     }
 
@@ -268,10 +268,7 @@ public class GameEntityFactory implements EntityFactory {
     public Entity newPlayergun(SpawnData data) {
         Vec2 dir = Vec2.fromAngle(-90);
 
-        // TODO: Bullet graphic
-        Texture bullet = texture("game/fx/bullet_border.png");
-
-        return entityBuilder().from(data).type(PowerupType.PLAYERGUN_BULLET).viewWithBBox(bullet)
+        return entityBuilder().from(data).type(PowerupType.PLAYERGUN_BULLET).viewWithBBox(texture("game/fx/bullet_border.png"))
                 .with(new ProjectileComponent(dir.toPoint2D(), 500).allowRotation(false)).with(new OffscreenCleanComponent()).collidable()
                 .build();
     }

@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.getAudioPlayer;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
 import static ly.unnecessary.frontend.controller.GameController.*;
 import static ly.unnecessary.frontend.controller.GamePlayerPhysicController.calculateAngle;
@@ -97,7 +98,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         gameSettings.setHeight(appHeight);
         gameSettings.setTitle(appName);
         gameSettings.setVersion(appVersion);
-        gameSettings.setApplicationMode(ApplicationMode.DEVELOPER);
+        gameSettings.setApplicationMode(ApplicationMode.RELEASE);
         gameSettings.setMainMenuEnabled(true);
         gameSettings.setSceneFactory(new SceneFactory() {
             @Override
@@ -123,26 +124,71 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         level = getAssetLoader().loadText("level.txt");
 
         // Loading Audio
-        getAssetLoader().loadSound("asset.wav");
-        Sound loop_1 = getAssetLoader().loadSound("alpha/loop_1_arp.wav");
-
-        getAssetLoader().loadSound("alpha/ball_collide_brick.wav");
-        getAssetLoader().loadSound("alpha/ball_collide_player_1.wav");
-        getAssetLoader().loadSound("alpha/ball_collide_wall_1_arp.wav");
-        getAssetLoader().loadSound("alpha/power_up.wav");
-        getAssetLoader().loadSound("alpha/ball_collide_player_hard.wav");
-        getAssetLoader().loadSound("alpha/ball_collide_wall_2_arp.wav");
+        getAssetLoader().loadSound("beta/brick_collide_1.wav");
+        getAssetLoader().loadSound("beta/brick_collide_2.wav");
+        getAssetLoader().loadSound("beta/brick_collide_3.wav");
+        getAssetLoader().loadSound("beta/brick_collide_4.wav");
+        getAssetLoader().loadSound("beta/game_loop_all.wav");
+        getAssetLoader().loadSound("beta/game_loop_small.wav");
+        getAssetLoader().loadSound("beta/game_over.wav");
+        getAssetLoader().loadSound("beta/game_win.wav");
+        getAssetLoader().loadSound("beta/player_collide_1.wav");
+        getAssetLoader().loadSound("beta/player_collide_2.wav");
+        getAssetLoader().loadSound("beta/player_collide_3.wav");
+        getAssetLoader().loadSound("beta/player_collide_4.wav");
+        getAssetLoader().loadSound("beta/player_collide_5.wav");
+        getAssetLoader().loadSound("beta/player_collide_6.wav");
+        getAssetLoader().loadSound("beta/player_live_loss.wav");
+        getAssetLoader().loadSound("beta/power_up.wav");
+        getAssetLoader().loadSound("beta/power_up_collect.wav");
+        getAssetLoader().loadSound("beta/shot_1.wav");
+        getAssetLoader().loadSound("beta/shot_2.wav");
+        getAssetLoader().loadSound("beta/shot_3.wav");
+        getAssetLoader().loadSound("beta/wall_collide_1.wav");
+        getAssetLoader().loadSound("beta/wall_collide_2.wav");
+        getAssetLoader().loadSound("beta/wall_collide_3.wav");
+        getAssetLoader().loadSound("beta/wall_collide_4.wav");
+        getAssetLoader().loadSound("beta/wall_collide_5.wav");
+        getAssetLoader().loadSound("beta/wall_collide_6.wav");
 
         // Loading Graphics
-        getAssetLoader().loadTexture("ui/heart.png", 16, 16);
-        getAssetLoader().loadTexture("game/ballBlue.png", ballRadius, ballRadius);
-        getAssetLoader().loadTexture("game/ballGrey.png", ballRadius, ballRadius);
-        getAssetLoader().loadTexture("game/paddleBlu.png", ballRadius, ballRadius);
+        getAssetLoader().loadTexture("game/player.png");
 
-        getAssetLoader().loadText("game/powerups/extraball.png");
-        getAssetLoader().loadText("game/powerups/heart.png");
-        getAssetLoader().loadText("game/powerups/playergun.png");
-        getAssetLoader().loadText("game/powerups/superball.png");
+        getAssetLoader().loadTexture("game/balls/ball_default.png");
+        getAssetLoader().loadTexture("game/balls/ball_superball.png");
+
+        getAssetLoader().loadTexture("game/boss/boss.png");
+        getAssetLoader().loadTexture("game/boss/boss_big.png");
+        getAssetLoader().loadTexture("game/boss/boss_bullet.png");
+
+        getAssetLoader().loadTexture("game/bricks/blue_brick.png");
+        getAssetLoader().loadTexture("game/bricks/cracked_1.png");
+        getAssetLoader().loadTexture("game/bricks/cracked_2.png");
+        getAssetLoader().loadTexture("game/bricks/green_brick.png");
+        getAssetLoader().loadTexture("game/bricks/red_brick.png");
+        getAssetLoader().loadTexture("game/bricks/undestroyable_brick.png");
+        getAssetLoader().loadTexture("game/bricks/white_brick.png");
+
+        getAssetLoader().loadTexture("game/fx/brick_1_fx.png");
+        getAssetLoader().loadTexture("game/fx/brick_2_fx.png");
+        getAssetLoader().loadTexture("game/fx/brick_3_fx.png");
+        getAssetLoader().loadTexture("game/fx/bullet_border.png");
+        getAssetLoader().loadTexture("game/fx/bullet_noBorder.png");
+
+        getAssetLoader().loadTexture("game/powerups/extraball.png");
+        getAssetLoader().loadTexture("game/powerups/heart.png");
+        getAssetLoader().loadTexture("game/powerups/playergun.png");
+        getAssetLoader().loadTexture("game/powerups/playergun_bullet.png");
+        getAssetLoader().loadTexture("game/powerups/superball.png");
+
+        getAssetLoader().loadTexture("ui/backgrounds/background_basic.png");
+        getAssetLoader().loadTexture("ui/backgrounds/background_basic_animated.png");
+        getAssetLoader().loadTexture("ui/backgrounds/background_menu.png");
+        getAssetLoader().loadTexture("ui/backgrounds/background_menu_2.png");
+        getAssetLoader().loadTexture("ui/backgrounds/background_menu_animated.png");
+        getAssetLoader().loadTexture("ui/cup_icon.png");
+        getAssetLoader().loadTexture("ui/heart.png");
+        getAssetLoader().loadTexture("ui/sad_smiley.png");
     }
 
     /**
@@ -173,6 +219,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
     protected void initGame() {
         getGameWorld().addEntityFactory(new GameEntityFactory());
 
+        getAudioPlayer().stopSound(MainMenu.backgroundMusic); //stops music from main menu
 
         loopBGM("beta/game_loop_all_01.mp3"); //plays background music
 
@@ -284,25 +331,25 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
                 case "MULTIBALL":
                     type = PowerupType.MULTIBALL;
                     if (byType(type).isEmpty()) {
-                        spawn("powerupSpawnMultiBall", 30, 60);
+                        spawn("powerupSpawnMultiBall", 100, 100);
                     }
                     break;
                 case "PLAYERGUN":
                     type = PowerupType.PLAYERGUN;
                     if (byType(type).isEmpty()) {
-                        spawn("powerupSpawnPlayerGun", 33 * 2, 60);
+                        spawn("powerupSpawnPlayerGun", 100 + 33, 100);
                     }
                     break;
                 case "SUPERBALL":
                     type = PowerupType.SUPERBALL;
                     if (byType(type).isEmpty()) {
-                        spawn("powerupSpawnSuperBall", 33 * 4, 60);
+                        spawn("powerupSpawnSuperBall", 100 + 33 * 3, 100);
                     }
                     break;
                 default:
                     type = PowerupType.HEART;
                     if (byType(type).isEmpty()) {
-                        spawn("powerupSpawnHeart", 33 * 3, 60);
+                        spawn("powerupSpawnHeart", 100 + 33 * 2, 100);
                     }
             }
         });
@@ -334,7 +381,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
         onCollisionBegin(EntityType.BALL, EntityType.PLAYER, (ball, player) -> {
 
-            play("beta/player_collide_" + FXGLMath.random(1, 6) + ".wav"); //TODO: MUSIC
+            play("beta/player_collide_" + FXGLMath.random(1, 6) + ".wav"); //plays random collide sound
 
             // Display the collide points for testing
             if (getSettings().getApplicationMode() != ApplicationMode.RELEASE) {

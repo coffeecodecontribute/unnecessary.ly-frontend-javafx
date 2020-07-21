@@ -2,6 +2,7 @@ package ly.unnecessary.frontend.menu;
 
 import com.almasb.fxgl.app.scene.FXGLMenu;
 import com.almasb.fxgl.app.scene.MenuType;
+import com.almasb.fxgl.audio.Sound;
 import com.almasb.fxgl.texture.AnimatedTexture;
 import javafx.beans.binding.StringBinding;
 import javafx.geometry.Pos;
@@ -15,8 +16,7 @@ import javafx.util.Duration;
 
 import static com.almasb.fxgl.dsl.FXGL.getDialogService;
 import static com.almasb.fxgl.dsl.FXGL.texture;
-import static com.almasb.fxgl.dsl.FXGLForKtKt.getAssetLoader;
-import static com.almasb.fxgl.dsl.FXGLForKtKt.getUIFactoryService;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
 import static ly.unnecessary.frontend.GameApplication.brickHeight;
 import static ly.unnecessary.frontend.GameApplication.brickWidth;
 
@@ -25,6 +25,7 @@ import static ly.unnecessary.frontend.GameApplication.brickWidth;
  */
 public class MainMenu extends FXGLMenu {
     AnimatedTexture background;
+    public static Sound backgroundMusic;
 
     /**
      * Main Menu on added. Creates Buttons and applies them to the root node.
@@ -39,6 +40,9 @@ public class MainMenu extends FXGLMenu {
         var box = new VBox(5, buttonPlay, buttonCredits, buttonExit);
         box.setTranslateX(100);
         box.setTranslateY(getAppHeight() / 2d);
+
+        backgroundMusic = getAssetLoader().loadSound("beta/game_loop_small.wav");
+        getAudioPlayer().playSound(backgroundMusic);
 
         getMenuContentRoot().getChildren().addAll(box);
     }
