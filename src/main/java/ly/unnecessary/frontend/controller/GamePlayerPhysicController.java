@@ -1,5 +1,8 @@
 package ly.unnecessary.frontend.controller;
 
+/**
+ * Handles the Player Physics to give the player control over the ball
+ */
 public class GamePlayerPhysicController {
 
     /**

@@ -123,7 +123,7 @@ public class GameEntityFactory implements EntityFactory {
     public Entity newBackground(SpawnData data) {
         Rectangle background = new Rectangle(getAppWidth(), getAppHeight());
         background.setFill(Color.web("#222222"));
-        return entityBuilder().from(data).view(texture("ui/backgrounds/background_menu_animated.png").toAnimatedTexture(2, Duration.seconds(0.3)).loop()).build();
+        return entityBuilder().from(data).view(texture("ui/backgrounds/background_basic_animated.png").toAnimatedTexture(7, Duration.seconds(7)).loop()).build();
     }
 
     @Spawns("boss")

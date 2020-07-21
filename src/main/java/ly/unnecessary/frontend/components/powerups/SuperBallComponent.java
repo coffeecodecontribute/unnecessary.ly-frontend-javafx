@@ -17,13 +17,16 @@ import ly.unnecessary.frontend.components.BallComponent;
 public class SuperBallComponent extends Component {
 
     /**
-     *
+     * Adds the super ball texture to all balls
      */
     @Override
     public void onAdded() {
         byType(EntityType.BALL).forEach(e -> e.getComponent(BallComponent.class).addSuperBallTexture());
     }
 
+    /**
+     * Removes the super ball texture from all balls
+     */
     @Override
     public void onRemoved() {
         byType(EntityType.BALL).forEach(e -> e.getComponent(BallComponent.class).removeSuperBallTexture());
