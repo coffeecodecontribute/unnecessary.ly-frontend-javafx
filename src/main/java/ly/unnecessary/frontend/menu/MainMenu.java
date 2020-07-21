@@ -4,6 +4,7 @@ import com.almasb.fxgl.app.scene.FXGLMenu;
 import com.almasb.fxgl.app.scene.MenuType;
 import com.almasb.fxgl.audio.Sound;
 import com.almasb.fxgl.dsl.FXGL;
+import com.almasb.fxgl.texture.AnimatedTexture;
 import com.almasb.fxgl.texture.Texture;
 import com.almasb.fxgl.ui.FXGLButton;
 import javafx.beans.binding.StringBinding;
@@ -26,35 +27,77 @@ import static ly.unnecessary.frontend.GameApplication.uiController;
 import static ly.unnecessary.frontend.controller.LevelController.setLevel;
 
 public class MainMenu extends FXGLMenu {
+    AnimatedTexture background;
+
+    /**
+     * Main Menu on added. Creates Buttons and applies them to the root node.
+     */
     public MainMenu() {
         super(MenuType.MAIN_MENU);
 
         var buttonPlay = new MainButton("PLAY", this::fireNewGame);
-        var buttonCredits = new MainButton("CREDITS", () -> {
-            displayCredits();
-        });
+        var buttonCredits = new MainButton("CREDITS", this::displayCredits);
         var buttonExit = new MainButton("EXIT", this::fireExit);
 
         var box = new VBox(5, buttonPlay, buttonCredits, buttonExit);
         box.setTranslateX(100);
-        box.setTranslateY(getAppHeight() / 2);
+        box.setTranslateY(getAppHeight() / 2d);
 
         getMenuContentRoot().getChildren().addAll(box);
     }
 
+    /**
+     * Update for main menu scene
+     * @param tpf
+     */
     @Override
-    protected Button createActionButton(StringBinding stringBinding, Runnable runnable) {
-        return new Button();
+    protected void onUpdate(double tpf) {
+        background.onUpdate(0.05); //background requires manually updated since there is no component animated Texture in main menu
     }
 
-    @Override
-    protected Button createActionButton(String s, Runnable runnable) {
-        return new Button();
-    }
-
+    /**
+     * Creates the animated menu background
+     * @param width width of the background
+     * @param height height of the background
+     * @return node with texture
+     */
     @Override
     protected Node createBackground(double width, double height) {
-        return texture("ui/backgrounds/background_menu_animated.png").toAnimatedTexture(2, Duration.seconds(0.3)).loop();
+        return background = texture("ui/backgrounds/background_menu_animated.png").toAnimatedTexture(2, Duration.seconds(3.0)).loop();
+    }
+
+    /**
+     * Display credits in dialog box.
+     */
+    public void displayCredits() {
+        VBox content = new VBox(20,
+                getUIFactoryService().newText("Credits", 56),
+                getAssetLoader().loadTexture("game/bricks/white_brick.png", 128, 36),
+                getAssetLoader().loadTexture("game/bricks/red_brick.png", 128, 36),
+                getAssetLoader().loadTexture("game/bricks/blue_brick.png", 128, 36),
+                getAssetLoader().loadTexture("game/bricks/green_brick.png", 128, 36)
+        );
+
+        content.setAlignment(Pos.TOP_CENTER);
+
+        Button btnClose = getUIFactoryService().newButton("Close Credits");
+        btnClose.setPrefWidth(300);
+
+        getDialogService().showBox("", content, btnClose);
+    }
+
+    public static class MainButton extends StackPane {
+        public MainButton(String name, Runnable action) {
+            var text = getUIFactoryService().newText(name, Color.WHITE, 72);
+
+            setOnMouseClicked(e -> {
+                action.run();
+            });
+
+            setAlignment(Pos.CENTER_LEFT);
+
+            getChildren().addAll(text);
+        }
     }
 
     @Override
@@ -72,32 +115,13 @@ public class MainMenu extends FXGLMenu {
         return new Text();
     }
 
-    public void displayCredits() {
-        VBox content = new VBox(
-                getUIFactoryService().newText("Game Made by these People", 56),
-                getAssetLoader().loadTexture("game/bricks/white_brick.png", 128, 36),
-                getAssetLoader().loadTexture("game/bricks/red_brick.png", 128, 36),
-                getAssetLoader().loadTexture("game/bricks/blue_brick.png", 128, 36)
-        );
-
-
-        Button btnClose = getUIFactoryService().newButton("Close Credits");
-        btnClose.setPrefWidth(300);
-
-        getDialogService().showBox("Game Over", content, btnClose);
+    @Override
+    protected Button createActionButton(StringBinding stringBinding, Runnable runnable) {
+        return new Button();
     }
 
-    public static class MainButton extends StackPane {
-        public MainButton(String name, Runnable action) {
-            var text = getUIFactoryService().newText(name, Color.WHITE, 72);
-
-            setOnMouseClicked(e -> {
-                action.run();
-            });
-
-            setAlignment(Pos.CENTER_LEFT);
-
-            getChildren().addAll(text);
-        }
+    @Override
+    protected Button createActionButton(String s, Runnable runnable) {
+        return new Button();
     }
 }
