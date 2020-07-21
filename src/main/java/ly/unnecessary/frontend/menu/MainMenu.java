@@ -48,7 +48,7 @@ public class MainMenu extends FXGLMenu {
 
     /**
      * Update for main menu scene
-     * @param tpf
+     * @param tpf time per frame
      */
     @Override
     protected void onUpdate(double tpf) {
@@ -86,6 +86,9 @@ public class MainMenu extends FXGLMenu {
         getDialogService().showBox("", content, btnClose);
     }
 
+    /**
+     * Create buttons with an action
+     */
     public static class MainButton extends StackPane {
         public MainButton(String name, Runnable action) {
             var text = getUIFactoryService().newText(name, Color.WHITE, 72);
@@ -100,16 +103,34 @@ public class MainMenu extends FXGLMenu {
         }
     }
 
+    /**
+     * Create view for profile name.
+     *
+     * @param s profile user name
+     * @return UI object
+     */
     @Override
     protected Node createProfileView(String s) {
         return new Text();
     }
 
+    /**
+     * Create view for the app title.
+     *
+     * @param s app title
+     * @return UI object
+     */
     @Override
     protected Node createTitleView(String s) {
         return new Text();
     }
 
+    /**
+     * Create view for version string.
+     *
+     * @param s version string
+     * @return UI object
+     */
     @Override
     protected Node createVersionView(String s) {
         return new Text();
