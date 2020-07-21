@@ -8,8 +8,8 @@ import ly.unnecessary.frontend.EntityType;
 import static com.almasb.fxgl.dsl.FXGL.*;
 
 /**
- * Multi Ball Power Up Component
- * Will spawn when the player is collecting a multi ball power up.
+ * Multi Ball Power Up Component Will spawn when the player is collecting a
+ * multi ball power up.
  */
 public class MultiBallComponent extends Component {
     Entity multiBall;

@@ -4,7 +4,6 @@ import com.almasb.fxgl.app.ApplicationMode;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.app.scene.FXGLMenu;
 import com.almasb.fxgl.app.scene.SceneFactory;
-import com.almasb.fxgl.audio.Sound;
 import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.Entity;
@@ -36,14 +35,12 @@ import static ly.unnecessary.frontend.controller.LevelController.setLevel;
  * Game Application. Brick Breaker made with ♥ and 👬 (teamwork)
  */
 public class GameApplication extends com.almasb.fxgl.app.GameApplication {
-
-
     // brick
     public static final int collisionLogicSecurityPadding = 10;
     // app
     public static String appName = "Brick Breaker";
     public static String appVersion = "1.0";
-    public static String appFont = "basic.ttf"; //is inside ui/fonts/
+    public static String appFont = "basic.ttf"; // is inside ui/fonts/
     public static int appWidth = 1920;
     public static int appHeight = 1080;
     // ball
@@ -66,17 +63,14 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
     // powerups
     public static double chanceForDrop = 0.1f;
     public static double chanceForInfected = 0.1f;
-    public static List level; // List with level data
+    public static List<?> level; // List with level data
     public static Entity ball, player;
-
 
     // User Interface
     public static UserInterfaceController uiController;
 
-
-    //cheats
+    // cheats
     public static boolean godMode = false;
-
 
     /**
      * Launches the game
@@ -198,18 +192,18 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
      */
     @Override
     protected void initGameVars(Map<String, Object> vars) {
-        vars.put("ballSpeed", ballSpeed); //ballSpeed
-        vars.put("playerSpeed", playerSpeed); //playerSpeed (if player uses only keyboard
+        vars.put("ballSpeed", ballSpeed); // ballSpeed
+        vars.put("playerSpeed", playerSpeed); // playerSpeed (if player uses only keyboard
 
-        vars.put("ballRadius", ballRadius); //ball radius
+        vars.put("ballRadius", ballRadius); // ball radius
 
-        vars.put("level", 0); //current Level
+        vars.put("level", 0); // current Level
 
-        vars.put("gameStatus", 0); //gameStatus -1 : lost 0 : pregame 1 : ingame 2 : game win
-        vars.put("freeze", false); //game Freeze?
-        vars.put("playerLives", playerLivesCount); //player lives
-        vars.put("playerStars", 0); //player stars
-        vars.put("score", 0); //current score (resets with level change)
+        vars.put("gameStatus", 0); // gameStatus -1 : lost 0 : pregame 1 : ingame 2 : game win
+        vars.put("freeze", false); // game Freeze?
+        vars.put("playerLives", playerLivesCount); // player lives
+        vars.put("playerStars", 0); // player stars
+        vars.put("score", 0); // current score (resets with level change)
     }
 
     /**
@@ -219,17 +213,14 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
     protected void initGame() {
         getGameWorld().addEntityFactory(new GameEntityFactory());
 
-        getAudioPlayer().stopSound(MainMenu.backgroundMusic); //stops music from main menu
+        getAudioPlayer().stopSound(MainMenu.backgroundMusic); // stops music from main menu
 
-        loopBGM("beta/game_loop_all_01.mp3"); //plays background music
+        loopBGM("beta/game_loop_all_01.mp3"); // plays background music
 
-        setLevel(0); //sets level to 0
+        setLevel(0); // sets level to 0
 
-        //creates wall with IrremovableComponent
-        entityBuilder()
-                .type(EntityType.WALL)
-                .collidable()
-                .with(new IrremovableComponent())
+        // creates wall with IrremovableComponent
+        entityBuilder().type(EntityType.WALL).collidable().with(new IrremovableComponent())
                 .buildScreenBoundsAndAttach(40);
     }
 
@@ -260,7 +251,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
                 removeAllPowerUps();
 
-                play("beta/player_live_loss.wav"); //Plays loss life sound
+                play("beta/player_live_loss.wav"); // Plays loss life sound
                 getGameScene().getViewport().shakeTranslational(1.5);
                 uiController.removeLife();
             }
@@ -288,7 +279,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         onCollisionBegin(EntityType.BALL, EntityType.BRICK, (ball, brick) -> {
             inc("score", 100);
 
-            play("beta/brick_collide_" + FXGLMath.random(1, 4) + ".wav"); //Plays a random brick collide sound
+            play("beta/brick_collide_" + FXGLMath.random(1, 4) + ".wav"); // Plays a random brick collide sound
 
             if (getSettings().getApplicationMode() != ApplicationMode.RELEASE) {
                 spawn("point", brick.getPosition());
@@ -309,7 +300,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         });
 
         onCollisionBegin(EntityType.BALL, EntityType.LEVELBRICK, (ball, levelBrick) -> {
-            play("beta/wall_collide_" + FXGLMath.random(1, 6) + ".wav");  //Plays a random wall collide sound
+            play("beta/wall_collide_" + FXGLMath.random(1, 6) + ".wav"); // Plays a random wall collide sound
 
             Point2D velocity = ball.getObject("velocity");
 
@@ -357,23 +348,28 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         onCollisionBegin(EntityType.ACTIONBRICK, EntityType.PLAYER, (actionBrick, player) -> {
             actionBrick.removeFromWorld();
             if (!godMode)
-                byType(EntityType.BALL).get(FXGLMath.random(0, byType(EntityType.BALL).size() - 1)).removeFromWorld(); //Removes one random ball as negative impact
+                byType(EntityType.BALL).get(FXGLMath.random(0, byType(EntityType.BALL).size() - 1)).removeFromWorld(); // Removes
+                                                                                                                       // one
+                                                                                                                       // random
+                                                                                                                       // ball
+                                                                                                                       // as
+                                                                                                                       // negative
+                                                                                                                       // impact
 
             play("beta/player_live_loss.wav");
 
             getGameScene().getViewport().shakeTranslational(1.5);
         });
 
-
         onCollisionBegin(EntityType.ACTIONBRICK, PowerupType.PLAYERGUN_BULLET, (actionBrick, bullet) -> {
-            play("beta/brick_collide_" + FXGLMath.random(1, 4) + ".wav"); //Plays random brick collide sound
+            play("beta/brick_collide_" + FXGLMath.random(1, 4) + ".wav"); // Plays random brick collide sound
 
             actionBrick.removeFromWorld();
             bullet.removeFromWorld();
         });
 
         onCollisionBegin(EntityType.BRICK, PowerupType.PLAYERGUN_BULLET, (brick, bullet) -> {
-            play("beta/brick_collide_" + FXGLMath.random(1, 4) + ".wav"); //Plays random brick collide sound
+            play("beta/brick_collide_" + FXGLMath.random(1, 4) + ".wav"); // Plays random brick collide sound
 
             brick.getComponent(BrickComponent.class).hitByBall();
             bullet.removeFromWorld();
@@ -381,7 +377,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
         onCollisionBegin(EntityType.BALL, EntityType.PLAYER, (ball, player) -> {
 
-            play("beta/player_collide_" + FXGLMath.random(1, 6) + ".wav"); //plays random collide sound
+            play("beta/player_collide_" + FXGLMath.random(1, 6) + ".wav"); // plays random collide sound
 
             // Display the collide points for testing
             if (getSettings().getApplicationMode() != ApplicationMode.RELEASE) {
@@ -392,7 +388,9 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
             double ballCorrectX = ball.getX() + ball.getWidth() / 2; // Takes the middle of the ball as ball x
             double angle = calculateAngle(ballCorrectX, player.getX(), player.getWidth());
 
-            ball.getComponent(BallComponent.class).collide(new Point2D(ballSpeed * playerSpeedMultiplier * Math.sin(angle), -ballSpeed * playerSpeedMultiplier * Math.cos(angle)));
+            ball.getComponent(BallComponent.class)
+                    .collide(new Point2D(ballSpeed * playerSpeedMultiplier * Math.sin(angle),
+                            -ballSpeed * playerSpeedMultiplier * Math.cos(angle)));
         });
     }
 
@@ -420,67 +418,70 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         }, MouseButton.PRIMARY);
 
         onKey(KeyCode.L, "Select Level", () -> {
-            getDialogService().showInputBox("Jump to Level: ",
-                    levelId -> {
-                        setLevel(Integer.parseInt(levelId));
-                        getNotificationService().pushNotification("Level set to " + levelId);
-                    });
+            getDialogService().showInputBox("Jump to Level: ", levelId -> {
+                setLevel(Integer.parseInt(levelId));
+                getNotificationService().pushNotification("Level set to " + levelId);
+            });
         });
 
         onKey(KeyCode.S, "Open Cheat Menu", () -> {
-            getDialogService().showInputBox("Cheat Menu\n0 - Remove all Power Ups (inc. drops)\n1 - Heart\n2 - Multi Ball\n3 - Player Gun\n4 - Super Ball\n5 - Infected Brick\n6 - Spawn Balls\n7 - God Mode", type -> {
-                int selection = Integer.parseInt(type);
-                PowerupType powerUp = null;
-                String notification = "";
-                switch (selection) {
-                    case 0:
-                        removeAllPowerUps();
-                        notification = "All Power-Ups removed";
-                        break;
-                    case 1:
-                        powerUp = PowerupType.HEART;
-                        notification = "Heart spawned";
-                        break;
-                    case 2:
-                        powerUp = PowerupType.MULTIBALL;
-                        notification = "Multi Ball spawned";
-                        break;
-                    case 3:
-                        powerUp = PowerupType.PLAYERGUN;
-                        notification = "Player Gun spawned";
-                        break;
-                    case 4:
-                        powerUp = PowerupType.SUPERBALL;
-                        notification = "Super Ball spawned";
-                        break;
-                    case 5:
-                        spawn("actionBrick", getAppWidth() / 2d, 50);
-                        notification = "Infected Brick spawned.";
-                        break;
-                    case 6:
-                        getDialogService().showInputBox("Number of balls: ", number -> {
-                            int numberInt = Integer.parseInt(number);
-                            for (int i = 0; i < numberInt; i++) {
-                                Entity multiBall = FXGL.spawn("ball", byType(EntityType.BALL).get(0).getPosition());
-                                multiBall.setProperty("velocity", new Point2D(geti("ballSpeed") * i, geti("ballSpeed")));
-                            }
-                        });
-                        notification = "Balls spawned.";
-                        break;
-                    case 7:
-                        godMode = !godMode;
-                        String status = godMode ? "ON" : "OFF";
-                        notification = "God Mode " + status;
-                        break;
-                    default:
-                        notification = "Upps. This command is unknown.";
-                }
-                if (powerUp != null)
-                    spawn("powerupdrop", new SpawnData(getAppWidth() / 2d, getAppHeight() / 2d)
-                            .put("type", powerUp.getType()).put("texture", powerUp.getTextureString()));
+            getDialogService().showInputBox(
+                    "Cheat Menu\n0 - Remove all Power Ups (inc. drops)\n1 - Heart\n2 - Multi Ball\n3 - Player Gun\n4 - Super Ball\n5 - Infected Brick\n6 - Spawn Balls\n7 - God Mode",
+                    type -> {
+                        int selection = Integer.parseInt(type);
+                        PowerupType powerUp = null;
+                        String notification = "";
+                        switch (selection) {
+                            case 0:
+                                removeAllPowerUps();
+                                notification = "All Power-Ups removed";
+                                break;
+                            case 1:
+                                powerUp = PowerupType.HEART;
+                                notification = "Heart spawned";
+                                break;
+                            case 2:
+                                powerUp = PowerupType.MULTIBALL;
+                                notification = "Multi Ball spawned";
+                                break;
+                            case 3:
+                                powerUp = PowerupType.PLAYERGUN;
+                                notification = "Player Gun spawned";
+                                break;
+                            case 4:
+                                powerUp = PowerupType.SUPERBALL;
+                                notification = "Super Ball spawned";
+                                break;
+                            case 5:
+                                spawn("actionBrick", getAppWidth() / 2d, 50);
+                                notification = "Infected Brick spawned.";
+                                break;
+                            case 6:
+                                getDialogService().showInputBox("Number of balls: ", number -> {
+                                    int numberInt = Integer.parseInt(number);
+                                    for (int i = 0; i < numberInt; i++) {
+                                        Entity multiBall = FXGL.spawn("ball",
+                                                byType(EntityType.BALL).get(0).getPosition());
+                                        multiBall.setProperty("velocity",
+                                                new Point2D(geti("ballSpeed") * i, geti("ballSpeed")));
+                                    }
+                                });
+                                notification = "Balls spawned.";
+                                break;
+                            case 7:
+                                godMode = !godMode;
+                                String status = godMode ? "ON" : "OFF";
+                                notification = "God Mode " + status;
+                                break;
+                            default:
+                                notification = "Upps. This command is unknown.";
+                        }
+                        if (powerUp != null)
+                            spawn("powerupdrop", new SpawnData(getAppWidth() / 2d, getAppHeight() / 2d)
+                                    .put("type", powerUp.getType()).put("texture", powerUp.getTextureString()));
 
-                getNotificationService().pushNotification(notification);
-            });
+                        getNotificationService().pushNotification(notification);
+                    });
         });
 
     }
@@ -492,7 +493,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
     protected void initUI() {
         uiController = new UserInterfaceController(getGameScene());
 
-        UI ui = getAssetLoader().loadUI("game.fxml", uiController); //loads fxml
+        UI ui = getAssetLoader().loadUI("game.fxml", uiController); // loads fxml
 
         uiController.getLabelScore().textProperty().bind(getip("score").asString("Score: %d"));
 
@@ -510,19 +511,19 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
             addVarText("playerLives", getAppWidth() - 100, 110);
         }
 
-        getGameScene().addUI(ui); //adds fxml to game scene
+        getGameScene().addUI(ui); // adds fxml to game scene
     }
 
     /**
      * Removes all power ups including drops from game world.
      */
     public void removeAllPowerUps() {
-        //Removes all powerup drops
+        // Removes all powerup drops
         if (!byType(EntityType.POWERUPDROP).isEmpty()) {
             byType(EntityType.POWERUPDROP).forEach(Entity::removeFromWorld);
         }
 
-        //Removes all active powerups
+        // Removes all active powerups
         PowerupType[] powerUps = PowerupType.values();
         for (int i = 0; i < powerUps.length; i++) {
             if (!byType(powerUps[i]).isEmpty()) {

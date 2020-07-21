@@ -35,7 +35,6 @@ import static ly.unnecessary.frontend.GameApplication.playerWidth;
  * Game Entity Factory
  */
 public class GameEntityFactory implements EntityFactory {
-
     /**
      * Spawns game ball with default texture.
      *
@@ -75,13 +74,14 @@ public class GameEntityFactory implements EntityFactory {
                 brick = texture("game/bricks/white_brick.png", 128, 36);
         }
 
-        return entityBuilder().from(data)
-                .type(EntityType.BRICK)
-                .viewWithBBox(brick)
-                .with(new HealthIntComponent(type)) // type == to lives a brick has
-                .with(new BrickComponent(type))
-                .collidable()
-                .build();
+        return entityBuilder().from(data).type(EntityType.BRICK).viewWithBBox(brick).with(new HealthIntComponent(type)) // type
+                                                                                                                        // ==
+                                                                                                                        // to
+                                                                                                                        // lives
+                                                                                                                        // a
+                                                                                                                        // brick
+                                                                                                                        // has
+                .with(new BrickComponent(type)).collidable().build();
     }
 
     /**
@@ -93,11 +93,8 @@ public class GameEntityFactory implements EntityFactory {
     @Spawns("levelBrick")
     public Entity newLevelBrick(SpawnData data) {
 
-        return entityBuilder().from(data)
-                .type(EntityType.LEVELBRICK)
-                .viewWithBBox(texture("game/bricks/undestroyable_brick.png", 128, 36))
-                .collidable()
-                .build();
+        return entityBuilder().from(data).type(EntityType.LEVELBRICK)
+                .viewWithBBox(texture("game/bricks/undestroyable_brick.png", 128, 36)).collidable().build();
     }
 
     /**
@@ -113,8 +110,7 @@ public class GameEntityFactory implements EntityFactory {
         Vec2 dir = Vec2.fromAngle(90);
 
         return entityBuilder().from(data).viewWithBBox(texture("game/bricks/green_brick.png", 128, 36))
-                .type(EntityType.ACTIONBRICK)
-                .with(new ProjectileComponent(dir.toPoint2D(), 500).allowRotation(false))
+                .type(EntityType.ACTIONBRICK).with(new ProjectileComponent(dir.toPoint2D(), 500).allowRotation(false))
                 .with(new OffscreenCleanComponent()).collidable().build();
     }
 
@@ -128,9 +124,9 @@ public class GameEntityFactory implements EntityFactory {
     public Entity newBrokenBrick(SpawnData data) {
 
         return entityBuilder().from(data)
-                .view(texture("game/fx/brick_" + data.get("type") + "_fx.png", 864, 72).toAnimatedTexture(6, Duration.seconds(0.3)).play())
-                .with(new ExpireCleanComponent(Duration.seconds(0.3)))
-                .build();
+                .view(texture("game/fx/brick_" + data.get("type") + "_fx.png", 864, 72)
+                        .toAnimatedTexture(6, Duration.seconds(0.3)).play())
+                .with(new ExpireCleanComponent(Duration.seconds(0.3))).build();
     }
 
     /**
@@ -141,8 +137,9 @@ public class GameEntityFactory implements EntityFactory {
      */
     @Spawns("player")
     public Entity newPlayer(SpawnData data) {
-        return entityBuilder().from(data).type(EntityType.PLAYER).viewWithBBox(texture("game/player.png", playerWidth, playerHeight))
-                .with(new PlayerComponent()).collidable().build();
+        return entityBuilder().from(data).type(EntityType.PLAYER)
+                .viewWithBBox(texture("game/player.png", playerWidth, playerHeight)).with(new PlayerComponent())
+                .collidable().build();
     }
 
     /**
@@ -155,7 +152,8 @@ public class GameEntityFactory implements EntityFactory {
     public Entity newBackground(SpawnData data) {
         Rectangle background = new Rectangle(getAppWidth(), getAppHeight());
         background.setFill(Color.web("#222222"));
-        return entityBuilder().from(data).view(texture("ui/backgrounds/background_basic_animated.png").toAnimatedTexture(7, Duration.seconds(7)).loop()).build();
+        return entityBuilder().from(data).view(texture("ui/backgrounds/background_basic_animated.png")
+                .toAnimatedTexture(7, Duration.seconds(7)).loop()).build();
     }
 
     /**
@@ -170,7 +168,7 @@ public class GameEntityFactory implements EntityFactory {
         brick = texture("game/boss/boss.png", 1728, 300).toAnimatedTexture(8, Duration.seconds(0.5)).loop();
         HealthIntComponent hp = new HealthIntComponent(10);
 
-        var hpView = new ProgressBar(true); //create health bar
+        var hpView = new ProgressBar(true); // create health bar
         hpView.setFill(Color.RED);
         hpView.setMaxValue(10);
         hpView.setWidth(200);
@@ -178,7 +176,7 @@ public class GameEntityFactory implements EntityFactory {
         hpView.setTranslateY(-30);
         hpView.setTranslateX(0);
         hpView.setBackgroundFill(Color.BLACK);
-        hpView.currentValueProperty().bind(hp.valueProperty()); //bind hp value to health bar
+        hpView.currentValueProperty().bind(hp.valueProperty()); // bind hp value to health bar
 
         return entityBuilder().from(data).type(EntityType.BRICK).viewWithBBox(brick).view(hpView).with(hp)
                 .with(new BrickComponent()).with(new BossComponent()).collidable().build();
@@ -192,16 +190,16 @@ public class GameEntityFactory implements EntityFactory {
      */
     @Spawns("bossShotBullet")
     public Entity newBossShotBullet(SpawnData data) {
-        Texture bossBullet = texture("game/boss/boss_bullet.png", 40, 60).toAnimatedTexture(5, Duration.seconds(0.5)).loop();
+        Texture bossBullet = texture("game/boss/boss_bullet.png", 40, 60).toAnimatedTexture(5, Duration.seconds(0.5))
+                .loop();
         bossBullet.setRotate(-90);
 
-        play("beta/shot_" + FXGLMath.random(1, 3) + ".wav"); //plays cool shot sound
+        play("beta/shot_" + FXGLMath.random(1, 3) + ".wav"); // plays cool shot sound
         Vec2 dir = data.get("dir");
 
-        return entityBuilder().from(data).viewWithBBox(bossBullet)
-                .type(EntityType.ACTIONBRICK)
-                .with(new ProjectileComponent(dir.toPoint2D(), 800))
-                .with(new OffscreenCleanComponent()).collidable().build();
+        return entityBuilder().from(data).viewWithBBox(bossBullet).type(EntityType.ACTIONBRICK)
+                .with(new ProjectileComponent(dir.toPoint2D(), 800)).with(new OffscreenCleanComponent()).collidable()
+                .build();
     }
 
     /**
@@ -215,7 +213,8 @@ public class GameEntityFactory implements EntityFactory {
         System.out.println("uiSpawnLevelInfo");
         Text levelText = getUIFactoryService().newText("Level " + geti("level"), 24);
 
-        Entity levelInfo = entityBuilder().from(data).view(levelText).with(new ExpireCleanComponent(Duration.seconds(3))).build();
+        Entity levelInfo = entityBuilder().from(data).view(levelText)
+                .with(new ExpireCleanComponent(Duration.seconds(3))).build();
 
         animationBuilder().interpolator(Interpolators.BOUNCE.EASE_OUT()).duration(Duration.seconds(2))
                 .translate(levelInfo)
@@ -237,7 +236,7 @@ public class GameEntityFactory implements EntityFactory {
         String dropIcon = data.get("texture");
         Vec2 dir = Vec2.fromAngle(90);
 
-        play("beta/power_up.wav"); //surprise sound
+        play("beta/power_up.wav"); // surprise sound
 
         return entityBuilder().from(data).type(EntityType.POWERUPDROP).viewWithBBox(texture(dropIcon, 33, 33))
                 .with(new ProjectileComponent(dir.toPoint2D(), 500).allowRotation(false))
@@ -268,9 +267,10 @@ public class GameEntityFactory implements EntityFactory {
     public Entity newPlayergun(SpawnData data) {
         Vec2 dir = Vec2.fromAngle(-90);
 
-        return entityBuilder().from(data).type(PowerupType.PLAYERGUN_BULLET).viewWithBBox(texture("game/fx/bullet_border.png"))
-                .with(new ProjectileComponent(dir.toPoint2D(), 500).allowRotation(false)).with(new OffscreenCleanComponent()).collidable()
-                .build();
+        return entityBuilder().from(data).type(PowerupType.PLAYERGUN_BULLET)
+                .viewWithBBox(texture("game/fx/bullet_border.png"))
+                .with(new ProjectileComponent(dir.toPoint2D(), 500).allowRotation(false))
+                .with(new OffscreenCleanComponent()).collidable().build();
     }
 
     /**
@@ -312,7 +312,6 @@ public class GameEntityFactory implements EntityFactory {
                 .with(new ExpireCleanComponent(Duration.seconds(10))).with(new SuperBallComponent()).build();
     }
 
-
     // Developer
 
     /**
@@ -327,5 +326,4 @@ public class GameEntityFactory implements EntityFactory {
         pixel.setFill(Color.CYAN);
         return entityBuilder().from(data).view(pixel).with(new ExpireCleanComponent(Duration.seconds(0.5))).build();
     }
-
 }

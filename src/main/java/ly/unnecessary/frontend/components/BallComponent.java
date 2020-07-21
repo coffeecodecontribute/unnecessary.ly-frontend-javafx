@@ -46,25 +46,23 @@ public class BallComponent extends Component {
     }
 
     /**
-     * With last wall collide we want to fix issues causing the ball to stuck in the wall.
-     * We handle that by only allowing a collision once with a the same wall.
-     * We do that by tracking the last collided wall and only accepting other walls, bricks and the player as next collision object.
+     * With last wall collide we want to fix issues causing the ball to stuck in the
+     * wall. We handle that by only allowing a collision once with a the same wall.
+     * We do that by tracking the last collided wall and only accepting other walls,
+     * bricks and the player as next collision object.
      * <ul>
-     *     <li>0 = collided with any brick or player</li>
-     *     <li>1 = top wall</li>
-     *     <li>2 = top right</li>
-     *     <li>3 = top bottom</li>
-     *     <li>4 = top left</li>
+     * <li>0 = collided with any brick or player</li>
+     * <li>1 = top wall</li>
+     * <li>2 = top right</li>
+     * <li>3 = top bottom</li>
+     * <li>4 = top left</li>
      * </ul>
      * <p>
-     * |-------1--------|
-     * |                |
-     * 4                2
-     * |                |
-     * |-------3--------|
+     * |-------1--------| | | 4 2 | | |-------3--------|
      *
      * @param point2D            the new direction after collide
-     * @param currentWallCollide the current wall with which you collided in form of an integer
+     * @param currentWallCollide the current wall with which you collided in form of
+     *                           an integer
      */
     public void collideWall(Point2D point2D, int currentWallCollide) {
         if (currentWallCollide != lastWallCollide) {
@@ -89,14 +87,16 @@ public class BallComponent extends Component {
             allowedToChangeCollideDirection = false;
         }
 
-        //we add a one millisecond wait to fix issues when the ball is colliding with two blocks
+        // we add a one millisecond wait to fix issues when the ball is colliding with
+        // two blocks
         run(() -> {
             allowedToChangeCollideDirection = true;
         }, Duration.millis(1));
     }
 
     /**
-     * Ball release in direction of Mouse. Creates a vector with a fixed length in direction to the player mouse.
+     * Ball release in direction of Mouse. Creates a vector with a fixed length in
+     * direction to the player mouse.
      */
     public void release() {
         Vec2 vel = new Vec2(getInput().getMouseXWorld(), getInput().getMouseYWorld());

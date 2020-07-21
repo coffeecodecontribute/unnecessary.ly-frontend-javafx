@@ -14,19 +14,21 @@ import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
  * Boss Component
  */
 public class BossComponent extends Component {
-    int velocity = 5; //velocity of boss
-    int speed; //speed of boss
+    int velocity = 5; // velocity of boss
+    int speed; // speed of boss
     long frameCount = 0;
 
     boolean isFreezed = false;
 
     /**
-     * Update method for boss. Handles all the "ai" logic.
-     * Boss is split in three phases:
+     * Update method for boss. Handles all the "ai" logic. Boss is split in three
+     * phases:
      * <ol>
-     *     <li>Start Phase: A few seconds before the fight the boss is not firing.</li>
-     *     <li>Middle Phase: The boss is firing normal bullets and each 300 frames a shotgun bullet.</li>
-     *     <li>End Phase: When the boss has only a few lives he will get faster and start only firing shotgun bullets. This can be very hard.</li>
+     * <li>Start Phase: A few seconds before the fight the boss is not firing.</li>
+     * <li>Middle Phase: The boss is firing normal bullets and each 300 frames a
+     * shotgun bullet.</li>
+     * <li>End Phase: When the boss has only a few lives he will get faster and
+     * start only firing shotgun bullets. This can be very hard.</li>
      * </ol>
      *
      * @param tpf time per frame
@@ -36,7 +38,7 @@ public class BossComponent extends Component {
         var hp = entity.getComponent(HealthIntComponent.class);
 
         if (frameCount > 50) { // start phase
-            if (hp.getValue() < 4) { //  end phase
+            if (hp.getValue() < 4) { // end phase
                 isFreezed = false;
                 velocity = 8;
                 if (frameCount % 50 == 0) {
@@ -58,7 +60,7 @@ public class BossComponent extends Component {
             }
         }
 
-        //handles the movement of boss
+        // handles the movement of boss
         if (isFreezed == false) {
             if (Math.abs(entity.getX() - byType(EntityType.PLAYER).get(0).getX()) < 100)
                 speed = 0;
@@ -69,7 +71,7 @@ public class BossComponent extends Component {
                 speed = velocity;
                 entity.getViewComponent().getChildren().get(0).setScaleX(-1);
             }
-            entity.translateX(speed); //applies speed to boss
+            entity.translateX(speed); // applies speed to boss
         }
 
         frameCount++;
@@ -82,23 +84,21 @@ public class BossComponent extends Component {
      */
     public void fireBullet(double angle) {
 
-        if (geti("gameStatus") == 0) //do not fire when the player is in pre Game
+        if (geti("gameStatus") == 0) // do not fire when the player is in pre Game
             return;
 
-        Vec2 dir = Vec2.fromAngle(angle); //creates a dir from the angle
-        spawn("bossShotBullet",
-                new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight())
-                        .put("dir", dir)); //spawns bullet at bottom center pos of boss
+        Vec2 dir = Vec2.fromAngle(angle); // creates a dir from the angle
+        spawn("bossShotBullet", new SpawnData(entity.getX() + entity.getWidth() / 2, entity.getY() + entity.getHeight())
+                .put("dir", dir)); // spawns bullet at bottom center pos of boss
 
     }
 
     /**
-     * Shotgun Bullet
-     * fires 3 bullets in 45°, 90° and 135°
+     * Shotgun Bullet fires 3 bullets in 45°, 90° and 135°
      */
     public void fireShootGun() {
 
-        //fires 3 times with +45 ° each time
+        // fires 3 times with +45 ° each time
         for (int i = 45; i < 136; i += 45) {
             fireBullet(i);
         }

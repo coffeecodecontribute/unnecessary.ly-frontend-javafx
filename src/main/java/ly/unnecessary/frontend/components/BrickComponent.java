@@ -30,24 +30,26 @@ public class BrickComponent extends Component {
     /**
      * Brick constructor.
      *
-     * @param type set type from 1 - 3 (1 : white, 2 : blue, 3 : red). The type also sets the lives a brick has.
+     * @param type set type from 1 - 3 (1 : white, 2 : blue, 3 : red). The type also
+     *             sets the lives a brick has.
      */
     public BrickComponent(int type) {
         this.type = type;
     }
 
     /**
-     * When the ball is hitting a brick this method is called. It updates the texture, makes the brick an infected brick or spawns a power up.
+     * When the ball is hitting a brick this method is called. It updates the
+     * texture, makes the brick an infected brick or spawns a power up.
      */
     public void hitByBall() {
-        var hp = entity.getComponent(HealthIntComponent.class); //get the current hp from the brick
+        var hp = entity.getComponent(HealthIntComponent.class); // get the current hp from the brick
 
-        if (!byType(PowerupType.SUPERBALL).isEmpty()) //destroy the brick if superball is active
+        if (!byType(PowerupType.SUPERBALL).isEmpty()) // destroy the brick if superball is active
             hp.damage(3);
 
         hp.damage(1); // remove one life
 
-        //add cracked textures
+        // add cracked textures
         if (getHealthPoints() == 2) {
             Texture rc = texture("game/bricks/cracked_1.png", brickWidth, brickHeight);
             entity.getViewComponent().addChild(rc);
@@ -57,18 +59,19 @@ public class BrickComponent extends Component {
             entity.getViewComponent().addChild(rc);
         }
 
-        //Spawns infected brick
+        // Spawns infected brick
         if (getHealthPoints() == 0) {
             if (FXGLMath.randomBoolean(chanceForInfected)) {
                 spawn("actionBrick", entity.getPosition());
                 blockIsInfected = true;
             } else {
-                spawn("brickBroken", new SpawnData(entity.getX() + entity.getWidth() / 2 - 72, entity.getY()).put("type", this.type));
+                spawn("brickBroken", new SpawnData(entity.getX() + entity.getWidth() / 2 - 72, entity.getY())
+                        .put("type", this.type));
             }
             entity.removeFromWorld();
         }
 
-        //Spawns power up
+        // Spawns power up
         if (FXGLMath.randomBoolean(chanceForDrop) && !blockIsInfected) {
             if (byType(EntityType.POWERUPDROP).isEmpty()) {
                 PowerupType powerUp = PowerupType.pickPowerUp();

@@ -9,8 +9,8 @@ import ly.unnecessary.frontend.EntityType;
 import static com.almasb.fxgl.dsl.FXGL.*;
 
 /**
- * Player Gun Power Up Component
- * Will spawn when the player is collecting a player gun power up.
+ * Player Gun Power Up Component Will spawn when the player is collecting a
+ * player gun power up.
  */
 public class PlayerGunComponent extends Component {
     private final int marginOfPlayer = 30;
@@ -24,7 +24,8 @@ public class PlayerGunComponent extends Component {
      */
     @Override
     public void onAdded() {
-        PlayerGunType type = FXGLMath.randomBoolean(0.5) ? PlayerGunType.SINGLE : PlayerGunType.DOUBLE; //Randomly picks a type
+        PlayerGunType type = FXGLMath.randomBoolean(0.5) ? PlayerGunType.SINGLE : PlayerGunType.DOUBLE; // Randomly
+                                                                                                        // picks a type
 
         if (type == PlayerGunType.DOUBLE)
             bulletSpawnPeriod *= 0.5;
@@ -55,5 +56,4 @@ public class PlayerGunComponent extends Component {
     public void onRemoved() {
         playergun.expire();
     }
-
 }

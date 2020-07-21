@@ -13,7 +13,6 @@ import static ly.unnecessary.frontend.GameApplication.*;
  * Manages the level
  */
 public class LevelController {
-
     /**
      * Set Level by Id from level.txt source in assets/text/level.txt
      *
@@ -21,13 +20,14 @@ public class LevelController {
      */
     public static void setLevel(int levelId) {
 
-        //validates and verify the levelId
+        // validates and verify the levelId
         if (levelId != 100 && levelId != 99) {
             if (levelId >= level.size() || levelId < 0)
                 return;
         }
 
-        getGameWorld().getEntitiesCopy().forEach(Entity::removeFromWorld); //removes all entities from the game world (except the WALL)
+        getGameWorld().getEntitiesCopy().forEach(Entity::removeFromWorld); // removes all entities from the game world
+                                                                           // (except the WALL)
 
         String currentLevel = "";
         set("gameStatus", 0);
@@ -35,27 +35,27 @@ public class LevelController {
         set("level", levelId);
         set("score", 0);
 
-        if (levelId == 100) //random Level
+        if (levelId == 100) // random Level
             currentLevel = generateRandomLevel();
-        else if (levelId == 99) //empty Level
+        else if (levelId == 99) // empty Level
             currentLevel = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
         else
             currentLevel = level.get(levelId).toString();
 
-        spawn("background", 0, 0); //spawns background
-        player = spawn("player", playerSpawnPoint); //spawns player
-        ball = spawn("ball", ballSpawnPoint); //spawns ball
+        spawn("background", 0, 0); // spawns background
+        player = spawn("player", playerSpawnPoint); // spawns player
+        ball = spawn("ball", ballSpawnPoint); // spawns ball
 
         // Deprecated for the Release
-        //spawn("uiSpawnLevelInfo"); // Spawns UI text
+        // spawn("uiSpawnLevelInfo"); // Spawns UI text
 
-        //Set the boss level
+        // Set the boss level
         if (currentLevel.equals("boss")) {
             spawn("boss", 100, 100);
             return;
         }
 
-        //spawns brick based on level string
+        // spawns brick based on level string
         int i = 0, x = 0, y = levelMargin;
         for (int row = 0; row < levelRows; row++) {
             for (int col = 0; col < 1920 / brickWidth; col++) {

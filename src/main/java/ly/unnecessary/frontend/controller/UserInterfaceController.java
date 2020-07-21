@@ -23,7 +23,7 @@ public class UserInterfaceController implements UIController {
     private double livesX;
     @FXML
     private double livesY;
-    private final List<Texture> lives = new ArrayList<>(); //hols all textures for hearts
+    private final List<Texture> lives = new ArrayList<>(); // hols all textures for hearts
 
     public UserInterfaceController(GameScene gameScene) {
         this.gameScene = gameScene;
@@ -34,21 +34,21 @@ public class UserInterfaceController implements UIController {
      */
     @Override
     public void init() {
-        labelScore.setFont(getUIFactoryService().newFont(30)); //Set Font and size for labelScore
+        labelScore.setFont(getUIFactoryService().newFont(30)); // Set Font and size for labelScore
     }
 
     /**
      * Adds life to Ui Node
      */
     public void addLife() {
-        int numLives = lives.size(); //gets amount of lives
+        int numLives = lives.size(); // gets amount of lives
 
-        Texture texture = getAssetLoader().loadTexture("ui/heart.png", 32, 32); //adds life texture
-        texture.setTranslateX(livesX + 64 * numLives); //calculates the correct X position
+        Texture texture = getAssetLoader().loadTexture("ui/heart.png", 32, 32); // adds life texture
+        texture.setTranslateX(livesX + 64 * numLives); // calculates the correct X position
         texture.setTranslateY(livesY);
 
-        lives.add(texture); //adds to arraylist
-        gameScene.addUINode(texture); //adds to Ui node
+        lives.add(texture); // adds to arraylist
+        gameScene.addUINode(texture); // adds to Ui node
     }
 
     /**
@@ -61,7 +61,8 @@ public class UserInterfaceController implements UIController {
     }
 
     /**
-     * Get labelScore Variable (is required to bind it to the UI node from GameApplication)
+     * Get labelScore Variable (is required to bind it to the UI node from
+     * GameApplication)
      *
      * @return score label
      */

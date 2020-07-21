@@ -11,15 +11,14 @@ import static ly.unnecessary.frontend.GameApplication.playerSpeed;
  * Handles player movement
  */
 public class PlayerComponent extends Component {
-
     /**
      * Modern Mouse Movement
      * <p>
      * Control the player with your mouse. Benefits of this method are:
      * <ul>
-     *     <li>faster control</li>
-     *     <li>more direct impact</li>
-     *     <li>Can handle multiple balls easy</li>
+     * <li>faster control</li>
+     * <li>more direct impact</li>
+     * <li>Can handle multiple balls easy</li>
      * </ul>
      */
     public void mouseMovement() {
@@ -39,20 +38,21 @@ public class PlayerComponent extends Component {
     }
 
     /**
-     * Deprecated control moved to mouse controller
-     * Moves the player right. Can be used in initInput
+     * Deprecated control moved to mouse controller Moves the player right. Can be
+     * used in initInput
      */
     public void moveRight() {
-        if (entity.getX() + entity.getWidth() < FXGL.getAppWidth()) //ensures that the player is not leaving the game world
+        if (entity.getX() + entity.getWidth() < FXGL.getAppWidth()) // ensures that the player is not leaving the game
+                                                                    // world
             entity.setX(entity.getX() + playerSpeed);
     }
 
     /**
-     * Deprecated control moved to mouse controller
-     * Moves the player left. Can be used in initInput
+     * Deprecated control moved to mouse controller Moves the player left. Can be
+     * used in initInput
      */
     public void moveLeft() {
-        if (entity.getX() > 0) //ensures that the player is not leaving the game world
+        if (entity.getX() > 0) // ensures that the player is not leaving the game world
             entity.setX(entity.getX() - playerSpeed);
     }
 }

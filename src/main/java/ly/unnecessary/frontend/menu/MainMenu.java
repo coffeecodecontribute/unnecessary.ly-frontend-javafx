@@ -54,7 +54,8 @@ public class MainMenu extends FXGLMenu {
      */
     @Override
     protected void onUpdate(double tpf) {
-        background.onUpdate(0.05); //background requires manually updated since there is no component animated Texture in main menu
+        background.onUpdate(0.05); // background requires manually updated since there is no component animated
+                                   // Texture in main menu
     }
 
     /**
@@ -66,20 +67,19 @@ public class MainMenu extends FXGLMenu {
      */
     @Override
     protected Node createBackground(double width, double height) {
-        return background = texture("ui/backgrounds/background_menu_animated.png").toAnimatedTexture(2, Duration.seconds(3.0)).loop();
+        return background = texture("ui/backgrounds/background_menu_animated.png")
+                .toAnimatedTexture(2, Duration.seconds(3.0)).loop();
     }
 
     /**
      * Display credits in dialog box.
      */
     public void displayCredits() {
-        VBox content = new VBox(20,
-                getUIFactoryService().newText("Credits", 56),
+        VBox content = new VBox(20, getUIFactoryService().newText("Credits", 56),
                 getAssetLoader().loadTexture("game/bricks/white_brick.png", brickWidth, brickHeight),
                 getAssetLoader().loadTexture("game/bricks/red_brick.png", brickWidth, brickHeight),
                 getAssetLoader().loadTexture("game/bricks/blue_brick.png", brickWidth, brickHeight),
-                getAssetLoader().loadTexture("game/bricks/green_brick.png", brickWidth, brickHeight)
-        );
+                getAssetLoader().loadTexture("game/bricks/green_brick.png", brickWidth, brickHeight));
 
         content.setAlignment(Pos.TOP_CENTER);
 
