@@ -1,10 +1,10 @@
 package ly.unnecessary.frontend;
 
-import static com.almasb.fxgl.dsl.FXGL.byType;
-import static com.almasb.fxgl.dsl.FXGL.texture;
-
 import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.texture.Texture;
+
+import static com.almasb.fxgl.dsl.FXGL.byType;
+import static com.almasb.fxgl.dsl.FXGL.texture;
 
 public enum PowerupType {
     // MULTIBALL, SCOREBOMB, PLAYERGUN, SPAWNMULTIBALL, SPAWNSCOREBOMB,
@@ -38,11 +38,11 @@ public enum PowerupType {
     /**
      * Picks a random power up which is not active. If all power ups are active it
      * will return null.
-     * 
+     *
      * @return A power up reference with necessary information
      */
     public static PowerupType pickPowerUp() {
-        PowerupType[] powerUpTypes = { PowerupType.MULTIBALL, PowerupType.PLAYERGUN, PowerupType.HEART, PowerupType.SUPERBALL }; // Pool of PowerUps
+        PowerupType[] powerUpTypes = {PowerupType.MULTIBALL, PowerupType.PLAYERGUN, PowerupType.HEART, PowerupType.SUPERBALL}; // Pool of PowerUps
 
         int selectedPowerUp;
         boolean notFound = true;
@@ -70,7 +70,7 @@ public enum PowerupType {
 
     /**
      * Getter of Type
-     * 
+     *
      * @return type of current power up
      */
     public String getType() {

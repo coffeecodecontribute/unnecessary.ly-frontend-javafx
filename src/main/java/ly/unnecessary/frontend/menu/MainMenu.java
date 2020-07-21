@@ -2,11 +2,7 @@ package ly.unnecessary.frontend.menu;
 
 import com.almasb.fxgl.app.scene.FXGLMenu;
 import com.almasb.fxgl.app.scene.MenuType;
-import com.almasb.fxgl.audio.Sound;
-import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.texture.AnimatedTexture;
-import com.almasb.fxgl.texture.Texture;
-import com.almasb.fxgl.ui.FXGLButton;
 import javafx.beans.binding.StringBinding;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -14,17 +10,15 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-import static com.almasb.fxgl.dsl.FXGL.*;
+import static com.almasb.fxgl.dsl.FXGL.getDialogService;
+import static com.almasb.fxgl.dsl.FXGL.texture;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.getAssetLoader;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.getUIFactoryService;
-import static com.almasb.fxgl.dsl.FXGLForKtKt.geti;
-import static com.almasb.fxgl.dsl.FXGLForKtKt.inc;
-import static ly.unnecessary.frontend.GameApplication.*;
-import static ly.unnecessary.frontend.controller.LevelController.setLevel;
+import static ly.unnecessary.frontend.GameApplication.brickHeight;
+import static ly.unnecessary.frontend.GameApplication.brickWidth;
 
 /**
  * Main Menu Logic
@@ -51,6 +45,7 @@ public class MainMenu extends FXGLMenu {
 
     /**
      * Update for main menu scene
+     *
      * @param tpf time per frame
      */
     @Override
@@ -60,7 +55,8 @@ public class MainMenu extends FXGLMenu {
 
     /**
      * Creates the animated menu background
-     * @param width width of the background
+     *
+     * @param width  width of the background
      * @param height height of the background
      * @return node with texture
      */
@@ -87,23 +83,6 @@ public class MainMenu extends FXGLMenu {
         btnClose.setPrefWidth(300);
 
         getDialogService().showBox("", content, btnClose);
-    }
-
-    /**
-     * Create buttons with an action
-     */
-    public static class MainButton extends StackPane {
-        public MainButton(String name, Runnable action) {
-            var text = getUIFactoryService().newText(name, Color.WHITE, 72);
-
-            setOnMouseClicked(e -> {
-                action.run();
-            });
-
-            setAlignment(Pos.CENTER_LEFT);
-
-            getChildren().addAll(text);
-        }
     }
 
     /**
@@ -147,5 +126,22 @@ public class MainMenu extends FXGLMenu {
     @Override
     protected Button createActionButton(String s, Runnable runnable) {
         return new Button();
+    }
+
+    /**
+     * Create buttons with an action
+     */
+    public static class MainButton extends StackPane {
+        public MainButton(String name, Runnable action) {
+            var text = getUIFactoryService().newText(name, Color.WHITE, 72);
+
+            setOnMouseClicked(e -> {
+                action.run();
+            });
+
+            setAlignment(Pos.CENTER_LEFT);
+
+            getChildren().addAll(text);
+        }
     }
 }

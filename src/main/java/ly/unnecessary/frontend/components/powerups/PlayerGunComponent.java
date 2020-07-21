@@ -3,7 +3,6 @@ package ly.unnecessary.frontend.components.powerups;
 import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.time.TimerAction;
-
 import javafx.util.Duration;
 import ly.unnecessary.frontend.EntityType;
 
@@ -14,10 +13,10 @@ import static com.almasb.fxgl.dsl.FXGL.*;
  * Will spawn when the player is collecting a player gun power up.
  */
 public class PlayerGunComponent extends Component {
+    private final int marginOfPlayer = 30;
     private TimerAction playergun;
     private double bulletSpawnPeriod = 0.5;
     private boolean switchSides = false;
-    private final int marginOfPlayer = 30;
 
     /**
      * Creates a bullet spawner which will fire a player gun bullet each bullet

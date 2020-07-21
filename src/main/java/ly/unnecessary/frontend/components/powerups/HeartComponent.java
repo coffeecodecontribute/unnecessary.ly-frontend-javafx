@@ -1,9 +1,9 @@
 package ly.unnecessary.frontend.components.powerups;
 
+import com.almasb.fxgl.entity.component.Component;
+
 import static com.almasb.fxgl.dsl.FXGL.inc;
 import static ly.unnecessary.frontend.GameApplication.uiController;
-
-import com.almasb.fxgl.entity.component.Component;
 
 /**
  * Heart Power Up Component

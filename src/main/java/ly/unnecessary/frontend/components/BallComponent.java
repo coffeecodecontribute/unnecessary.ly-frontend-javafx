@@ -3,11 +3,9 @@ package ly.unnecessary.frontend.components;
 import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.core.math.Vec2;
 import com.almasb.fxgl.entity.component.Component;
-
 import com.almasb.fxgl.texture.Texture;
 import javafx.geometry.Point2D;
 import javafx.util.Duration;
-import ly.unnecessary.frontend.EntityType;
 import ly.unnecessary.frontend.PowerupType;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
@@ -22,12 +20,13 @@ public class BallComponent extends Component {
 
     @Override
     public void onAdded() {
-        if(!byType(PowerupType.SUPERBALL).isEmpty())
+        if (!byType(PowerupType.SUPERBALL).isEmpty())
             addSuperBallTexture();
     }
 
     /**
      * Handles all ball logic each tick.
+     *
      * @param tpf
      */
     @Override
@@ -57,18 +56,18 @@ public class BallComponent extends Component {
      *     <li>3 = top bottom</li>
      *     <li>4 = top left</li>
      * </ul>
-     *
+     * <p>
      * |-------1--------|
      * |                |
      * 4                2
      * |                |
      * |-------3--------|
      *
-     * @param point2D the new direction after collide
+     * @param point2D            the new direction after collide
      * @param currentWallCollide the current wall with which you collided in form of an integer
      */
     public void collideWall(Point2D point2D, int currentWallCollide) {
-        if(currentWallCollide != lastWallCollide) {
+        if (currentWallCollide != lastWallCollide) {
 
             play("beta/wall_collide_" + FXGLMath.random(1, 6) + ".wav");
 
@@ -79,6 +78,7 @@ public class BallComponent extends Component {
 
     /**
      * Collide with brick or player
+     *
      * @param point2d direction the ball should go next
      */
     public void collide(Point2D point2d) {
@@ -109,7 +109,7 @@ public class BallComponent extends Component {
      * Adds the super ball texture to the ball
      */
     public void addSuperBallTexture() {
-        if(!entity.getViewComponent().getChildren().contains(superBallTexture)) {
+        if (!entity.getViewComponent().getChildren().contains(superBallTexture)) {
             superBallTexture = texture("game/balls/ball_superball.png", geti("ballRadius"), geti("ballRadius"));
             entity.getViewComponent().addChild(superBallTexture);
         }
@@ -119,7 +119,7 @@ public class BallComponent extends Component {
      * Removes the super ball texture from the ball
      */
     public void removeSuperBallTexture() {
-        if(entity.getViewComponent().getChildren().contains(superBallTexture))
+        if (entity.getViewComponent().getChildren().contains(superBallTexture))
             entity.getViewComponent().removeChild(superBallTexture);
     }
 }

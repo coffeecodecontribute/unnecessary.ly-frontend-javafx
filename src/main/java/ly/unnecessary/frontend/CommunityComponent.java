@@ -1,19 +1,5 @@
 package ly.unnecessary.frontend;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import org.controlsfx.control.PopOver;
-import org.kordamp.ikonli.Ikon;
-import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
-import org.kordamp.ikonli.javafx.FontIcon;
-
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -22,17 +8,11 @@ import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -46,17 +26,30 @@ import ly.unnecessary.backend.api.CommunityOuterClass.Channel;
 import ly.unnecessary.backend.api.CommunityOuterClass.Chat;
 import ly.unnecessary.backend.api.CommunityOuterClass.Community;
 import ly.unnecessary.backend.api.UserOuterClass.User;
+import org.controlsfx.control.PopOver;
+import org.kordamp.ikonli.Ikon;
+import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
+import org.kordamp.ikonli.javafx.FontIcon;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Community component (main multi-tenancy view)
  */
 public class CommunityComponent {
     // Style constants
-    private static String SIDEBAR_BUTTON_STYLES = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16; -fx-font-weight: bold;";
-    private static String SIDEBAR_BUTTON_INACTIVE_STYLES = "-fx-background-radius: 32; " + SIDEBAR_BUTTON_STYLES;
-    private static String SIDEBAR_BUTTON_ACTIVE_STYLES = "-fx-base: royalblue; -fx-background-radius: 16; "
+    private static final String SIDEBAR_BUTTON_STYLES = "-fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64; -fx-font-size: 16; -fx-font-weight: bold;";
+    private static final String SIDEBAR_BUTTON_INACTIVE_STYLES = "-fx-background-radius: 32; " + SIDEBAR_BUTTON_STYLES;
+    private static final String SIDEBAR_BUTTON_ACTIVE_STYLES = "-fx-base: royalblue; -fx-background-radius: 16; "
             + SIDEBAR_BUTTON_STYLES;
-    private static int TOOLBAR_HEIGHT = 56;
+    private static final int TOOLBAR_HEIGHT = 56;
 
     // Component references
     private TextField newChatField;
@@ -84,8 +77,8 @@ public class CommunityComponent {
     private List<User> members;
 
     // State to component mappers
-    private Map<Long, Button> communityToLink = new HashMap<>();
-    private Map<Integer, Channel> indexToChannel = new HashMap<>();
+    private final Map<Long, Button> communityToLink = new HashMap<>();
+    private final Map<Integer, Channel> indexToChannel = new HashMap<>();
 
     // Event handlers
     private Consumer<String> onCreateChat;
@@ -98,9 +91,10 @@ public class CommunityComponent {
     private Runnable onSignOut;
 
     // Event handler settings
+
     /**
      * Set create chat handler
-     * 
+     *
      * @param onCreateChat
      */
     public void setOnCreateChat(Consumer<String> onCreateChat) {
@@ -109,7 +103,7 @@ public class CommunityComponent {
 
     /**
      * Set community switch handler
-     * 
+     *
      * @param onSwitchCommunity
      */
     public void setOnSwitchCommunity(Consumer<Community> onSwitchCommunity) {
@@ -118,7 +112,7 @@ public class CommunityComponent {
 
     /**
      * Set channel switch handler
-     * 
+     *
      * @param onSwitchChannel
      */
     public void setOnSwitchChannel(Consumer<Channel> onSwitchChannel) {
@@ -127,7 +121,7 @@ public class CommunityComponent {
 
     /**
      * Set create channel handler
-     * 
+     *
      * @param onCreateChannel
      */
     public void setOnCreateChannel(Function<String, Boolean> onCreateChannel) {
@@ -136,7 +130,7 @@ public class CommunityComponent {
 
     /**
      * Set create community handler
-     * 
+     *
      * @param onCreateCommunity
      */
     public void setOnCreateCommunity(Function<String, Boolean> onCreateCommunity) {
@@ -145,7 +139,7 @@ public class CommunityComponent {
 
     /**
      * Set invite request handler
-     * 
+     *
      * @param onRequestInvite
      */
     public void setOnRequestInvite(Supplier<String> onRequestInvite) {
@@ -154,7 +148,7 @@ public class CommunityComponent {
 
     /**
      * Set community join handler
-     * 
+     *
      * @param onJoinCommunity
      */
     public void setOnJoinCommunity(Function<String, Boolean> onJoinCommunity) {
@@ -163,7 +157,7 @@ public class CommunityComponent {
 
     /**
      * Set sign out handler
-     * 
+     *
      * @param onSignOut
      */
     public void setOnSignOut(Runnable onSignOut) {
@@ -171,9 +165,10 @@ public class CommunityComponent {
     }
 
     // State and view mutators
+
     /**
      * Add a chat
-     * 
+     *
      * @param chat
      */
     public void addChat(Chat chat) {
@@ -184,7 +179,7 @@ public class CommunityComponent {
 
     /**
      * Replace chats
-     * 
+     *
      * @param chats
      */
     public void setChats(List<Chat> chats) {
@@ -210,7 +205,7 @@ public class CommunityComponent {
 
     /**
      * Replace communities
-     * 
+     *
      * @param communities
      */
     public void setCommunities(List<Community> communities) {
@@ -220,7 +215,7 @@ public class CommunityComponent {
 
     /**
      * Set the currently selected community
-     * 
+     *
      * @param community
      */
     public void setSelectedCommunity(Community community) {
@@ -253,7 +248,7 @@ public class CommunityComponent {
 
     /**
      * Set community title
-     * 
+     *
      * @param communityTitle
      */
     public void setCommunityTitle(String communityTitle) {
@@ -262,7 +257,7 @@ public class CommunityComponent {
 
     /**
      * Set channel title
-     * 
+     *
      * @param channelTitle
      */
     public void setChannelTitle(String channelTitle) {
@@ -271,7 +266,7 @@ public class CommunityComponent {
 
     /**
      * Replace channels
-     * 
+     *
      * @param channels
      */
     public void setChannels(List<Channel> channels) {
@@ -285,7 +280,7 @@ public class CommunityComponent {
 
     /**
      * Set currently selected channel
-     * 
+     *
      * @param channel
      */
     public void setSelectedChannel(Channel channel) {
@@ -297,7 +292,7 @@ public class CommunityComponent {
 
     /**
      * Set owner
-     * 
+     *
      * @param owner
      */
     public void setOwner(User owner) {
@@ -309,7 +304,7 @@ public class CommunityComponent {
 
     /**
      * Replace members
-     * 
+     *
      * @param members
      */
     public void setMembers(List<User> members) {
@@ -329,7 +324,7 @@ public class CommunityComponent {
 
     /**
      * Set current user
-     * 
+     *
      * @param newCurrentUser
      */
     public void setCurrentUser(User newCurrentUser) {
@@ -357,9 +352,10 @@ public class CommunityComponent {
     }
 
     // Component factories
+
     /**
      * Create community link component
-     * 
+     *
      * @param community
      * @param active
      * @return Button
@@ -388,7 +384,7 @@ public class CommunityComponent {
 
     /**
      * Create community action component
-     * 
+     *
      * @param iconName
      * @param action
      * @return Button
@@ -406,7 +402,7 @@ public class CommunityComponent {
 
     /**
      * Create primary action component
-     * 
+     *
      * @param iconName
      * @param action
      * @return Button
@@ -429,7 +425,7 @@ public class CommunityComponent {
 
     /**
      * Create chat component
-     * 
+     *
      * @param width
      * @param initials
      * @param message
@@ -463,7 +459,7 @@ public class CommunityComponent {
 
     /**
      * Create user menu component
-     * 
+     *
      * @param initials
      * @param fullName
      * @return Button
@@ -480,7 +476,7 @@ public class CommunityComponent {
 
     /**
      * Create user persona component
-     * 
+     *
      * @param initials
      * @param fullName
      * @return HBox
@@ -500,7 +496,7 @@ public class CommunityComponent {
 
     /**
      * Create profile picture component
-     * 
+     *
      * @param initials
      * @return Label
      */
@@ -517,7 +513,7 @@ public class CommunityComponent {
 
     /**
      * Create header component
-     * 
+     *
      * @param title
      * @return Label
      */
@@ -530,9 +526,10 @@ public class CommunityComponent {
     }
 
     // State helpers
+
     /**
      * Get initials of display name
-     * 
+     *
      * @param displayName
      * @return String
      */
@@ -547,7 +544,7 @@ public class CommunityComponent {
 
     /**
      * Get initials for user by their id
-     * 
+     *
      * @param id
      * @return String
      */
@@ -571,7 +568,7 @@ public class CommunityComponent {
 
     /**
      * Render component
-     * 
+     *
      * @return Node
      */
     public Node render() {

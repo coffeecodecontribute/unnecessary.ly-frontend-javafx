@@ -11,8 +11,6 @@ import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.EntityFactory;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.Spawns;
-import com.almasb.fxgl.particle.ParticleComponent;
-import com.almasb.fxgl.particle.ParticleEmitters;
 import com.almasb.fxgl.texture.Texture;
 import com.almasb.fxgl.ui.ProgressBar;
 import javafx.geometry.Point2D;
@@ -30,7 +28,8 @@ import ly.unnecessary.frontend.components.powerups.PlayerGunComponent;
 import ly.unnecessary.frontend.components.powerups.SuperBallComponent;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
-import static ly.unnecessary.frontend.GameApplication.*;
+import static ly.unnecessary.frontend.GameApplication.playerHeight;
+import static ly.unnecessary.frontend.GameApplication.playerWidth;
 
 /**
  * Game Entity Factory
@@ -39,6 +38,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawns game ball with default texture.
+     *
      * @param data Spawndata with x, y.
      * @return Entity of ball
      */
@@ -52,6 +52,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawns a brick with a given type
+     *
      * @param data Spawndata with x, y and type.
      * @return Entity of brick
      */
@@ -60,7 +61,7 @@ public class GameEntityFactory implements EntityFactory {
         int type = data.get("type");
         Texture brick;
 
-        switch(type) {
+        switch (type) {
             case 1:
                 brick = texture("game/bricks/white_brick.png", 128, 36);
                 break;
@@ -85,6 +86,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawns a level brick (undestroyable brick).
+     *
      * @param data Spawndata with x, y.
      * @return Entity of level Brick
      */
@@ -100,6 +102,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawns an infected brick falling down (to player)
+     *
      * @param data Spawn data with x, y.
      * @return Entity of infected brick
      */
@@ -117,6 +120,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawns an broken brick fx when a brick is destroyed
+     *
      * @param data Spawn data with x, y.
      * @return Entity of fx
      */
@@ -131,6 +135,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawns the player
+     *
      * @param data Spawndata with x,y
      * @return the entity of the player
      */
@@ -142,6 +147,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawns animated background
+     *
      * @param data Spawn data x, y
      * @return Entity of background
      */
@@ -154,6 +160,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawns the boss with healthBar and logic component
+     *
      * @param data Spawndata x, y
      * @return Entity of boss
      */
@@ -179,6 +186,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawns boss bullet with dir
+     *
      * @param data Spawndata x, y and dir (for bullet)
      * @return Entity of boss bullet
      */
@@ -198,6 +206,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawn Level UI Notification (not included or used in RELEASE) wth animation
+     *
      * @param data Spawn data x, y
      * @return Entity of ui
      */
@@ -219,6 +228,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawn powerup drop with type
+     *
      * @param data Spawndata y, x and type
      * @return Entity of power up drop
      */
@@ -250,6 +260,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawns Player Gun Bullet
+     *
      * @param data Spawndata y, x
      * @return Entity of Player Gun Bullet
      */
@@ -309,6 +320,7 @@ public class GameEntityFactory implements EntityFactory {
 
     /**
      * Spawns a small point for developer purpose (only 0.5 seconds visable)
+     *
      * @param data Spawndata x,y
      * @return Entity of this point
      */

@@ -1,36 +1,30 @@
 package ly.unnecessary.frontend;
 
-import java.util.function.Function;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+
+import java.util.function.Function;
 
 /**
  * Sign in/up/password reset component
  */
 public class SignInComponent {
+    private static final int FORM_WIDTH = 300;
     private Function<SignInInfo, Integer> onSignIn;
     private Function<SignInInfo, Integer> onSignUp;
     private Function<SignInInfo, Integer> onPasswordReset;
-
     private Runnable handleSignInActivate;
     private Runnable handleSignUpActivate;
     private Runnable handlePasswordResetActivate;
 
-    private static int FORM_WIDTH = 300;
-
     /**
      * Set sign in handler
-     * 
+     *
      * @param onSignIn
      */
     public void setOnSignIn(Function<SignInInfo, Integer> onSignIn) {
@@ -39,7 +33,7 @@ public class SignInComponent {
 
     /**
      * Set sign up handler
-     * 
+     *
      * @param onSignUp
      */
     public void setOnSignUp(Function<SignInInfo, Integer> onSignUp) {
@@ -48,7 +42,7 @@ public class SignInComponent {
 
     /**
      * Set password reset handler
-     * 
+     *
      * @param onPasswordReset
      */
     public void setOnPasswordReset(Function<SignInInfo, Integer> onPasswordReset) {
@@ -56,73 +50,8 @@ public class SignInComponent {
     }
 
     /**
-     * Utility class with sign in/up/password reset info
-     */
-    public class SignInInfo {
-        private String apiUrl;
-
-        private String displayName;
-
-        private String email;
-
-        private String password;
-
-        private Boolean isSignUp = false;
-
-        private Boolean isPasswordReset = false;
-
-        public String getApiUrl() {
-            return apiUrl;
-        }
-
-        public void setApiUrl(String apiUrl) {
-            this.apiUrl = apiUrl;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public void setDisplayName(String displayName) {
-            this.displayName = displayName;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public Boolean getIsSignUp() {
-            return isSignUp;
-        }
-
-        public void setIsSignUp(Boolean isSignUp) {
-            this.isSignUp = isSignUp;
-        }
-
-        public Boolean getIsPasswordReset() {
-            return isPasswordReset;
-        }
-
-        public void setIsPasswordReset(Boolean isPasswordReset) {
-            this.isPasswordReset = isPasswordReset;
-        }
-    }
-
-    /**
      * Render component
-     * 
+     *
      * @return Node
      */
     public Node render() {
@@ -269,5 +198,70 @@ public class SignInComponent {
         wrapper.setStyle("-fx-font-family: 'Arial';");
 
         return wrapper;
+    }
+
+    /**
+     * Utility class with sign in/up/password reset info
+     */
+    public class SignInInfo {
+        private String apiUrl;
+
+        private String displayName;
+
+        private String email;
+
+        private String password;
+
+        private Boolean isSignUp = false;
+
+        private Boolean isPasswordReset = false;
+
+        public String getApiUrl() {
+            return apiUrl;
+        }
+
+        public void setApiUrl(String apiUrl) {
+            this.apiUrl = apiUrl;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public Boolean getIsSignUp() {
+            return isSignUp;
+        }
+
+        public void setIsSignUp(Boolean isSignUp) {
+            this.isSignUp = isSignUp;
+        }
+
+        public Boolean getIsPasswordReset() {
+            return isPasswordReset;
+        }
+
+        public void setIsPasswordReset(Boolean isPasswordReset) {
+            this.isPasswordReset = isPasswordReset;
+        }
     }
 }

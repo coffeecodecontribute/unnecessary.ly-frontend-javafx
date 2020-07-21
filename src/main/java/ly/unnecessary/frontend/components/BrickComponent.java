@@ -1,26 +1,24 @@
 package ly.unnecessary.frontend.components;
 
-import static com.almasb.fxgl.dsl.FXGL.*;
-import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
-import static ly.unnecessary.frontend.GameApplication.*;
-
 import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.dsl.components.HealthIntComponent;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.component.Component;
-
 import com.almasb.fxgl.texture.Texture;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import ly.unnecessary.frontend.EntityType;
 import ly.unnecessary.frontend.PowerupType;
+
+import static com.almasb.fxgl.dsl.FXGL.byType;
+import static com.almasb.fxgl.dsl.FXGL.texture;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
+import static ly.unnecessary.frontend.GameApplication.*;
 
 /**
  * Brick Component
  */
 public class BrickComponent extends Component {
-    private boolean blockIsInfected = false;
     private final int type;
+    private boolean blockIsInfected = false;
 
     /**
      * Default constructor. Sets brick type to default (1).
@@ -31,6 +29,7 @@ public class BrickComponent extends Component {
 
     /**
      * Brick constructor.
+     *
      * @param type set type from 1 - 3 (1 : white, 2 : blue, 3 : red). The type also sets the lives a brick has.
      */
     public BrickComponent(int type) {
@@ -43,17 +42,17 @@ public class BrickComponent extends Component {
     public void hitByBall() {
         var hp = entity.getComponent(HealthIntComponent.class); //get the current hp from the brick
 
-        if(!byType(PowerupType.SUPERBALL).isEmpty()) //destroy the brick if superball is active
+        if (!byType(PowerupType.SUPERBALL).isEmpty()) //destroy the brick if superball is active
             hp.damage(3);
 
         hp.damage(1); // remove one life
 
         //add cracked textures
-        if(getHealthPoints() == 2) {
+        if (getHealthPoints() == 2) {
             Texture rc = texture("game/bricks/cracked_1.png", brickWidth, brickHeight);
             entity.getViewComponent().addChild(rc);
         }
-        if(getHealthPoints() == 1) {
+        if (getHealthPoints() == 1) {
             Texture rc = texture("game/bricks/cracked_2.png", brickWidth, brickHeight);
             entity.getViewComponent().addChild(rc);
         }
@@ -83,6 +82,7 @@ public class BrickComponent extends Component {
 
     /**
      * Get the current hp
+     *
      * @return current hp of an block
      */
     public int getHealthPoints() {

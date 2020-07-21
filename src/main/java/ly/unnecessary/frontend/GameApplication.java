@@ -21,7 +21,6 @@ import ly.unnecessary.frontend.components.PlayerComponent;
 import ly.unnecessary.frontend.controller.UserInterfaceController;
 import ly.unnecessary.frontend.menu.MainMenu;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -30,7 +29,7 @@ import static com.almasb.fxgl.dsl.FXGL.*;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
 import static ly.unnecessary.frontend.controller.GameController.*;
 import static ly.unnecessary.frontend.controller.GamePlayerPhysicController.calculateAngle;
-import static ly.unnecessary.frontend.controller.LevelController.*;
+import static ly.unnecessary.frontend.controller.LevelController.setLevel;
 
 /**
  * Game Application. Brick Breaker made with ♥ and 👬 (teamwork)
@@ -38,18 +37,18 @@ import static ly.unnecessary.frontend.controller.LevelController.*;
 public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
 
+    // brick
+    public static final int collisionLogicSecurityPadding = 10;
     // app
     public static String appName = "Brick Breaker";
     public static String appVersion = "1.0";
     public static String appFont = "basic.ttf"; //is inside ui/fonts/
     public static int appWidth = 1920;
     public static int appHeight = 1080;
-
     // ball
     public static int ballSpeed = 8;
     public static int ballRadius = 32;
     public static Point2D ballSpawnPoint = new Point2D(appWidth / 2d - ballRadius / 2d, appHeight - 150);
-
     // player
     public static int playerWidth = 320;
     public static int playerHeight = 64;
@@ -59,11 +58,6 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
     public static int brickWidth = 128;
     public static int brickHeight = 36;
     public static int playerLivesCount = 3;
-
-    // brick
-    public static final int collisionLogicSecurityPadding = 10;
-
-
     // level
     public static int levelMargin = 36;
     public static int levelRows = 19;
@@ -386,7 +380,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
                     });
         });
 
-        onKey(KeyCode.S,"Open Cheat Menu", () -> {
+        onKey(KeyCode.S, "Open Cheat Menu", () -> {
             getDialogService().showInputBox("Cheat Menu\n0 - Remove all Power Ups (inc. drops)\n1 - Heart\n2 - Multi Ball\n3 - Player Gun\n4 - Super Ball\n5 - Infected Brick\n6 - Spawn Balls\n7 - God Mode", type -> {
                 int selection = Integer.parseInt(type);
                 PowerupType powerUp = null;

@@ -8,28 +8,22 @@ import javafx.scene.control.Label;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import static com.almasb.fxgl.dsl.FXGL.getAssetLoader;
 import static com.almasb.fxgl.dsl.FXGL.getUIFactoryService;
-import static com.almasb.fxgl.dsl.FXGLForKtKt.geti;
 
 /**
  * Handles the game user interface (Hearts and score)
  */
 public class UserInterfaceController implements UIController {
+    private final GameScene gameScene;
     @FXML
     private Label labelScore;
-
     @FXML
     private double livesX;
-
     @FXML
     private double livesY;
-
-    private List<Texture> lives = new ArrayList<>(); //hols all textures for hearts
-
-    private final GameScene gameScene;
+    private final List<Texture> lives = new ArrayList<>(); //hols all textures for hearts
 
     public UserInterfaceController(GameScene gameScene) {
         this.gameScene = gameScene;
@@ -68,6 +62,7 @@ public class UserInterfaceController implements UIController {
 
     /**
      * Get labelScore Variable (is required to bind it to the UI node from GameApplication)
+     *
      * @return score label
      */
     public Label getLabelScore() {

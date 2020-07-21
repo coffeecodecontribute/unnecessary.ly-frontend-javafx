@@ -3,10 +3,7 @@ package ly.unnecessary.frontend.components;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.component.Component;
 
-import ly.unnecessary.frontend.GameApplication;
-
 import static com.almasb.fxgl.dsl.FXGL.*;
-import static com.almasb.fxgl.dsl.FXGL.getAppWidth;
 import static ly.unnecessary.frontend.GameApplication.player;
 import static ly.unnecessary.frontend.GameApplication.playerSpeed;
 
@@ -17,7 +14,7 @@ public class PlayerComponent extends Component {
 
     /**
      * Modern Mouse Movement
-     *
+     * <p>
      * Control the player with your mouse. Benefits of this method are:
      * <ul>
      *     <li>faster control</li>

@@ -1,14 +1,11 @@
 package ly.unnecessary.frontend.components.powerups;
 
-import static com.almasb.fxgl.dsl.FXGL.byType;
-import static com.almasb.fxgl.dsl.FXGL.geti;
-import static com.almasb.fxgl.dsl.FXGL.spawn;
-
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.component.Component;
-
 import javafx.geometry.Point2D;
 import ly.unnecessary.frontend.EntityType;
+
+import static com.almasb.fxgl.dsl.FXGL.*;
 
 /**
  * Multi Ball Power Up Component

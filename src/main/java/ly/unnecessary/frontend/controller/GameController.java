@@ -1,18 +1,19 @@
 package ly.unnecessary.frontend.controller;
 
-import com.almasb.fxgl.audio.Audio;
-import com.almasb.fxgl.audio.AudioPlayer;
 import com.almasb.fxgl.audio.Sound;
-import com.almasb.fxgl.dsl.FXGL;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
-import javafx.util.Duration;
 
-import static com.almasb.fxgl.dsl.FXGL.getDialogService;
 import static com.almasb.fxgl.dsl.FXGL.play;
 import static com.almasb.fxgl.dsl.FXGL.set;
-import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
+import static com.almasb.fxgl.dsl.FXGL.*;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.getAssetLoader;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.getAudioPlayer;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.getUIFactoryService;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.geti;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.inc;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
 import static ly.unnecessary.frontend.GameApplication.*;
 import static ly.unnecessary.frontend.controller.LevelController.setLevel;
 

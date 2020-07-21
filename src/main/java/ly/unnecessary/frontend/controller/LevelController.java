@@ -1,14 +1,11 @@
 package ly.unnecessary.frontend.controller;
 
-import com.almasb.fxgl.core.collection.Array;
 import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.SpawnData;
 
-import java.util.ArrayList;
-import java.util.stream.IntStream;
-
-import static com.almasb.fxgl.dsl.FXGL.*;
+import static com.almasb.fxgl.dsl.FXGL.getGameWorld;
+import static com.almasb.fxgl.dsl.FXGL.set;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
 import static ly.unnecessary.frontend.GameApplication.*;
 
@@ -19,6 +16,7 @@ public class LevelController {
 
     /**
      * Set Level by Id from level.txt source in assets/text/level.txt
+     *
      * @param levelId id of level (row in level.txt)
      */
     public static void setLevel(int levelId) {
@@ -39,7 +37,7 @@ public class LevelController {
 
         if (levelId == 100) //random Level
             currentLevel = generateRandomLevel();
-        else if(levelId == 99) //empty Level
+        else if (levelId == 99) //empty Level
             currentLevel = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
         else
             currentLevel = level.get(levelId).toString();
@@ -79,6 +77,7 @@ public class LevelController {
 
     /**
      * Generates a random level (levelId = 100)
+     *
      * @return random level string
      */
     public static String generateRandomLevel() {

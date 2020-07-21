@@ -4,11 +4,10 @@ import com.almasb.fxgl.core.math.Vec2;
 import com.almasb.fxgl.dsl.components.HealthIntComponent;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.component.Component;
-import com.almasb.fxgl.time.TimerAction;
-import javafx.util.Duration;
 import ly.unnecessary.frontend.EntityType;
 
-import static com.almasb.fxgl.dsl.FXGL.*;
+import static com.almasb.fxgl.dsl.FXGL.byType;
+import static com.almasb.fxgl.dsl.FXGL.geti;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
 
 /**
@@ -29,6 +28,7 @@ public class BossComponent extends Component {
      *     <li>Middle Phase: The boss is firing normal bullets and each 300 frames a shotgun bullet.</li>
      *     <li>End Phase: When the boss has only a few lives he will get faster and start only firing shotgun bullets. This can be very hard.</li>
      * </ol>
+     *
      * @param tpf time per frame
      */
     @Override
@@ -77,11 +77,12 @@ public class BossComponent extends Component {
 
     /**
      * Fire boss bullet with direction
+     *
      * @param angle direction where the bullet goes. 0 -> Right | 90° -> Down ...
      */
     public void fireBullet(double angle) {
 
-        if(geti("gameStatus") == 0) //do not fire when the player is in pre Game
+        if (geti("gameStatus") == 0) //do not fire when the player is in pre Game
             return;
 
         Vec2 dir = Vec2.fromAngle(angle); //creates a dir from the angle
@@ -98,7 +99,7 @@ public class BossComponent extends Component {
     public void fireShootGun() {
 
         //fires 3 times with +45 ° each time
-        for(int i = 45; i < 136; i += 45) {
+        for (int i = 45; i < 136; i += 45) {
             fireBullet(i);
         }
     }
