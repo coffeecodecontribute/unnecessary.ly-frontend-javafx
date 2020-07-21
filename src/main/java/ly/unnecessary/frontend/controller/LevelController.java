@@ -1,24 +1,33 @@
 package ly.unnecessary.frontend.controller;
 
 import com.almasb.fxgl.core.math.FXGLMath;
+import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.SpawnData;
 
-import java.util.stream.IntStream;
-
-import static com.almasb.fxgl.dsl.FXGL.*;
+import static com.almasb.fxgl.dsl.FXGL.getGameWorld;
+import static com.almasb.fxgl.dsl.FXGL.set;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
 import static ly.unnecessary.frontend.GameApplication.*;
 
+/**
+ * Manages the level
+ */
 public class LevelController {
+
+    /**
+     * Set Level by Id from level.txt source in assets/text/level.txt
+     *
+     * @param levelId id of level (row in level.txt)
+     */
     public static void setLevel(int levelId) {
-        if (levelId != 10) {
+
+        //validates and verify the levelId
+        if (levelId != 100 && levelId != 99) {
             if (levelId >= level.size() || levelId < 0)
                 return;
         }
 
-        getGameWorld().getEntitiesCopy().forEach(e -> e.removeFromWorld());
-
-
+        getGameWorld().getEntitiesCopy().forEach(Entity::removeFromWorld); //removes all entities from the game world (except the WALL)
 
         String currentLevel = "";
         set("gameStatus", 0);
@@ -26,23 +35,27 @@ public class LevelController {
         set("level", levelId);
         set("score", 0);
 
-        if (levelId == 10) {
+        if (levelId == 100) //random Level
             currentLevel = generateRandomLevel();
-        } else
+        else if (levelId == 99) //empty Level
+            currentLevel = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+        else
             currentLevel = level.get(levelId).toString();
 
-        spawn("background", 0, 0);
-        player = spawn("player", playerSpawnPoint);
-        ball = spawn("ball", ballSpawnPoint);
+        spawn("background", 0, 0); //spawns background
+        player = spawn("player", playerSpawnPoint); //spawns player
+        ball = spawn("ball", ballSpawnPoint); //spawns ball
 
-        // Ui
-        spawn("uiSpawnLevelInfo");
+        // Deprecated for the Release
+        //spawn("uiSpawnLevelInfo"); // Spawns UI text
 
+        //Set the boss level
         if (currentLevel.equals("boss")) {
             spawn("boss", 100, 100);
             return;
         }
 
+        //spawns brick based on level string
         int i = 0, x = 0, y = levelMargin;
         for (int row = 0; row < levelRows; row++) {
             for (int col = 0; col < 1920 / brickWidth; col++) {
@@ -62,11 +75,16 @@ public class LevelController {
         }
     }
 
-
+    /**
+     * Generates a random level (levelId = 100)
+     *
+     * @return random level string
+     */
     public static String generateRandomLevel() {
         String result = "";
+
         for (int i = 0; i < 285; i++) {
-            result += FXGLMath.randomBoolean() ? "1" : "0";
+            result += FXGLMath.random(0, 4);
         }
         return result;
     }

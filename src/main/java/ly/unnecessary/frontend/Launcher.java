@@ -7,7 +7,7 @@ package ly.unnecessary.frontend;
 public class Launcher {
     /**
      * Start the main app
-     * 
+     *
      * @param args
      */
     public static void main(String[] args) {

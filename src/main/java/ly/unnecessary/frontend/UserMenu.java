@@ -13,7 +13,7 @@ public class UserMenu {
 
     /**
      * Set sign out handler
-     * 
+     *
      * @param onSignOut
      */
     public void setOnSignOut(Runnable onSignOut) {
@@ -22,7 +22,7 @@ public class UserMenu {
 
     /**
      * Render component
-     * 
+     *
      * @return Node
      */
     public Node render() {

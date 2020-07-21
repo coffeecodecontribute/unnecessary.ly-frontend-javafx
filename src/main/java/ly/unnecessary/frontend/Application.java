@@ -1,6 +1,20 @@
 package ly.unnecessary.frontend;
 
-import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
+import com.google.protobuf.Empty;
+import com.google.protobuf.InvalidProtocolBufferException;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
+import io.grpc.stub.MetadataUtils;
+import javafx.application.Platform;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import ly.unnecessary.backend.api.CommunityOuterClass.*;
+import ly.unnecessary.backend.api.CommunityServiceGrpc;
+import ly.unnecessary.backend.api.CommunityServiceGrpc.CommunityServiceBlockingStub;
+import ly.unnecessary.backend.api.UserOuterClass.*;
+import ly.unnecessary.backend.api.UserServiceGrpc;
+import ly.unnecessary.frontend.SignInComponent.SignInInfo;
 
 import java.util.Base64;
 import java.util.List;
@@ -12,35 +26,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.protobuf.Empty;
-import com.google.protobuf.InvalidProtocolBufferException;
-
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.Metadata;
-import io.grpc.stub.MetadataUtils;
-import javafx.application.Platform;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-import ly.unnecessary.backend.api.CommunityOuterClass.Channel;
-import ly.unnecessary.backend.api.CommunityOuterClass.ChannelFilter;
-import ly.unnecessary.backend.api.CommunityOuterClass.Community;
-import ly.unnecessary.backend.api.CommunityOuterClass.CommunityFilter;
-import ly.unnecessary.backend.api.CommunityOuterClass.Invitation;
-import ly.unnecessary.backend.api.CommunityOuterClass.InvitationCreateRequest;
-import ly.unnecessary.backend.api.CommunityOuterClass.NewChannel;
-import ly.unnecessary.backend.api.CommunityOuterClass.NewChat;
-import ly.unnecessary.backend.api.CommunityOuterClass.NewCommunity;
-import ly.unnecessary.backend.api.CommunityServiceGrpc;
-import ly.unnecessary.backend.api.CommunityServiceGrpc.CommunityServiceBlockingStub;
-import ly.unnecessary.backend.api.UserOuterClass.User;
-import ly.unnecessary.backend.api.UserOuterClass.UserPasswordResetConfirmation;
-import ly.unnecessary.backend.api.UserOuterClass.UserPasswordResetRequest;
-import ly.unnecessary.backend.api.UserOuterClass.UserSignInRequest;
-import ly.unnecessary.backend.api.UserOuterClass.UserSignUpConfirmation;
-import ly.unnecessary.backend.api.UserOuterClass.UserSignUpRequest;
-import ly.unnecessary.backend.api.UserServiceGrpc;
-import ly.unnecessary.frontend.SignInComponent.SignInInfo;
+import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
 /**
  * Main app
@@ -51,12 +37,21 @@ public class Application extends javafx.application.Application {
 
     private long currentChannelId = -1;
     private long currentCommunityId = -1;
-    private Map<Long, Boolean> chatListeners = new ConcurrentHashMap<>();
+    private final Map<Long, Boolean> chatListeners = new ConcurrentHashMap<>();
     private CommunityServiceBlockingStub communityClient;
 
     /**
+     * Run main app
+     *
+     * @param args
+     */
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    /**
      * Show main app
-     * 
+     *
      * @param primaryStage
      * @throws Exception
      */
@@ -507,17 +502,8 @@ public class Application extends javafx.application.Application {
     }
 
     /**
-     * Run main app
-     * 
-     * @param args
-     */
-    public static void main(String[] args) {
-        launch(args);
-    }
-
-    /**
      * Get the current channel's id
-     * 
+     *
      * @return long
      */
     public long getCurrentChannelId() {
@@ -526,7 +512,7 @@ public class Application extends javafx.application.Application {
 
     /**
      * Set the current channel's id
-     * 
+     *
      * @param currentChannelId
      */
     public void setCurrentChannelId(long currentChannelId) {
@@ -535,7 +521,7 @@ public class Application extends javafx.application.Application {
 
     /**
      * Get the current community's id
-     * 
+     *
      * @return long
      */
     public long getCurrentCommunityId() {
@@ -544,7 +530,7 @@ public class Application extends javafx.application.Application {
 
     /**
      * Set the current communitiy's id
-     * 
+     *
      * @param currentCommunityId
      */
     public void setCurrentCommunityId(long currentCommunityId) {
@@ -553,7 +539,7 @@ public class Application extends javafx.application.Application {
 
     /**
      * Create a daemon thread
-     * 
+     *
      * @param handler
      */
     private Thread createDaemonThread(Runnable handler) {

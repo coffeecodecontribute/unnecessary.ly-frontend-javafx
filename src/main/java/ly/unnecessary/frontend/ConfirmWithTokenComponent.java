@@ -1,18 +1,14 @@
 package ly.unnecessary.frontend;
 
-import java.util.function.Function;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+
+import java.util.function.Function;
 
 /**
  * Confirmation component
@@ -28,7 +24,7 @@ public class ConfirmWithTokenComponent {
 
     /**
      * Set submit handler
-     * 
+     *
      * @param onSubmit
      */
     public void setOnSubmit(Function<String, Integer> onSubmit) {
@@ -37,7 +33,7 @@ public class ConfirmWithTokenComponent {
 
     /**
      * Set header for invalid state
-     * 
+     *
      * @param invalidHeader
      */
     public void setInvalidHeader(String invalidHeader) {
@@ -46,7 +42,7 @@ public class ConfirmWithTokenComponent {
 
     /**
      * Set description for invalid state
-     * 
+     *
      * @param invalidDescription
      */
     public void setInvalidDescription(String invalidDescription) {
@@ -55,7 +51,7 @@ public class ConfirmWithTokenComponent {
 
     /**
      * Set token description
-     * 
+     *
      * @param tokenDescription
      */
     public void setTokenDescription(String tokenDescription) {
@@ -64,7 +60,7 @@ public class ConfirmWithTokenComponent {
 
     /**
      * Set token prompt text description
-     * 
+     *
      * @param tokenFieldDescription
      */
     public void setTokenFieldDescription(String tokenFieldDescription) {
@@ -73,7 +69,7 @@ public class ConfirmWithTokenComponent {
 
     /**
      * Set token submit description
-     * 
+     *
      * @param tokenSubmitDescription
      */
     public void setTokenSubmitDescription(String tokenSubmitDescription) {
@@ -82,7 +78,7 @@ public class ConfirmWithTokenComponent {
 
     /**
      * Enable/disable password field
-     * 
+     *
      * @param isPassword
      */
     public void setIsPassword(Boolean isPassword) {
@@ -91,7 +87,7 @@ public class ConfirmWithTokenComponent {
 
     /**
      * Render component
-     * 
+     *
      * @return Node
      */
     public Node render() {
