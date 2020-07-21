@@ -42,7 +42,7 @@ public class GameEntityFactory implements EntityFactory {
         rectangle.setFill(Color.RED);
 
         return entityBuilder().type(EntityType.BALL).from(data)
-                .viewWithBBox(texture("game/ball_small.png", geti("ballRadius"), geti("ballRadius")))
+                .viewWithBBox(texture("game/balls/ball_default.png", geti("ballRadius"), geti("ballRadius")))
                 .with("velocity", new Point2D(0, 0)).with(new BallComponent()).collidable().build();
     }
 
@@ -90,7 +90,10 @@ public class GameEntityFactory implements EntityFactory {
     public Entity newActionBrick(SpawnData data) {
         Texture actionBrick = texture("game/bricks/green_brick.png", 128, 36);
 
+        play("beta/power_up.wav");
+
         Vec2 dir = Vec2.fromAngle(90);
+
         return entityBuilder().from(data).viewWithBBox(actionBrick)
                 .type(EntityType.ACTIONBRICK)
                 .with(new ProjectileComponent(dir.toPoint2D(), 500).allowRotation(false))

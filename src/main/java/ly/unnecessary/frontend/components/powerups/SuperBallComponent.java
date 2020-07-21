@@ -8,18 +8,24 @@ import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.texture.Texture;
 
 import ly.unnecessary.frontend.EntityType;
+import ly.unnecessary.frontend.components.BallComponent;
 
+/**
+ * Super Ball Power Up Component
+ * Will spawn when the player is collecting a super ball power up.
+ */
 public class SuperBallComponent extends Component {
-    Texture t;
 
+    /**
+     *
+     */
     @Override
     public void onAdded() {
-        t = texture("game/ballBlue.png", geti("ballRadius"), geti("ballRadius"));
-        byType(EntityType.BALL).forEach(e -> e.getViewComponent().addChild(t));
+        byType(EntityType.BALL).forEach(e -> e.getComponent(BallComponent.class).addSuperBallTexture());
     }
 
     @Override
     public void onRemoved() {
-        byType(EntityType.BALL).forEach(e -> e.getViewComponent().removeChild(t));
+        byType(EntityType.BALL).forEach(e -> e.getComponent(BallComponent.class).removeSuperBallTexture());
     }
 }

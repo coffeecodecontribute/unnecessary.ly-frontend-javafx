@@ -1,5 +1,18 @@
 package ly.unnecessary.frontend.components.powerups;
 
+/**
+ * There are two types of the player gun.
+ *
+ *          Double       Single
+ *
+ *               |        |
+ *          |             |
+ *               |        |
+ *          |             |
+ *          _____       _____
+ *
+ * Double spawns two bullets left, right. Single spawns one bullet in the center of the player. When the powerup is picked up, it will randomly pick one type.
+ */
 enum PlayerGunType {
     SINGLE, DOUBLE
 }

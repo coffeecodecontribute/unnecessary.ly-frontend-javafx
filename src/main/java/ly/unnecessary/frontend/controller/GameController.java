@@ -20,7 +20,7 @@ public class GameController {
     public static void gameLost() {
         VBox content = new VBox(
                 getUIFactoryService().newText("Your score: " + geti("score"), 56),
-                getAssetLoader().loadTexture("game/ball_small.png", 150, 150)
+                getAssetLoader().loadTexture("game/balls/ball_default.png", 150, 150)
         );
 
         inc("playerLives", +3);
@@ -38,7 +38,7 @@ public class GameController {
     public static void gameWon() {
         VBox content = new VBox(
                 getUIFactoryService().newText("Your score: " + geti("score"), 56),
-                getAssetLoader().loadTexture("game/ball_small.png", 150, 150)
+                getAssetLoader().loadTexture("game/balls/ball_default.png", 150, 150)
         );
 
         Button btnNextLevel = getUIFactoryService().newButton("Next Level");

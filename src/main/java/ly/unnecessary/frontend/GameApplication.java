@@ -15,10 +15,9 @@ import com.almasb.fxgl.ui.UI;
 import javafx.geometry.Point2D;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.VBox;
 import ly.unnecessary.frontend.components.BallComponent;
 import ly.unnecessary.frontend.components.BrickComponent;
-import ly.unnecessary.frontend.controller.MouseMovementController;
+import ly.unnecessary.frontend.components.PlayerComponent;
 import ly.unnecessary.frontend.controller.UserInterfaceController;
 import ly.unnecessary.frontend.menu.MainMenu;
 
@@ -32,7 +31,6 @@ import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
 import static ly.unnecessary.frontend.controller.GameController.*;
 import static ly.unnecessary.frontend.controller.GamePlayerPhysicController.calculateAngle;
 import static ly.unnecessary.frontend.controller.LevelController.*;
-import static ly.unnecessary.frontend.controller.MouseMovementController.mouseMovement;
 
 public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
@@ -68,9 +66,14 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
     public static Entity ball, player;
 
 
-    Sound loop_2;
     // User Interface
     public static UserInterfaceController uiController;
+
+
+    //cheats
+    public static boolean godMode = false;
+
+
 
     public static void main(String[] args) {
         launch(args);
@@ -129,7 +132,6 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         // Loading Audio
         getAssetLoader().loadSound("asset.wav");
         Sound loop_1 = getAssetLoader().loadSound("alpha/loop_1_arp.wav");
-        loop_2 = getAssetLoader().loadSound("alpha/loop_1_plomg.wav");
 
         getAssetLoader().loadSound("alpha/ball_collide_brick.wav");
         getAssetLoader().loadSound("alpha/ball_collide_player_1.wav");
@@ -184,7 +186,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
     @Override
     protected void onUpdate(double tpf) {
-        mouseMovement();
+        player.getComponent(PlayerComponent.class).mouseMovement();
 
         if (geti("gameStatus") == 0)
             inPreGame();
@@ -314,7 +316,8 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
 
         onCollisionBegin(EntityType.ACTIONBRICK, EntityType.PLAYER, (actionBrick, player) -> {
             actionBrick.removeFromWorld();
-            byType(EntityType.BALL).get(FXGLMath.random(0, byType(EntityType.BALL).size() - 1)).removeFromWorld(); //Removes one random ball as negative impact
+            if(!godMode)
+                byType(EntityType.BALL).get(FXGLMath.random(0, byType(EntityType.BALL).size() - 1)).removeFromWorld(); //Removes one random ball as negative impact
 
             play("beta/player_live_loss.wav"); //TODO: MUSIC
 
@@ -387,7 +390,7 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
         });
 
         onKey(KeyCode.S, () -> {
-            getDialogService().showInputBox("Spawn Something\n0 - Remove all Power Ups (inc. drops)\n1 - Heart\n2 - Multi Ball\n3 - Player Gun\n4 - Super Ball\n5 - Infected Brick\n6 - Spawn Balls", type -> {
+            getDialogService().showInputBox("Cheat Menu\n0 - Remove all Power Ups (inc. drops)\n1 - Heart\n2 - Multi Ball\n3 - Player Gun\n4 - Super Ball\n5 - Infected Brick\n6 - Spawn Balls\n7 - God Mode", type -> {
                 int selection = Integer.parseInt(type);
                 PowerupType powerUp = null;
                 String notification = "";
@@ -417,7 +420,6 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
                         notification = "Infected Brick spawned.";
                         break;
                     case 6:
-                        powerUp = PowerupType.MULTIBALL;
                         getDialogService().showInputBox("Number of balls: ", number -> {
                             int numberInt = Integer.parseInt(number);
                             for (int i = 0; i < numberInt; i++) {
@@ -426,6 +428,11 @@ public class GameApplication extends com.almasb.fxgl.app.GameApplication {
                             }
                         });
                         notification = "Balls spawned.";
+                        break;
+                    case 7:
+                        godMode = !godMode;
+                        String status = godMode ? "ON" : "OFF";
+                        notification = "God Mode " + status;
                         break;
                     default:
                         notification = "Upps. This command is unknown.";

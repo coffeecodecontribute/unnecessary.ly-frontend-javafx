@@ -9,6 +9,10 @@ import ly.unnecessary.frontend.EntityType;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
 
+/**
+ * Player Gun Power Up Component
+ * Will spawn when the player is collecting a player gun power up.
+ */
 public class PlayerGunComponent extends Component {
     private TimerAction playergun;
     private double bulletSpawnPeriod = 0.5;
@@ -21,22 +25,21 @@ public class PlayerGunComponent extends Component {
      */
     @Override
     public void onAdded() {
-        PlayerGunType type = FXGLMath.randomBoolean(0.5) ? PlayerGunType.SINGLE : PlayerGunType.DOUBLE;
+        PlayerGunType type = FXGLMath.randomBoolean(0.5) ? PlayerGunType.SINGLE : PlayerGunType.DOUBLE; //Randomly picks a type
 
         if (type == PlayerGunType.DOUBLE)
             bulletSpawnPeriod *= 0.5;
+        else
+            bulletSpawnPeriod *= 0.2;
 
         playergun = run(() -> {
             var player = byType(EntityType.PLAYER).get(0);
+
+            play("beta/shot_" + FXGLMath.random(1, 3) + ".wav");
+
             if (type == PlayerGunType.SINGLE) {
-
-                play("beta/shot_" + FXGLMath.random(1, 3) + ".wav"); //TODO: MUSIC
-
                 spawn("playerGunBullet", player.getX() + player.getWidth() / 2, player.getY());
             } else if (type == PlayerGunType.DOUBLE) {
-
-                play("beta/shot_" + FXGLMath.random(1, 3) + ".wav"); //TODO: MUSIC
-
                 if (switchSides)
                     spawn("playerGunBullet", player.getX() + marginOfPlayer, player.getY());
                 else
