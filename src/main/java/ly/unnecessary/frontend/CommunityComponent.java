@@ -553,10 +553,16 @@ public class CommunityComponent {
      * @return String
      */
     private String getInitials(String displayName) {
-        var shorthand = displayName.substring(0, 2).toUpperCase();
-        var initials = displayName.toUpperCase().split(" ");
-        if (initials.length > 1)
-            shorthand = initials[0].substring(0, 1) + initials[1].substring(0, 1);
+        var shorthand = "";
+        try {
+            shorthand = displayName.substring(0, 2).toUpperCase();
+            var initials = displayName.toUpperCase().split(" ");
+            if (initials.length > 1)
+                shorthand = initials[0].substring(0, 1) + initials[1].substring(0, 1);
+        } catch (Exception e) {
+
+        }
+
         return shorthand;
 
     }
